@@ -1,0 +1,75 @@
+// 反馈信息
+export interface IFeedbackInfo {
+  id: number
+  userId: string
+  content: string
+  type: number
+  status: number
+  fileNames: string[]
+  handlerId: number
+  handleTime: string
+  handleResult: string
+  createdAt: string
+  updatedAt: string
+}
+
+// 获取反馈列表请求参数
+export interface IGetFeedbackListReq {
+  page?: number
+  limit?: number
+  status?: number
+  type?: number
+  userId?: string
+  keywords?: string
+}
+
+// 获取反馈列表响应
+export interface IGetFeedbackListRes {
+  list: IFeedbackInfo[]
+  total: number
+}
+
+// 获取反馈详情请求参数
+export interface IGetFeedbackDetailReq {
+  id: number
+}
+
+// 获取反馈详情响应
+export interface IGetFeedbackDetailRes extends IFeedbackInfo {}
+
+// 处理反馈请求参数
+export interface IHandleFeedbackReq {
+  id: number
+  status: number
+  handleResult: string
+  handlerId: number
+}
+
+// 处理反馈响应
+export interface IHandleFeedbackRes {}
+
+// 删除反馈请求参数
+export interface IDeleteFeedbackReq {
+  id: number
+}
+
+// 删除反馈响应
+export interface IDeleteFeedbackRes {}
+
+// 反馈类型枚举
+export enum FeedbackType {
+  BUG_REPORT = 1, // 错误报告
+  FEATURE_REQUEST = 2, // 功能请求
+  GENERAL_FEEDBACK = 3, // 一般反馈
+  COMPLAINT = 4, // 投诉建议
+  OTHER = 5 // 其他
+}
+
+// 反馈状态枚举
+export enum FeedbackStatus {
+  PENDING = 1, // 待处理
+  IN_PROGRESS = 2, // 处理中
+  RESOLVED = 3, // 已解决
+  REJECTED = 4, // 已拒绝
+  CLOSED = 5 // 已关闭
+}
