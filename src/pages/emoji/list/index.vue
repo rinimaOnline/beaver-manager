@@ -150,7 +150,7 @@ import {
   updateEmojiApi
 } from "@/api/emoji"
 import { previewOnlineFileApi } from "@/api/file"
-import { uploadAndSaveFile } from "@/utils/upload/upload"
+import { uploadAndSaveFile } from "@/api/file"
 import config from "@/config/env"
 
 export default defineComponent({

@@ -21,7 +21,7 @@ export interface HeaderRequest {
  * 创建axios实例
  */
 const request = axios.create({
-  timeout: 50000, // 请求超时时间
+  timeout: 600000, // 请求超时时间，10分钟，文件上传需要更长的超时时间
   headers: {
     "Content-Type": "application/json;charset=UTF-8"
   }

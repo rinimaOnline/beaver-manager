@@ -1,5 +1,5 @@
 import BMF from 'browser-md5-file'
-
+import type { ImageSize } from '@/types/utils/upload'
 
 /**
  * @description: 获取文件的md5
@@ -20,8 +20,8 @@ export const getMd5 = (file: File): Promise<string> => {
 
 /**
  * @description: 获取图片的宽度和高度
- * @param {Blob} file
- * @return {*}
+ * @param {File} file
+ * @return {Promise<ImageSize>}
  */
 export const getImageAttribute = (file: File): Promise<ImageSize> => {
   return new Promise((resolve) => {
@@ -37,49 +37,134 @@ export const getImageAttribute = (file: File): Promise<ImageSize> => {
         })
       }
     }
-    reader.onerror = function (e: any) {
-      resolve(e)
+    reader.onerror = function () {
+      resolve({ width: 0, height: 0 })
     }
     reader.readAsDataURL(file)
   })
 }
 
 /**
- * @description: 判断当前文件的类型
- * @param {string} value
- * @return {*}
+ * @description: 获取音频文件的详细信息
+ * @param {File} file
+ * @return {Promise<{ duration: number }>}
  */
-export const fileType = (value: string): string => {
-  if (value.lastIndexOf('audio') !== -1) {
+export const getAudioInfo = (file: File): Promise<{ duration: number }> => {
+  return new Promise((resolve) => {
+    const audio = new Audio()
+    const url = URL.createObjectURL(file)
+
+    audio.addEventListener('loadedmetadata', () => {
+      resolve({
+        duration: Math.round(audio.duration),
+      })
+      URL.revokeObjectURL(url)
+    })
+
+    audio.addEventListener('error', () => {
+      resolve({ duration: 0 })
+      URL.revokeObjectURL(url)
+    })
+
+    audio.src = url
+  })
+}
+
+/**
+ * @description: 获取视频文件的详细信息
+ * @param {File} file
+ * @return {Promise<{ width: number; height: number; duration: number }>}
+ */
+export const getVideoInfo = (file: File): Promise<{ width: number; height: number; duration: number }> => {
+  return new Promise((resolve) => {
+    const video = document.createElement('video')
+    const url = URL.createObjectURL(file)
+
+    video.addEventListener('loadedmetadata', () => {
+      resolve({
+        width: video.videoWidth,
+        height: video.videoHeight,
+        duration: Math.round(video.duration),
+      })
+      URL.revokeObjectURL(url)
+    })
+
+    video.addEventListener('error', () => {
+      resolve({ width: 0, height: 0, duration: 0 })
+      URL.revokeObjectURL(url)
+    })
+
+    video.src = url
+  })
+}
+
+/**
+ * @description: 判断当前文件的类型
+ * @param {string} mimeType
+ * @return {string} 'audio' | 'image' | 'video' | 'other'
+ */
+export const fileType = (mimeType: string): string => {
+  if (mimeType.includes('audio')) {
     return 'audio'
-  } else if (value.lastIndexOf('image') !== -1) {
+  } else if (mimeType.includes('image')) {
     return 'image'
+  } else if (mimeType.includes('video')) {
+    return 'video'
   } else {
-    return ''
+    return 'other'
   }
 }
 
 /**
- * @description: 判断文件是否存在
- * @param {string} url
- * @return {*}
+ * @description: 获取文件类型（更详细的版本）
+ * @param {string} mimeType
+ * @return {'audio' | 'image' | 'video' | 'other'}
  */
-export const isExistFile = (url: string): Boolean => {
-  let xmlhttp
-  if (window.XMLHttpRequest) {
-    xmlhttp = new XMLHttpRequest()
+export const getFileType = (mimeType: string): 'audio' | 'image' | 'video' | 'other' => {
+  if (mimeType.includes('audio')) {
+    return 'audio'
+  } else if (mimeType.includes('image')) {
+    return 'image'
+  } else if (mimeType.includes('video')) {
+    return 'video'
   } else {
-    xmlhttp = new ActiveXObject('Microsoft.XMLHTTP')
+    return 'other'
   }
-  xmlhttp.open('GET', `${url}?${new Date().getTime()}`, false)
-  xmlhttp.send()
-  if (xmlhttp.readyState === 4) {
-    if (xmlhttp.status === 200) {
-      return true
-    } else {
-      return false
+}
+
+// 文件信息类型
+interface FileInfo {
+  type: string
+  imageFile?: ImageSize
+  audioFile?: { duration: number }
+  videoFile?: { width: number; height: number; duration: number }
+}
+
+/**
+ * @description: 获取文件的完整信息（根据类型返回对应信息）
+ * @param {File} file
+ * @return {Promise<FileInfo>}
+ */
+export const getFileInfo = async (file: File): Promise<FileInfo> => {
+  const fileType = getFileType(file.type)
+
+  switch (fileType) {
+    case 'image': {
+      const imageInfo = await getImageAttribute(file)
+      return { type: fileType, imageFile: imageInfo }
     }
-  } else {
-    return false
+
+    case 'audio': {
+      const audioInfo = await getAudioInfo(file)
+      return { type: fileType, audioFile: audioInfo }
+    }
+
+    case 'video': {
+      const videoInfo = await getVideoInfo(file)
+      return { type: fileType, videoFile: videoInfo }
+    }
+
+    default:
+      return { type: fileType }
   }
 }

@@ -1,27 +1,27 @@
 import type {
-  BatchDeleteChatMessagesReq,
-  BatchDeleteChatMessagesRes,
-  BatchRestoreChatMessagesReq,
-  BatchRestoreChatMessagesRes,
-  ClearConversationReq,
-  ClearConversationRes,
-  DeleteChatMessageRes,
-  DeleteMessagesByTypeReq,
-  DeleteMessagesByTypeRes,
-  GetChatMessageDetailRes,
-  GetChatMessageListReq,
-  GetChatMessageListRes,
-  GetConversationListReq,
-  GetConversationListRes,
-  RestoreChatMessageReq,
-  RestoreChatMessageRes
+  IBatchDeleteChatMessagesReq,
+  IBatchDeleteChatMessagesRes,
+  IBatchRestoreChatMessagesReq,
+  IBatchRestoreChatMessagesRes,
+  IClearConversationReq,
+  IClearConversationRes,
+  IDeleteChatMessageRes,
+  IDeleteMessagesByTypeReq,
+  IDeleteMessagesByTypeRes,
+  IGetChatMessageDetailRes,
+  IGetChatMessageListReq,
+  IGetChatMessageListRes,
+  IGetConversationListReq,
+  IGetConversationListRes,
+  IRestoreChatMessageReq,
+  IRestoreChatMessageRes
 } from "@/types/api/chat"
 import config from "@/config/env"
 import { ajax } from "@/utils/request"
 
 // 获取聊天消息列表
-export function getChatMessageListApi(params: GetChatMessageListReq) {
-  return ajax<GetChatMessageListRes>({
+export function getChatMessageListApi(params: IGetChatMessageListReq) {
+  return ajax<IGetChatMessageListRes>({
     method: "GET",
     url: `${config.baseAPI}/admin/chat/list`,
     params
@@ -30,7 +30,7 @@ export function getChatMessageListApi(params: GetChatMessageListReq) {
 
 // 获取聊天消息详情
 export function getChatMessageDetailApi(messageId: string) {
-  return ajax<GetChatMessageDetailRes>({
+  return ajax<IGetChatMessageDetailRes>({
     method: "GET",
     url: `${config.baseAPI}/admin/chat/${messageId}`
   })
@@ -38,15 +38,15 @@ export function getChatMessageDetailApi(messageId: string) {
 
 // 删除聊天消息
 export function deleteChatMessageApi(messageId: string) {
-  return ajax<DeleteChatMessageRes>({
+  return ajax<IDeleteChatMessageRes>({
     method: "DELETE",
     url: `${config.baseAPI}/admin/chat/${messageId}`
   })
 }
 
 // 批量删除聊天消息
-export function batchDeleteChatMessagesApi(data: BatchDeleteChatMessagesReq) {
-  return ajax<BatchDeleteChatMessagesRes>({
+export function batchDeleteChatMessagesApi(data: IBatchDeleteChatMessagesReq) {
+  return ajax<IBatchDeleteChatMessagesRes>({
     method: "DELETE",
     url: `${config.baseAPI}/admin/chat/batch`,
     data
@@ -54,8 +54,8 @@ export function batchDeleteChatMessagesApi(data: BatchDeleteChatMessagesReq) {
 }
 
 // 恢复已删除的消息
-export function restoreChatMessageApi(data: RestoreChatMessageReq) {
-  return ajax<RestoreChatMessageRes>({
+export function restoreChatMessageApi(data: IRestoreChatMessageReq) {
+  return ajax<IRestoreChatMessageRes>({
     method: "PUT",
     url: `${config.baseAPI}/admin/chat/restore`,
     data
@@ -63,8 +63,8 @@ export function restoreChatMessageApi(data: RestoreChatMessageReq) {
 }
 
 // 批量恢复消息
-export function batchRestoreChatMessagesApi(data: BatchRestoreChatMessagesReq) {
-  return ajax<BatchRestoreChatMessagesRes>({
+export function batchRestoreChatMessagesApi(data: IBatchRestoreChatMessagesReq) {
+  return ajax<IBatchRestoreChatMessagesRes>({
     method: "PUT",
     url: `${config.baseAPI}/admin/chat/restorebatch`,
     data
@@ -72,8 +72,8 @@ export function batchRestoreChatMessagesApi(data: BatchRestoreChatMessagesReq) {
 }
 
 // 清空会话消息
-export function clearConversationApi(data: ClearConversationReq) {
-  return ajax<ClearConversationRes>({
+export function clearConversationApi(data: IClearConversationReq) {
+  return ajax<IClearConversationRes>({
     method: "DELETE",
     url: `${config.baseAPI}/admin/chat/clearconv`,
     data
@@ -81,8 +81,8 @@ export function clearConversationApi(data: ClearConversationReq) {
 }
 
 // 按消息类型删除
-export function deleteMessagesByTypeApi(data: DeleteMessagesByTypeReq) {
-  return ajax<DeleteMessagesByTypeRes>({
+export function deleteMessagesByTypeApi(data: IDeleteMessagesByTypeReq) {
+  return ajax<IDeleteMessagesByTypeRes>({
     method: "DELETE",
     url: `${config.baseAPI}/admin/chat/bytype`,
     data
@@ -90,8 +90,8 @@ export function deleteMessagesByTypeApi(data: DeleteMessagesByTypeReq) {
 }
 
 // 获取对话列表
-export function getConversationListApi(params: GetConversationListReq) {
-  return ajax<GetConversationListRes>({
+export function getConversationListApi(params: IGetConversationListReq) {
+  return ajax<IGetConversationListRes>({
     method: "GET",
     url: `${config.baseAPI}/admin/chat/conversations`,
     params

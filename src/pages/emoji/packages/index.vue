@@ -333,7 +333,7 @@ import {
 import config from "@/config/env"
 import { EmojiPackageStatus } from "@/types/api/emoji"
 import { previewOnlineFileApi } from "@/api/file"
-import { uploadAndSaveFile } from "@/utils/upload/upload"
+import { uploadAndSaveFile } from "@/api/file"
 
 export default defineComponent({
   name: "EmojiPackageList",

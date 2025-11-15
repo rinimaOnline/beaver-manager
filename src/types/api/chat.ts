@@ -1,5 +1,5 @@
 // 聊天消息信息
-export interface ChatMessageInfo {
+export interface IChatMessageInfo {
   id: string
   messageId: string
   conversationId: string
@@ -13,7 +13,7 @@ export interface ChatMessageInfo {
 }
 
 // 聊天消息详情
-export interface ChatMessageDetail {
+export interface IChatMessageDetail {
   id: string
   messageId: string
   conversationId: string
@@ -29,7 +29,7 @@ export interface ChatMessageDetail {
 }
 
 // 获取聊天消息列表请求
-export interface GetChatMessageListReq {
+export interface IGetChatMessageListReq {
   page?: number
   pageSize?: number
   conversationId?: string
@@ -42,61 +42,61 @@ export interface GetChatMessageListReq {
 }
 
 // 获取聊天消息列表响应
-export interface GetChatMessageListRes {
-  list: ChatMessageInfo[]
+export interface IGetChatMessageListRes {
+  list: IChatMessageInfo[]
   total: number
 }
 
 // 获取聊天消息详情请求
-export interface GetChatMessageDetailReq {
+export interface IGetChatMessageDetailReq {
   messageId: string
 }
 
 // 获取聊天消息详情响应
-export interface GetChatMessageDetailRes extends ChatMessageDetail {}
+export interface IGetChatMessageDetailRes extends IChatMessageDetail {}
 
 // 删除聊天消息请求
-export interface DeleteChatMessageReq {
+export interface IDeleteChatMessageReq {
   messageId: string
 }
 
 // 删除聊天消息响应
-export interface DeleteChatMessageRes {}
+export interface IDeleteChatMessageRes {}
 
 // 批量删除聊天消息请求
-export interface BatchDeleteChatMessagesReq {
+export interface IBatchDeleteChatMessagesReq {
   ids: string[]
 }
 
 // 批量删除聊天消息响应
-export interface BatchDeleteChatMessagesRes {}
+export interface IBatchDeleteChatMessagesRes {}
 
 // 恢复聊天消息请求
-export interface RestoreChatMessageReq {
+export interface IRestoreChatMessageReq {
   messageId: string
 }
 
 // 恢复聊天消息响应
-export interface RestoreChatMessageRes {}
+export interface IRestoreChatMessageRes {}
 
 // 批量恢复聊天消息请求
-export interface BatchRestoreChatMessagesReq {
+export interface IBatchRestoreChatMessagesReq {
   ids: string[]
 }
 
 // 批量恢复聊天消息响应
-export interface BatchRestoreChatMessagesRes {}
+export interface IBatchRestoreChatMessagesRes {}
 
 // 清空会话请求
-export interface ClearConversationReq {
+export interface IClearConversationReq {
   conversationId: string
 }
 
 // 清空会话响应
-export interface ClearConversationRes {}
+export interface IClearConversationRes {}
 
 // 按类型删除消息请求
-export interface DeleteMessagesByTypeReq {
+export interface IDeleteMessagesByTypeReq {
   conversationId?: string
   msgType: number
   startTime?: string
@@ -104,12 +104,12 @@ export interface DeleteMessagesByTypeReq {
 }
 
 // 按类型删除消息响应
-export interface DeleteMessagesByTypeRes {
+export interface IDeleteMessagesByTypeRes {
   deletedCount: number
 }
 
 // 对话参与者信息
-export interface ConversationParticipant {
+export interface IConversationParticipant {
   userId: string
   nickName: string
   avatar: string
@@ -117,17 +117,17 @@ export interface ConversationParticipant {
 }
 
 // 对话信息
-export interface ConversationInfo {
+export interface IConversationInfo {
   conversationId: string
   conversationType: number // 1: 私聊, 2: 群聊
-  participants: ConversationParticipant[]
+  participants: IConversationParticipant[]
   lastMessage: string
   lastMessageTime: string
   messageCount: number
 }
 
 // 获取对话列表请求
-export interface GetConversationListReq {
+export interface IGetConversationListReq {
   conversationType?: number
   participantName?: string
   startDate?: string
@@ -137,8 +137,8 @@ export interface GetConversationListReq {
 }
 
 // 获取对话列表响应
-export interface GetConversationListRes {
-  list: ConversationInfo[]
+export interface IGetConversationListRes {
+  list: IConversationInfo[]
   total: number
 }
 

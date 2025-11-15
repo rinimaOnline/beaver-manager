@@ -3,7 +3,7 @@ import type { IVersionInfo } from '@/types/api/update'
 export interface IVersionForm {
   architectureId: number
   version: string
-  fileName: string
+  fileKey: string
   description: string
   releaseNotes: string
   releaseDate: string

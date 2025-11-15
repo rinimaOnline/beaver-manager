@@ -54,7 +54,7 @@
         :header-cell-style="{ background: '#f5f7fa' }"
       >
         <el-table-column prop="version" label="版本号" width="120" />
-        <el-table-column prop="fileName" label="文件ID" width="280" show-overflow-tooltip />
+        <el-table-column prop="fileKey" label="文件ID" width="280" show-overflow-tooltip />
         <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
         <el-table-column prop="updatedAt" label="更新日志" min-width="200" show-overflow-tooltip />
         <el-table-column prop="createdAt" label="发布时间" width="180" />
@@ -100,7 +100,7 @@
             <template #prefix>v</template>
           </el-input>
         </el-form-item>
-        <el-form-item label="安装包" prop="fileName">
+        <el-form-item label="安装包" prop="fileKey">
           <el-upload
             class="upload-demo"
             action="#"
@@ -170,7 +170,7 @@ import {
   getVersionListApi, 
   deleteVersionApi
 } from '@/api/update'
-import { uploadAndSaveFile } from '@/utils/upload/upload'
+import { uploadFileApi } from '@/api/file'
 
 export default defineComponent({
   name: 'VersionManagement',
@@ -199,7 +199,7 @@ export default defineComponent({
       form: {
         architectureId: 0,
         version: '',
-        fileName: '',
+        fileKey: '',
         description: '',
         releaseNotes: '',
         releaseDate: ''
@@ -296,7 +296,7 @@ export default defineComponent({
       state.form = {
         architectureId: state.selectedArchId,
         version: '',
-        fileName: '',
+        fileKey: '',
         description: '',
         releaseNotes: '',
         releaseDate: ''
@@ -343,10 +343,11 @@ export default defineComponent({
           ctx?.$message.info('文件上传中，请稍候...')
           
           // 使用前端直传OSS并保存到数据库
-          const result = await uploadAndSaveFile(file.raw, 'update')
+          const result = await uploadFileApi(file.raw, 'update')
+          console.log('文件上传成功，result:', result)
           
-          state.form.fileId = result.fileId
-          console.log('文件上传成功，fileId:', state.form.fileId)
+          state.form.fileKey = result.fileKey
+          // console.log('文件上传成功，fileId:', state.form.fileId)
           ctx?.$message.success('文件上传成功')
         } catch (error) {
           console.error('文件上传失败:', error)
@@ -359,7 +360,7 @@ export default defineComponent({
       if (!formRef.value) return
       
       // 检查文件是否已上传
-      if (!state.form.fileId) {
+      if (!state.form.fileKey) {
         ctx?.$message.error('请先上传安装包文件')
         return
       }
