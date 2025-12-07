@@ -330,10 +330,8 @@ import {
   addEmojiToPackageApi,
   removeEmojiFromPackageApi
 } from "@/api/emoji"
-import config from "@/config/env"
 import { EmojiPackageStatus } from "@/types/api/emoji"
-import { previewOnlineFileApi } from "@/api/file"
-import { uploadAndSaveFile } from "@/api/file"
+import { previewOnlineFileApi, uploadFileApi } from "@/api/file"
 
 export default defineComponent({
   name: "EmojiPackageList",
@@ -528,10 +526,10 @@ export default defineComponent({
       try {
         uploading.value = true
         // 前端直传OSS并保存到数据库
-        const result = await uploadAndSaveFile(file, 'emoji-package')
+        const result = await uploadFileApi(file, 'emoji-package')
         
         selectedFile.value = file
-        form.coverFile = result.fileId
+        form.coverFile = result.fileKey
         previewUrl.value = URL.createObjectURL(file)
         
         ElMessage.success('文件上传成功')
@@ -582,10 +580,10 @@ export default defineComponent({
       try {
         emojiUploading.value = true
         // 前端直传OSS并保存到数据库
-        const result = await uploadAndSaveFile(file, 'emoji')
+        const result = await uploadFileApi(file, 'emoji')
         
         emojiSelectedFile.value = file
-        emojiForm.fileId = result.fileId
+        emojiForm.fileId = result.fileKey
         emojiPreviewUrl.value = URL.createObjectURL(file)
         
         ElMessage.success('文件上传成功')

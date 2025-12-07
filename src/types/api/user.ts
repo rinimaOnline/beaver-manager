@@ -1,7 +1,7 @@
 // 用户基础信息
 export interface IUserInfo {
   id: string
-  nickname: string
+  nickName: string
   email: string
   abstract: string
   fileName: string
@@ -37,7 +37,7 @@ export interface IGetUserDetailRes extends IUserInfo {}
 
 // 创建用户请求参数
 export interface ICreateUserReq {
-  nickname: string
+  nickName: string
   password: string
   email: string
   avatar?: string
@@ -54,7 +54,7 @@ export interface ICreateUserRes {
 // 更新用户请求参数
 export interface IUpdateUserReq {
   id: string
-  nickname?: string
+  nickName?: string
   email?: string
   avatar?: string
   abstract?: string

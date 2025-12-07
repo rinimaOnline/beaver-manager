@@ -111,7 +111,7 @@
           style="width: 100%"
         >
           <el-table-column type="selection" width="50" />
-          <el-table-column prop="nickname" label="昵称" width="120" show-overflow-tooltip />
+          <el-table-column prop="nickName" label="昵称" width="120" show-overflow-tooltip />
           <el-table-column prop="avatar" label="头像" width="80" align="center">
             <template #default="{ row }">
               <el-avatar 
@@ -186,8 +186,8 @@
       >
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="昵称" prop="nickname">
-              <el-input v-model="userForm.nickname" placeholder="请输入昵称">
+            <el-form-item label="昵称" prop="nickName">
+              <el-input v-model="userForm.nickName" placeholder="请输入昵称">
                 <template #prefix>
                   <el-icon><User /></el-icon>
                 </template>
@@ -349,7 +349,7 @@ export default defineComponent({
     // 用户表单
     const userForm = reactive({
       id: "",
-      nickname: "",
+      nickName: "",
       email: "",
       password: "",
       abstract: "",
@@ -369,7 +369,7 @@ export default defineComponent({
 
     // 表单验证规则
     const userFormRules = {
-      nickname: [
+      nickName: [
         { required: true, message: "请输入昵称", trigger: "blur" }
       ],
       email: [
@@ -488,7 +488,7 @@ export default defineComponent({
       isEdit.value = true
       Object.assign(userForm, {
         id: row.id,
-        nickname: row.nickname,
+        nickName: row.nickName,
         email: row.email,
         abstract: row.abstract,
         status: row.status,
@@ -499,7 +499,7 @@ export default defineComponent({
 
     const handleDelete = async (row: IUserInfo) => {
       try {
-        await ElMessageBox.confirm(`确认删除用户"${row.nickname}"吗？`, "提示", {
+        await ElMessageBox.confirm(`确认删除用户"${row.nickName}"吗？`, "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
@@ -592,7 +592,7 @@ export default defineComponent({
         submitting.value = true
 
         const formData = {
-          nickname: userForm.nickname,
+          nickName: userForm.nickName,
           email: userForm.email,
           abstract: userForm.abstract,
           status: userForm.status,
@@ -645,7 +645,7 @@ export default defineComponent({
     const resetUserForm = () => {
       Object.assign(userForm, {
         id: "",
-        nickname: "",
+        nickName: "",
         email: "",
         password: "",
         abstract: "",

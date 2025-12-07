@@ -48,22 +48,21 @@
         style="width: 100%"
 
       >
-
-        <el-table-column prop="id" label="ID" width="120" />
+      <!-- 序号 -->
+        <el-table-column prop="uuid" label="uuid" width="200" />
         <el-table-column prop="title" label="表情名称" min-width="150" />
-        <el-table-column prop="fileId" label="文件预览" width="120">
+        <el-table-column prop="fileKey" label="文件预览" width="120">
           <template #default="{ row }">
             <el-image
-              v-if="row.fileId"
-              :src="getFilePreviewUrl(row.fileId)"
-              :preview-src-list="[getFilePreviewUrl(row.fileId)]"
+              v-if="row.fileKey"
+              :src="getFilePreviewUrl(row.fileKey)"
+              :preview-src-list="[getFilePreviewUrl(row.fileKey)]"
               style="width: 40px; height: 40px"
               fit="cover"
             />
             <span v-else>无文件</span>
           </template>
         </el-table-column>
-        <el-table-column prop="authorId" label="创建者ID" width="120" />
         <el-table-column prop="createTime" label="创建时间" width="180" />
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
@@ -149,9 +148,7 @@ import {
   getEmojiListApi,
   updateEmojiApi
 } from "@/api/emoji"
-import { previewOnlineFileApi } from "@/api/file"
-import { uploadAndSaveFile } from "@/api/file"
-import config from "@/config/env"
+import { previewOnlineFileApi, uploadFileApi } from "@/api/file"
 
 export default defineComponent({
   name: "EmojiList",
@@ -270,10 +267,10 @@ export default defineComponent({
       try {
         uploading.value = true
         // 立即上传文件
-        const result = await uploadAndSaveFile(file, 'emoji')
+        const result = await uploadFileApi(file, 'emoji')
         
         selectedFile.value = file
-        form.fileId = result.fileId
+        form.fileId = result.fileKey
         previewUrl.value = URL.createObjectURL(file)
         
         ElMessage.success('文件上传成功')
@@ -336,8 +333,8 @@ export default defineComponent({
           // 编辑模式：如果有新文件则先上传
           let fileId = form.fileId
           if (selectedFile.value && !form.fileId) {
-            const result = await uploadAndSaveFile(selectedFile.value)
-            fileId = result.fileId
+            const result = await uploadFileApi(selectedFile.value)
+            fileId = result.fileKey
           }
 
           const res = await updateEmojiApi(form.id, {
