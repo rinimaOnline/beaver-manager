@@ -49,7 +49,7 @@
 
       >
       <!-- 序号 -->
-        <el-table-column prop="uuid" label="uuid" width="200" />
+        <el-table-column prop="emojiId" label="表情id" width="200" />
         <el-table-column prop="title" label="表情名称" min-width="150" />
         <el-table-column prop="fileKey" label="文件预览" width="120">
           <template #default="{ row }">
