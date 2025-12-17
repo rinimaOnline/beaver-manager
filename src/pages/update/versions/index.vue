@@ -170,7 +170,7 @@ import {
   getVersionListApi, 
   deleteVersionApi
 } from '@/api/update'
-import { uploadFileApi } from '@/api/file'
+import { uploadFile } from '@/api/upload'
 
 export default defineComponent({
   name: 'VersionManagement',
@@ -343,7 +343,7 @@ export default defineComponent({
           ctx?.$message.info('文件上传中，请稍候...')
           
           // 使用前端直传OSS并保存到数据库
-          const result = await uploadFileApi(file.raw, 'update')
+          const result = await uploadFile(file.raw)
           console.log('文件上传成功，result:', result)
           
           state.form.fileKey = result.fileKey

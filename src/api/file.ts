@@ -203,11 +203,7 @@ export const uploadFileApi = async (file: File, fileKey?: string): Promise<IFile
 export const uploadFileApiWithTarget = async (file: File, fileKey?: string, target: 'local' | 'qiniu' = 'local'): Promise<IFileUploadResult> => {
   // 根据目标选择URL
   const baseEndpoint = target === 'qiniu' ? 'uploadQiniu' : 'uploadLocal'
-  let uploadUrl = `${config.baseAPI}/admin/file/${baseEndpoint}`
-
-  if (fileKey) {
-    uploadUrl += `?fileKey=${encodeURIComponent(fileKey)}`
-  }
+  const uploadUrl = `${config.baseAPI}/admin/file/${baseEndpoint}`
 
   // 获取文件信息
   const fileInfo = await getFileInfo(file)
@@ -216,6 +212,7 @@ export const uploadFileApiWithTarget = async (file: File, fileKey?: string, targ
   const formData = new FormData()
   formData.append('file', file)
   formData.append('fileInfo', JSON.stringify(fileInfo))
+  formData.append('source', target) // 添加source字段
 
   const result = await ajax<IFileRes>({
     method: 'POST',

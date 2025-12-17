@@ -148,7 +148,8 @@ import {
   getEmojiListApi,
   updateEmojiApi
 } from "@/api/emoji"
-import { previewOnlineFileApi, uploadFileApi } from "@/api/file"
+import { previewOnlineFileApi } from "@/api/file"
+import { uploadFile } from "@/api/upload"
 
 export default defineComponent({
   name: "EmojiList",
@@ -177,6 +178,7 @@ export default defineComponent({
       title: "",
       fileId: "",
       fileName: "",
+      emojiInfo: { width: 0, height: 0 },
       authorId: ""
     })
 
@@ -267,10 +269,11 @@ export default defineComponent({
       try {
         uploading.value = true
         // 立即上传文件
-        const result = await uploadFileApi(file, 'emoji')
-        
+        const result = await uploadFile(file)
+
         selectedFile.value = file
         form.fileId = result.fileKey
+        form.emojiInfo = result.style
         previewUrl.value = URL.createObjectURL(file)
         
         ElMessage.success('文件上传成功')
@@ -333,7 +336,7 @@ export default defineComponent({
           // 编辑模式：如果有新文件则先上传
           let fileId = form.fileId
           if (selectedFile.value && !form.fileId) {
-            const result = await uploadFileApi(selectedFile.value)
+            const result = await uploadFile(selectedFile.value)
             fileId = result.fileKey
           }
 
@@ -357,7 +360,8 @@ export default defineComponent({
 
           const res = await createEmojiApi({
             title: form.title,
-            fileName: form.fileName
+            fileKey: form.fileId,
+            emojiInfo: form.emojiInfo
           })
           if (res.code === 0) {
             ElMessage.success("创建成功")

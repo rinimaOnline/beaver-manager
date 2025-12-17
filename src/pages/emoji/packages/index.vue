@@ -331,7 +331,8 @@ import {
   removeEmojiFromPackageApi
 } from "@/api/emoji"
 import { EmojiPackageStatus } from "@/types/api/emoji"
-import { previewOnlineFileApi, uploadFileApi } from "@/api/file"
+import { previewOnlineFileApi } from "@/api/file"
+import { uploadFile } from "@/api/upload"
 
 export default defineComponent({
   name: "EmojiPackageList",
@@ -405,6 +406,7 @@ export default defineComponent({
       title: "",
       fileKey: "",
       packageId: "",
+      emojiInfo: { width: 0, height: 0 },
       authorId: "" // 添加创建者ID字段
     })
 
@@ -526,10 +528,11 @@ export default defineComponent({
       try {
         uploading.value = true
         // 前端直传OSS并保存到数据库
-        const result = await uploadFileApi(file, 'emoji-package')
-        
+        const result = await uploadFile(file)
+
         selectedFile.value = file
         form.coverFile = result.fileKey
+        // 可以在这里使用 result.style 获取图片尺寸信息
         previewUrl.value = URL.createObjectURL(file)
         
         ElMessage.success('文件上传成功')
@@ -580,10 +583,11 @@ export default defineComponent({
       try {
         emojiUploading.value = true
         // 前端直传OSS并保存到数据库
-        const result = await uploadFileApi(file, 'emoji')
-        
+        const result = await uploadFile(file)
+
         emojiSelectedFile.value = file
         emojiForm.fileKey = result.fileKey
+        emojiForm.emojiInfo = result.style // 保存图片尺寸信息
         emojiPreviewUrl.value = URL.createObjectURL(file)
         
         ElMessage.success('文件上传成功')
@@ -740,6 +744,7 @@ export default defineComponent({
           packageId: emojiForm.packageId,
           fileKey: emojiForm.fileKey,
           title: emojiForm.title,
+          emojiInfo: emojiForm.emojiInfo,
           authorId: emojiForm.authorId
         })
         if (res.code === 0) {
@@ -747,7 +752,7 @@ export default defineComponent({
           emojiFormDialogVisible.value = false
           fetchEmojiList(currentPackage.value.packageId)
           // 重置表单
-          Object.assign(emojiForm, { title: "", fileKey: "", authorId: "" })
+          Object.assign(emojiForm, { title: "", fileKey: "", emojiInfo: { width: 0, height: 0 }, authorId: "" })
           emojiSelectedFile.value = null
           emojiPreviewUrl.value = ''
         } else {

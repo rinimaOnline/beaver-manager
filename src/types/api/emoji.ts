@@ -51,8 +51,12 @@ export interface IGetEmojiListRes {
 
 // 创建表情
 export interface ICreateEmojiReq {
-  fileName: string
+  fileKey: string
   title: string
+  emojiInfo: {
+    width: number
+    height: number
+  }
 }
 
 export interface ICreateEmojiRes {
