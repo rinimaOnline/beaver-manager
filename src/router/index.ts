@@ -90,11 +90,6 @@ const router = createRouter({
           component: () => import("@/pages/track/stats/index.vue")
         },
         {
-          path: "/track/logs",
-          name: "TrackLogs",
-          component: () => import("@/pages/track/logs/index.vue")
-        },
-        {
           path: "/update/apps",
           name: "UpdateApps",
           component: () => import("@/pages/update/apps/index.vue"),
