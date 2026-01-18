@@ -50,74 +50,74 @@ export const menuConfig: MenuItem[] = [
   },
 
   // 👥 核心业务功能
-  {
-    path: "/user",
-    title: "用户管理",
-    icon: User,
-    children: [
-      { path: "/user/list", title: "用户列表", icon: User }
-    ]
-  },
-  {
-    path: "/chat",
-    title: "聊天管理",
-    icon: ChatLineRound,
-    children: [
-      { path: "/chat/messages", title: "消息管理", icon: Message }
-    ]
-  },
-  {
-    path: "/group",
-    title: "群组管理",
-    icon: UserFilled,
-    children: [
-      { path: "/group/list", title: "群组列表", icon: UserFilled }
-    ]
-  },
-  {
-    path: "/friend",
-    title: "好友管理",
-    icon: Connection,
-    children: [
-      { path: "/friend/relations", title: "好友关系", icon: Connection },
-      { path: "/friend/requests", title: "好友申请", icon: Bell },
-      // { path: "/friend/blacklist", title: "黑名单", icon: Lock }
-    ]
-  },
-  {
-    path: "/moment",
-    title: "动态管理",
-    icon: Camera,
-    children: [
-      { path: "/moment/list", title: "动态列表", icon: Camera },
-      { path: "/moment/reports", title: "举报管理", icon: Bell },
-      { path: "/moment/comments", title: "评论管理", icon: ChatLineRound }
-    ]
-  },
+  // {
+  //   path: "/user",
+  //   title: "用户管理",
+  //   icon: User,
+  //   children: [
+  //     { path: "/user/list", title: "用户列表", icon: User }
+  //   ]
+  // },
+  // {
+  //   path: "/chat",
+  //   title: "聊天管理",
+  //   icon: ChatLineRound,
+  //   children: [
+  //     { path: "/chat/messages", title: "消息管理", icon: Message }
+  //   ]
+  // },
+  // {
+  //   path: "/group",
+  //   title: "群组管理",
+  //   icon: UserFilled,
+  //   children: [
+  //     { path: "/group/list", title: "群组列表", icon: UserFilled }
+  //   ]
+  // },
+  // {
+  //   path: "/friend",
+  //   title: "好友管理",
+  //   icon: Connection,
+  //   children: [
+  //     { path: "/friend/relations", title: "好友关系", icon: Connection },
+  //     { path: "/friend/requests", title: "好友申请", icon: Bell },
+  //     // { path: "/friend/blacklist", title: "黑名单", icon: Lock }
+  //   ]
+  // },
+  // {
+  //   path: "/moment",
+  //   title: "动态管理",
+  //   icon: Camera,
+  //   children: [
+  //     { path: "/moment/list", title: "动态列表", icon: Camera },
+  //     { path: "/moment/reports", title: "举报管理", icon: Bell },
+  //     { path: "/moment/comments", title: "评论管理", icon: ChatLineRound }
+  //   ]
+  // },
 
-  // 📞 通讯功能 - 暂未实现
-  /*
-  {
-    path: "/call",
-    title: "通话管理",
-    icon: Phone,
-    children: [
-      { path: "/call/voice", title: "语音通话", icon: Phone },
-      { path: "/call/video", title: "视频通话", icon: VideoCamera },
-      { path: "/call/records", title: "通话记录", icon: Document }
-    ]
-  },
-  */
+  // // 📞 通讯功能 - 暂未实现
+  // /*
+  // {
+  //   path: "/call",
+  //   title: "通话管理",
+  //   icon: Phone,
+  //   children: [
+  //     { path: "/call/voice", title: "语音通话", icon: Phone },
+  //     { path: "/call/video", title: "视频通话", icon: VideoCamera },
+  //     { path: "/call/records", title: "通话记录", icon: Document }
+  //   ]
+  // },
+  // */
 
-  // 📁 文件与内容
-  {
-    path: "/file",
-    title: "文件管理",
-    icon: FolderOpened,
-    children: [
-      { path: "/file/storage", title: "文件存储", icon: FolderOpened }
-    ]
-  },
+  // // 📁 文件与内容
+  // {
+  //   path: "/file",
+  //   title: "文件管理",
+  //   icon: FolderOpened,
+  //   children: [
+  //     { path: "/file/storage", title: "文件存储", icon: FolderOpened }
+  //   ]
+  // },
   {
     path: "/emoji",
     title: "表情管理",
@@ -144,16 +144,16 @@ export const menuConfig: MenuItem[] = [
   */
 
   // 📊 数据与分析
-  {
-    path: "/track",
-    title: "数据统计",
-    icon: TrendCharts,
-    children: [
-      { path: "/track/buckets", title: "Bucket管理", icon: DataAnalysis },
-      { path: "/track/stats", title: "统计数据", icon: TrendCharts },
-      { path: "/track/logs", title: "日志查询", icon: Document }
-    ]
-  },
+  // {
+  //   path: "/track",
+  //   title: "数据统计",
+  //   icon: TrendCharts,
+  //   children: [
+  //     { path: "/track/buckets", title: "Bucket管理", icon: DataAnalysis },
+  //     { path: "/track/stats", title: "统计数据", icon: TrendCharts },
+  //     { path: "/track/logs", title: "日志查询", icon: Document }
+  //   ]
+  // },
 
   // 💬 用户反馈
   {
