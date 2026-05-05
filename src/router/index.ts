@@ -125,6 +125,16 @@ const router = createRouter({
             requiresAuth: true
           }
         },
+        // 开放平台管理
+        {
+          path: "/open/developers",
+          name: "OpenDevelopers",
+          component: () => import("@/pages/open/developers/index.vue"),
+          meta: {
+            title: '开发者审核',
+            requiresAuth: true
+          }
+        },
       ]
     },
     {

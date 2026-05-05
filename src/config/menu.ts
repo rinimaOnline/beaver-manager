@@ -31,7 +31,8 @@ import {
   Upload,
   User,
   UserFilled,
-  VideoCamera
+  VideoCamera,
+  Collection
 } from "@element-plus/icons-vue"
 
 export interface MenuItem {
@@ -247,6 +248,16 @@ export const menuConfig: MenuItem[] = [
       { path: "/update/architectures", title: "架构管理", icon: Tools },
       { path: "/update/versions", title: "版本列表", icon: Rank },
       { path: "/update/strategies", title: "发布策略", icon: Share }
+    ]
+  },
+
+  // 🔌 开放平台管理
+  {
+    path: "/open",
+    title: "开放平台",
+    icon: Collection,
+    children: [
+      { path: "/open/developers", title: "开发者审核", icon: UserFilled }
     ]
   }
 ]
