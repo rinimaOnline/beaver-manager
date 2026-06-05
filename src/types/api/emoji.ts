@@ -2,6 +2,7 @@
 export interface IEmojiInfo {
   id: string
   fileName: string
+  fileKey?: string
   title: string
   authorId: string
   createTime: string

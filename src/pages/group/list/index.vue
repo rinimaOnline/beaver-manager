@@ -32,7 +32,8 @@ export default defineComponent({
     Delete
   },
   setup() {
-    // 响应式数据
+    const route = useRoute()
+    const router = useRouter()
     const loading = ref(false)
     const detailLoading = ref(false)
     const memberLoading = ref(false)
@@ -89,63 +90,46 @@ export default defineComponent({
 
     // 获取群组列表
     const fetchGroupList = async () => {
-      try {
-        loading.value = true
-        const res = await getGroupListApi({
-          page: pagination.page,
-          limit: pagination.pageSize,
-          keywords: searchForm.keywords || undefined,
-          status: searchForm.status
-        })
-        if (res.code === 0) {
-          groupList.value = res.result.list
-          pagination.total = res.result.total
-        } else {
-          ElMessage.error(res.msg || "获取群组列表失败")
-        }
-      } catch {
-        ElMessage.error("获取群组列表失败")
-      } finally {
-        loading.value = false
+      loading.value = true
+      const res = await getGroupListApi({
+        page: pagination.page,
+        limit: pagination.pageSize,
+        keywords: searchForm.keywords || undefined,
+        status: searchForm.status
+      })
+      loading.value = false
+      if (res.code === 0) {
+        groupList.value = res.result.list || []
+        pagination.total = res.result.total || 0
+      } else {
+        ElMessage.error(res.msg || "获取群组列表失败")
       }
     }
 
-    // 获取群组详情
     const fetchGroupDetail = async (id: number) => {
-      try {
-        detailLoading.value = true
-        const res = await getGroupDetailApi(id)
-        if (res.code === 0) {
-          Object.assign(groupForm, res.result)
-        } else {
-          ElMessage.error(res.msg || "获取群组详情失败")
-        }
-      } catch {
-        ElMessage.error("获取群组详情失败")
-      } finally {
-        detailLoading.value = false
+      detailLoading.value = true
+      const res = await getGroupDetailApi(id)
+      detailLoading.value = false
+      if (res.code === 0) {
+        Object.assign(groupForm, res.result)
+      } else {
+        ElMessage.error(res.msg || "获取群组详情失败")
       }
     }
 
-    // 获取成员列表
     const fetchMemberList = async () => {
-      try {
-        memberLoading.value = true
-        const res = await getGroupMemberListApi({
-          groupId: String(groupForm.id),
-          page: memberPagination.page,
-          limit: memberPagination.pageSize
-        })
-        if (res.code === 0) {
-          memberList.value = res.result.list
-          memberPagination.total = res.result.total
-        } else {
-          ElMessage.error(res.msg || "获取成员列表失败")
-        }
-      } catch {
-        ElMessage.error("获取成员列表失败")
-      } finally {
-        memberLoading.value = false
+      memberLoading.value = true
+      const res = await getGroupMemberListApi({
+        groupId: String(groupForm.id),
+        page: memberPagination.page,
+        limit: memberPagination.pageSize
+      })
+      memberLoading.value = false
+      if (res.code === 0) {
+        memberList.value = res.result.list || []
+        memberPagination.total = res.result.total || 0
+      } else {
+        ElMessage.error(res.msg || "获取成员列表失败")
       }
     }
 
@@ -201,6 +185,10 @@ export default defineComponent({
       fetchGroupList()
     }
 
+    const goGroupProfile = (row: GroupInfo) => {
+      router.push(`/group/profile/${row.uuid}`)
+    }
+
     const handleView = async (row: GroupInfo) => {
       isEdit.value = false
       await fetchGroupDetail(row.id)
@@ -216,47 +204,29 @@ export default defineComponent({
     }
 
     const handleDelete = async (row: GroupInfo) => {
-      try {
-        await ElMessageBox.confirm(`确认删除群组"${row.title}"吗？`, "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        })
-
-        const res = await deleteGroupApi(row.id)
-        if (res.code === 0) {
-          ElMessage.success("删除成功")
-          fetchGroupList()
-        } else {
-          ElMessage.error(res.msg || "删除失败")
-        }
-      } catch (error: any) {
-        if (error !== "cancel") {
-          ElMessage.error("删除失败")
-        }
+      await ElMessageBox.confirm(`确认删除群组「${row.title}」？`, "删除群组", { type: "warning" })
+      const res = await deleteGroupApi(row.id)
+      if (res.code === 0) {
+        ElMessage.success("删除成功")
+        fetchGroupList()
+      } else {
+        ElMessage.error(res.msg || "删除失败")
       }
     }
 
     const handleSave = async () => {
-      try {
-        const valid = await groupFormRef.value?.validate()
-        if (!valid) return
-
-        saving.value = true
-
-        const res = await updateGroupApi(groupForm.id, groupForm)
-        if (res.code === 0) {
-          ElMessage.success("保存成功")
-          isEdit.value = false
-          fetchGroupList()
-          fetchGroupDetail(groupForm.id)
-        } else {
-          ElMessage.error(res.msg || "保存失败")
-        }
-      } catch {
-        ElMessage.error("保存失败")
-      } finally {
-        saving.value = false
+      if (!groupFormRef.value) return
+      await groupFormRef.value.validate()
+      saving.value = true
+      const res = await updateGroupApi(groupForm.id, groupForm)
+      saving.value = false
+      if (res.code === 0) {
+        ElMessage.success("保存成功")
+        isEdit.value = false
+        fetchGroupList()
+        fetchGroupDetail(groupForm.id)
+      } else {
+        ElMessage.error(res.msg || "保存失败")
       }
     }
 
@@ -277,60 +247,35 @@ export default defineComponent({
     }
 
     const handleRemoveMember = async (row: GroupMemberInfo) => {
-      try {
-        await ElMessageBox.confirm(`确认移除成员 ${row.memberNickname}？`, "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        })
-
-        const res = await removeGroupMemberApi({
-          groupId: String(groupForm.id),
-          memberIds: [row.userId]
-        })
-
-        if (res.code === 0) {
-          ElMessage.success("移除成功")
-          fetchMemberList()
-        } else {
-          ElMessage.error(res.msg || "移除失败")
-        }
-      } catch (error: any) {
-        if (error !== "cancel") {
-          ElMessage.error("移除失败")
-        }
+      await ElMessageBox.confirm(`确认移除成员 ${row.memberNickname}？`, "移除成员", { type: "warning" })
+      const res = await removeGroupMemberApi({ groupId: String(groupForm.id), memberIds: [row.userId] })
+      if (res.code === 0) {
+        ElMessage.success("移除成功")
+        fetchMemberList()
+      } else {
+        ElMessage.error(res.msg || "移除失败")
       }
     }
 
     const handleMute = async (row: GroupMemberInfo) => {
-      try {
-        const isMuted = row.status === 2
-        const prohibitionTime = isMuted ? 0 : 30
-
-        const res = await muteGroupMemberApi(row.id, { prohibitionTime })
-        if (res.code === 0) {
-          ElMessage.success(isMuted ? "解除禁言成功" : "禁言成功")
-          fetchMemberList()
-        } else {
-          ElMessage.error(res.msg || "操作失败")
-        }
-      } catch {
-        ElMessage.error("操作失败")
+      const isMuted = row.status === 2
+      const res = await muteGroupMemberApi(row.id, { prohibitionTime: isMuted ? 0 : 30 })
+      if (res.code === 0) {
+        ElMessage.success(isMuted ? "解除禁言成功" : "禁言成功")
+        fetchMemberList()
+      } else {
+        ElMessage.error(res.msg || "操作失败")
       }
     }
 
     const handleChangeRole = async (row: GroupMemberInfo) => {
-      try {
-        const newRole = row.role === 1 ? 0 : 1
-        const res = await updateMemberRoleApi(row.id, { role: newRole })
-        if (res.code === 0) {
-          ElMessage.success("角色修改成功")
-          fetchMemberList()
-        } else {
-          ElMessage.error(res.msg || "角色修改失败")
-        }
-      } catch {
-        ElMessage.error("角色修改失败")
+      const newRole = row.role === 1 ? 0 : 1
+      const res = await updateMemberRoleApi(row.id, { role: newRole })
+      if (res.code === 0) {
+        ElMessage.success("角色修改成功")
+        fetchMemberList()
+      } else {
+        ElMessage.error(res.msg || "角色修改失败")
       }
     }
 
@@ -344,6 +289,10 @@ export default defineComponent({
 
     // 初始化
     onMounted(() => {
+      const q = route.query.groupId as string
+      if (q) {
+        searchForm.keywords = q
+      }
       fetchGroupList()
     })
 
@@ -370,6 +319,7 @@ export default defineComponent({
       handleReset,
       handleSizeChange,
       handleCurrentChange,
+      goGroupProfile,
       handleView,
       handleEdit,
       handleDelete,
@@ -470,8 +420,11 @@ export default defineComponent({
           <el-table-column prop="currentMembers" label="成员数" width="100" />
           <el-table-column prop="creatorId" label="创建者ID" width="120" />
           <el-table-column prop="createdAt" label="创建时间" width="180" />
-          <el-table-column label="操作" width="280" fixed="right" align="center">
+          <el-table-column label="操作" width="360" fixed="right" align="center">
             <template #default="{ row }">
+              <el-button size="small" type="success" @click="goGroupProfile(row)">
+                群组360
+              </el-button>
               <el-button size="small" type="primary" @click="handleView(row)">
                 <el-icon><ViewIcon /></el-icon>
                 详情

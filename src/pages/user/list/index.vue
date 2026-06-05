@@ -23,18 +23,23 @@
       <!-- 搜索筛选区域 -->
       <div class="search-section">
         <el-form :model="searchForm" inline class="search-form">
+          <el-form-item label="关键词">
+            <el-input
+              v-model="searchForm.keyword"
+              placeholder="昵称/邮箱/手机号"
+              clearable
+              style="width: 200px"
+              @keyup.enter="handleSearch"
+            />
+          </el-form-item>
           <el-form-item label="邮箱">
             <el-input
               v-model="searchForm.email"
-              placeholder="搜索邮箱"
+              placeholder="精确搜邮箱"
               clearable
-              style="width: 240px"
+              style="width: 200px"
               @keyup.enter="handleSearch"
-            >
-              <template #prefix>
-                <el-icon><Search /></el-icon>
-              </template>
-            </el-input>
+            />
           </el-form-item>
           <el-form-item label="状态">
             <el-select
@@ -138,8 +143,11 @@
             </template>
           </el-table-column>
           <el-table-column prop="createTime" label="创建时间" width="160" />
-          <el-table-column label="操作" width="280" fixed="right" align="center">
+          <el-table-column label="操作" width="360" fixed="right" align="center">
             <template #default="{ row }">
+              <el-button size="small" type="success" @click="openUserProfile(row.id)">
+                用户360
+              </el-button>
               <el-button size="small" type="primary" @click="handleEdit(row)">
                 <el-icon><Edit /></el-icon>
                 编辑
@@ -321,7 +329,7 @@ import { previewOnlineFileApi } from "@/api/file"
 
 export default defineComponent({
   setup() {
-    // 响应式数据
+    const router = useRouter()
     const loading = ref(false)
     const submitting = ref(false)
     const userList = ref<IUserInfo[]>([])
@@ -329,6 +337,7 @@ export default defineComponent({
 
     // 搜索表单
     const searchForm = reactive({
+      keyword: "",
       email: "",
       status: undefined as number | undefined,
       source: undefined as number | undefined
@@ -404,26 +413,21 @@ export default defineComponent({
 
     // 获取用户列表
     const fetchUserList = async () => {
-      try {
-        loading.value = true
-        const response: IApiResponse<any> = await getUserListApi({
-          page: pagination.page,
-          pageSize: pagination.pageSize,
-          email: searchForm.email || undefined,
-          status: searchForm.status,
-          source: searchForm.source
-        })
-
-        if (response.code === 0) {
-          userList.value = response.result.list
-          pagination.total = response.result.total
-        } else {
-          ElMessage.error(response.msg || "获取用户列表失败")
-        }
-      } catch (error) {
-        ElMessage.error((error as any)?.message || "获取用户列表失败")
-      } finally {
-        loading.value = false
+      loading.value = true
+      const response = await getUserListApi({
+        page: pagination.page,
+        pageSize: pagination.pageSize,
+        keyword: searchForm.keyword || undefined,
+        email: searchForm.email || undefined,
+        status: searchForm.status,
+        source: searchForm.source
+      })
+      loading.value = false
+      if (response.code === 0) {
+        userList.value = response.result.list || []
+        pagination.total = response.result.total || 0
+      } else {
+        ElMessage.error(response.msg || "获取用户列表失败")
       }
     }
 
@@ -462,6 +466,7 @@ export default defineComponent({
 
     const handleReset = () => {
       Object.assign(searchForm, {
+        keyword: "",
         email: "",
         status: undefined,
         source: undefined
@@ -498,24 +503,13 @@ export default defineComponent({
     }
 
     const handleDelete = async (row: IUserInfo) => {
-      try {
-        await ElMessageBox.confirm(`确认删除用户"${row.nickName}"吗？`, "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        })
-
-        const response: IApiResponse = await deleteUserApi(row.id)
-        if (response.code === 0) {
-          ElMessage.success("删除成功")
-          fetchUserList()
-        } else {
-          ElMessage.error(response.msg || "删除失败")
-        }
-      } catch (error) {
-        if (error !== "cancel") {
-          ElMessage.error((error as any)?.message || "删除失败")
-        }
+      await ElMessageBox.confirm(`确认删除用户「${row.nickName}」？`, "删除用户", { type: "warning" })
+      const response = await deleteUserApi(row.id)
+      if (response.code === 0) {
+        ElMessage.success("删除成功")
+        fetchUserList()
+      } else {
+        ElMessage.error(response.msg || "删除失败")
       }
     }
 
@@ -526,27 +520,13 @@ export default defineComponent({
     }
 
     const handleBatchDelete = async () => {
-      try {
-        await ElMessageBox.confirm(`确认删除选中的 ${selectedUserIds.value.length} 个用户吗？`, "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        })
-
-        const response: IApiResponse = await batchDeleteUsersApi({
-          ids: selectedUserIds.value
-        })
-
-        if (response.code === 0) {
-          ElMessage.success("批量删除成功")
-          fetchUserList()
-        } else {
-          ElMessage.error(response.msg || "批量删除失败")
-        }
-      } catch (error) {
-        if (error !== "cancel") {
-          ElMessage.error((error as any)?.message || "批量删除失败")
-        }
+      await ElMessageBox.confirm(`确认删除选中的 ${selectedUserIds.value.length} 个用户？`, "批量删除", { type: "warning" })
+      const response = await batchDeleteUsersApi({ ids: selectedUserIds.value })
+      if (response.code === 0) {
+        ElMessage.success("批量删除成功")
+        fetchUserList()
+      } else {
+        ElMessage.error(response.msg || "批量删除失败")
       }
     }
 
@@ -559,86 +539,54 @@ export default defineComponent({
     }
 
     const handleBatchUpdateStatus = async (status: number, action: string) => {
-      try {
-        await ElMessageBox.confirm(`确认${action}选中的 ${selectedUserIds.value.length} 个用户吗？`, "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        })
-
-        const response: IApiResponse = await batchUpdateUserStatusApi({
-          ids: selectedUserIds.value,
-          status
-        })
-
-        if (response.code === 0) {
-          ElMessage.success(`批量${action}成功`)
-          fetchUserList()
-        } else {
-          ElMessage.error(response.msg || `批量${action}失败`)
-        }
-      } catch (error) {
-        if (error !== "cancel") {
-          ElMessage.error((error as any)?.message || `批量${action}失败`)
-        }
+      await ElMessageBox.confirm(`确认${action}选中的 ${selectedUserIds.value.length} 个用户？`, "批量操作", { type: "warning" })
+      const response = await batchUpdateUserStatusApi({ ids: selectedUserIds.value, status })
+      if (response.code === 0) {
+        ElMessage.success(`批量${action}成功`)
+        fetchUserList()
+      } else {
+        ElMessage.error(response.msg || `批量${action}失败`)
       }
     }
 
     const handleSubmit = async () => {
-      try {
-        const valid = await userFormRef.value?.validate()
-        if (!valid) return
-
-        submitting.value = true
-
-        const formData = {
-          nickName: userForm.nickName,
-          email: userForm.email,
-          abstract: userForm.abstract,
-          status: userForm.status,
-          ...(isEdit.value ? {} : { password: MD5(userForm.password).toString() })
-        }
-
-        const response: IApiResponse = isEdit.value
-          ? await updateUserApi(userForm.id, formData)
-          : await createUserApi({ ...formData, password: formData.password || "" })
-
-        if (response.code === 0) {
-          ElMessage.success(isEdit.value ? "更新成功" : "创建成功")
-          showCreateDialog.value = false
-          fetchUserList()
-        } else {
-          ElMessage.error(response.msg || (isEdit.value ? "更新失败" : "创建失败"))
-        }
-      } catch (error) {
-        ElMessage.error((error as any)?.message || (isEdit.value ? "更新失败" : "创建失败"))
-      } finally {
-        submitting.value = false
+      if (!userFormRef.value) return
+      await userFormRef.value.validate()
+      submitting.value = true
+      const formData = {
+        nickName: userForm.nickName,
+        email: userForm.email,
+        abstract: userForm.abstract,
+        status: userForm.status,
+        ...(isEdit.value ? {} : { password: MD5(userForm.password).toString() })
+      }
+      const response = isEdit.value
+        ? await updateUserApi(userForm.id, formData)
+        : await createUserApi({ ...formData, password: formData.password || "" })
+      submitting.value = false
+      if (response.code === 0) {
+        ElMessage.success(isEdit.value ? "更新成功" : "创建成功")
+        showCreateDialog.value = false
+        fetchUserList()
+      } else {
+        ElMessage.error(response.msg || (isEdit.value ? "更新失败" : "创建失败"))
       }
     }
 
     const handlePasswordSubmit = async () => {
-      try {
-        const valid = await passwordFormRef.value?.validate()
-        if (!valid) return
-
-        submitting.value = true
-
-        const response: IApiResponse = await resetUserPasswordApi({
-          userId: passwordForm.userId,
-          newPassword: MD5(passwordForm.newPassword).toString()
-        })
-
-        if (response.code === 0) {
-          ElMessage.success("密码重置成功")
-          showPasswordDialog.value = false
-        } else {
-          ElMessage.error(response.msg || "密码重置失败")
-        }
-      } catch (error) {
-        ElMessage.error((error as any)?.message || "密码重置失败")
-      } finally {
-        submitting.value = false
+      if (!passwordFormRef.value) return
+      await passwordFormRef.value.validate()
+      submitting.value = true
+      const response = await resetUserPasswordApi({
+        userId: passwordForm.userId,
+        newPassword: MD5(passwordForm.newPassword).toString()
+      })
+      submitting.value = false
+      if (response.code === 0) {
+        ElMessage.success("密码重置成功")
+        showPasswordDialog.value = false
+      } else {
+        ElMessage.error(response.msg || "密码重置失败")
       }
     }
 
@@ -677,7 +625,10 @@ export default defineComponent({
       }
     })
 
-    // 初始化
+    const openUserProfile = (userId: string) => {
+      router.push(`/user/profile/${userId}`)
+    }
+
     onMounted(() => {
       fetchUserList()
     })
@@ -719,7 +670,8 @@ export default defineComponent({
       handlePasswordSubmit,
       resetUserForm,
       resetPasswordForm,
-      previewOnlineFileApi
+      previewOnlineFileApi,
+      openUserProfile
     }
   }
 })

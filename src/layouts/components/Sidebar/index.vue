@@ -1,7 +1,7 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { menuConfig } from "../../../config/menu"
+import { menuConfig } from "@/config/menu"
 
 export default defineComponent({
   setup() {
@@ -12,7 +12,11 @@ export default defineComponent({
     const menuItems = ref(menuConfig)
 
     // 当前激活的菜单
-    const activeMenu = computed(() => route.path)
+    const activeMenu = computed(() => {
+      if (route.path.startsWith("/group/profile")) return "/group/list"
+      if (route.path.startsWith("/user/profile")) return "/user/list"
+      return route.path
+    })
 
     // 处理菜单点击
     const handleMenuClick = (path: string) => {

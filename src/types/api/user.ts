@@ -17,6 +17,7 @@ export interface IGetUserListReq {
   page?: number
   pageSize?: number
   email?: string
+  keyword?: string
   status?: number
   source?: number
 }

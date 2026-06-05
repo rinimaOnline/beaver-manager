@@ -1,6 +1,18 @@
+// 文件信息
+export interface IFileInfo {
+  id: number
+  fileName: string
+  originalName: string
+  size: number
+  path: string
+  md5: string
+  type: string
+  createdAt: string
+  updatedAt: string
+}
+
 // 文件上传响应
 export interface IUploadFileRes {
-  fileName: string
   fileName: string
   size: number
   path: string
@@ -11,14 +23,15 @@ export interface IUploadFileRes {
 // 文件列表请求
 export interface IGetFileListReq {
   page?: number
-  pageSize?: number
+  limit?: number
   type?: string
+  keywords?: string
 }
 
 // 文件列表响应
 export interface IGetFileListRes {
   total: number
-  files: IUploadFileRes[]
+  list: IFileInfo[]
 }
 
 // 获取文件详情请求参数

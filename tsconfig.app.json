@@ -10,6 +10,7 @@
     "types": ["vite/client", "element-plus/global", "./types/auto/auto-imports.d.ts"],
 
     /* Linting */
+    "noEmit": true,
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,

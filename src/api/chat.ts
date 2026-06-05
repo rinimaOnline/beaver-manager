@@ -11,13 +11,22 @@ import type {
   IGetChatMessageDetailRes,
   IGetChatMessageListReq,
   IGetChatMessageListRes,
-  IGetConversationListReq,
-  IGetConversationListRes,
+  IGetChatSessionListReq,
+  IGetChatSessionListRes,
   IRestoreChatMessageReq,
   IRestoreChatMessageRes
 } from "@/types/api/chat"
 import config from "@/config/env"
 import { ajax } from "@/utils/request"
+
+// 获取用户会话列表
+export function getChatSessionListApi(params: IGetChatSessionListReq) {
+  return ajax<IGetChatSessionListRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/chat/sessions`,
+    params
+  })
+}
 
 // 获取聊天消息列表
 export function getChatMessageListApi(params: IGetChatMessageListReq) {
@@ -89,11 +98,3 @@ export function deleteMessagesByTypeApi(data: IDeleteMessagesByTypeReq) {
   })
 }
 
-// 获取对话列表
-export function getConversationListApi(params: IGetConversationListReq) {
-  return ajax<IGetConversationListRes>({
-    method: "GET",
-    url: `${config.baseAPI}/admin/chat/conversations`,
-    params
-  })
-}

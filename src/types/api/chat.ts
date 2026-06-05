@@ -3,13 +3,41 @@ export interface IChatMessageInfo {
   id: string
   messageId: string
   conversationId: string
+  conversationType?: number
   sendUserId: string
   sendUserName: string
   msgType: number
   msgPreview: string
+  msgContent?: string
   isDeleted: boolean
   createTime: string
   updateTime: string
+}
+
+// 用户会话摘要
+export interface IChatSessionInfo {
+  conversationId: string
+  conversationType: number
+  title: string
+  peerUserId: string
+  peerUserName: string
+  participantIds: string[]
+  participantNames: string[]
+  lastMessage: string
+  lastMessageTime: string
+  messageCount: number
+}
+
+export interface IGetChatSessionListReq {
+  userId: string
+  conversationType?: number
+  page?: number
+  pageSize?: number
+}
+
+export interface IGetChatSessionListRes {
+  list: IChatSessionInfo[]
+  total: number
 }
 
 // 聊天消息详情
@@ -39,6 +67,8 @@ export interface IGetChatMessageListReq {
   isDeleted?: boolean
   startTime?: string
   endTime?: string
+  order?: number
+  withContent?: boolean
 }
 
 // 获取聊天消息列表响应

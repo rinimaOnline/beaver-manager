@@ -1,43 +1,22 @@
+import type {
+  IAuditDeveloperReq,
+  IAuditDeveloperRes,
+  IApplyDeveloperReq,
+  IApplyDeveloperRes,
+  IAuditOpenAppReq,
+  IAuditOpenAppRes,
+  IGetDeveloperListReq,
+  IGetDeveloperListRes,
+  IGetOpenAppListReq,
+  IGetOpenAppListRes,
+  IGetOpenWebhookLogListReq,
+  IGetOpenWebhookLogListRes,
+  IUpdateOpenAppStatusReq,
+  IUpdateOpenAppStatusRes
+} from "@/types/api/open"
 import config from "@/config/env"
 import { ajax } from "@/utils/request"
 
-// ==================== 开发者管理 ====================
-
-export interface IDeveloperInfo {
-  id: string
-  userId: string
-  realName: string
-  companyName: string
-  phone: string
-  email: string
-  description: string
-  status: number // 0待审核 1已通过 2已拒绝
-  auditBy: string
-  auditTime: number
-  auditRemark: string
-  createdAt: number
-}
-
-export interface IGetDeveloperListReq {
-  page?: number
-  pageSize?: number
-  status?: number
-}
-
-export interface IGetDeveloperListRes {
-  total: number
-  list: IDeveloperInfo[]
-}
-
-export interface IAuditDeveloperReq {
-  id: string
-  status: number // 1通过 2拒绝
-  auditRemark?: string
-}
-
-export interface IAuditDeveloperRes {}
-
-// 获取开发者列表
 export function getDeveloperListApi(params: IGetDeveloperListReq) {
   return ajax<IGetDeveloperListRes>({
     method: "GET",
@@ -46,11 +25,50 @@ export function getDeveloperListApi(params: IGetDeveloperListReq) {
   })
 }
 
-// 审核开发者申请
 export function auditDeveloperApi(data: IAuditDeveloperReq) {
   return ajax<IAuditDeveloperRes>({
     method: "POST",
     url: `${config.baseAPI}/admin/open/developer/audit`,
     data
+  })
+}
+
+export function applyDeveloperApi(data: IApplyDeveloperReq) {
+  return ajax<IApplyDeveloperRes>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/open/developer/apply`,
+    data
+  })
+}
+
+export function getOpenAppListApi(params: IGetOpenAppListReq) {
+  return ajax<IGetOpenAppListRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/open/app/list`,
+    params
+  })
+}
+
+export function auditOpenAppApi(data: IAuditOpenAppReq) {
+  return ajax<IAuditOpenAppRes>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/open/app/audit`,
+    data
+  })
+}
+
+export function updateOpenAppStatusApi(data: IUpdateOpenAppStatusReq) {
+  return ajax<IUpdateOpenAppStatusRes>({
+    method: "PUT",
+    url: `${config.baseAPI}/admin/open/app/status`,
+    data
+  })
+}
+
+export function getOpenWebhookLogListApi(params: IGetOpenWebhookLogListReq) {
+  return ajax<IGetOpenWebhookLogListRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/open/webhook/logs`,
+    params
   })
 }
