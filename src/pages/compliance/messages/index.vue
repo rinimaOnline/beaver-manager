@@ -242,6 +242,12 @@ export default defineComponent({
       const qMessageId = route.query.messageId as string
       const qConversationId = route.query.conversationId as string
       const qSendUserId = route.query.sendUserId as string
+      const qGroupId = route.query.groupId as string
+      if (qGroupId) {
+        form.conversationId = `group_${qGroupId}`
+        fetchList()
+        return
+      }
       if (qMessageId) {
         form.messageId = qMessageId
         fetchList()

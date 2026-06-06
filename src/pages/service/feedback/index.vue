@@ -25,7 +25,6 @@
       <el-form-item>
         <el-button type="primary" :loading="loading" @click="handleSearch">搜索</el-button>
         <el-button @click="handleReset">重置</el-button>
-        <el-button link type="primary" @click="goTickets">客诉工单</el-button>
       </el-form-item>
     </el-form>
 
@@ -272,7 +271,6 @@ export default defineComponent({
     }
 
     const goUser = (userId: string) => router.push(`/user/profile/${userId}`)
-    const goTickets = () => router.push("/service/tickets")
 
     onMounted(() => {
       const qUser = route.query.userId as string
@@ -288,7 +286,7 @@ export default defineComponent({
       feedbackTypeMap, feedbackStatusMap,
       handleSearch, handleReset, handleSizeChange, handleCurrentChange,
       handleDetail, handleProcess, submitProcess, handleDelete,
-      getTypeTagType, getStatusTagType, goUser, goTickets
+      getTypeTagType, getStatusTagType, goUser
     }
   }
 })

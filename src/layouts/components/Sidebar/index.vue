@@ -13,7 +13,6 @@ export default defineComponent({
 
     // 当前激活的菜单
     const activeMenu = computed(() => {
-      if (route.path.startsWith("/group/profile")) return "/group/list"
       if (route.path.startsWith("/user/profile")) return "/user/list"
       return route.path
     })

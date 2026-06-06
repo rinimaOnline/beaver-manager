@@ -46,11 +46,6 @@ export function batchDeleteFileApi(data: IBatchDeleteFileReq) {
   })
 }
 
-// 预览文件
-export function previewOnlineFileApi(fileId: string) {
-  return `${config.apiApi}/api/file/preview/${fileId}`
-}
-
 // Token缓存
 let tokenCache: { token: string; expires: number } | null = null
 

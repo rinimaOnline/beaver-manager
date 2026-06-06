@@ -101,6 +101,7 @@ import { executeUserControlApi } from "@/api/moderation"
 
 export default defineComponent({
   setup() {
+    const route = useRoute()
     const router = useRouter()
     const loading = ref(false)
     const appealList = ref<IFeedbackInfo[]>([])
@@ -193,9 +194,13 @@ export default defineComponent({
     }
 
     const goUser = (userId: string) => router.push(`/user/profile/${userId}`)
-    const goSanctions = (userId: string) => router.push({ path: "/user/sanctions", query: { userId } })
+    const goSanctions = (userId: string) => router.push({ path: "/system/audit-logs", query: { userId, scope: "sanctions" } })
 
-    onMounted(fetchList)
+    onMounted(() => {
+      const qUser = route.query.userId as string
+      if (qUser) searchForm.userId = qUser
+      fetchList()
+    })
 
     return {
       loading, appealList, searchForm, pagination, currentAppeal, detailVisible, processVisible,

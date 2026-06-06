@@ -79,8 +79,8 @@
           <template #default="{ row }">
             <el-image
               v-if="row.coverFile"
-              :src="getFilePreviewUrl(row.coverFile)"
-              :preview-src-list="[getFilePreviewUrl(row.coverFile)]"
+              :src="row.coverFile"
+              :preview-src-list="row.coverFile ? [row.coverFile] : []"
               style="width: 50px; height: 50px"
               fit="cover"
             />
@@ -245,8 +245,8 @@
               <div class="emoji-preview">
                 <el-image
                   v-if="emoji.fileKey"
-                  :src="getFilePreviewUrl(emoji.fileKey)"
-                  :preview-src-list="[getFilePreviewUrl(emoji.fileKey)]"
+                  :src="emoji.fileKey"
+                  :preview-src-list="emoji.fileKey ? [emoji.fileKey] : []"
                   fit="cover"
                 />
                 <div v-else class="no-image">无图片</div>
@@ -326,7 +326,6 @@ import {
   removeEmojiFromPackageApi
 } from "@/api/emoji"
 import { EmojiPackageStatus } from "@/types/api/emoji"
-import { previewOnlineFileApi } from "@/api/file"
 import { uploadFile } from "@/api/upload"
 
 export default defineComponent({
@@ -410,11 +409,6 @@ export default defineComponent({
     const emojiFormRules = {
       title: [{ required: true, message: "请输入表情名称", trigger: "blur" }],
       fileKey: [{ required: true, message: "请选择表情文件", trigger: "change" }]
-    }
-
-    // 获取文件预览URL
-    const getFilePreviewUrl = (fileKey: string) => {
-      return previewOnlineFileApi(fileKey)
     }
 
     // 获取状态标签类型
@@ -607,7 +601,7 @@ export default defineComponent({
         type: row.type
       })
       selectedFile.value = null
-      previewUrl.value = row.coverFile ? getFilePreviewUrl(row.coverFile) : ''
+      previewUrl.value = row.coverFile || ''
       formDialogVisible.value = true
     }
 
@@ -727,7 +721,6 @@ export default defineComponent({
       uploading,
       previewUrl,
       selectedFile,
-      getFilePreviewUrl,
       getStatusTagType,
       fetchPackageList,
       handleSearch,

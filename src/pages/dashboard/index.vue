@@ -8,70 +8,97 @@
       <el-button :loading="loading" @click="fetchData">刷新</el-button>
     </div>
 
-    <div class="dashboard__stats">
-      <div
-        v-for="stat in stats"
-        :key="stat.title"
-        class="dashboard__stat-card"
-        :style="{ borderTopColor: stat.color }"
-        @click="goTo(stat.path)"
-      >
-        <div class="dashboard__stat-card-icon" :style="{ backgroundColor: stat.color }">
-          <img class="dashboard__stat-card-icon-img" src="@/pages/dashboard/images/dashboard.svg" alt="" />
-        </div>
-        <div class="dashboard__stat-card-body">
-          <h3 class="dashboard__stat-card-value">{{ stat.value.toLocaleString() }}</h3>
-          <p class="dashboard__stat-card-label">{{ stat.title }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="dashboard__inbox">
-      <div class="dashboard__inbox-header">
-        <h2 class="dashboard__inbox-title">待办收件箱</h2>
-        <span class="dashboard__inbox-total">共 {{ inboxTotal }} 条</span>
-      </div>
-      <div v-if="inboxList.length" class="dashboard__inbox-list">
-        <div
-          v-for="item in inboxList"
-          :key="`${item.category}-${item.entityId}`"
-          class="dashboard__inbox-item"
-          @click="goInboxItem(item)"
-        >
-          <el-tag class="dashboard__inbox-tag" size="small">{{ categoryLabel(item.category) }}</el-tag>
-          <div class="dashboard__inbox-item-body">
-            <div class="dashboard__inbox-item-title">{{ item.title }}</div>
-            <div class="dashboard__inbox-item-summary">{{ item.summary }}</div>
+    <el-tabs v-model="activeTab" class="dashboard__tabs">
+      <el-tab-pane label="概览与待办" name="overview">
+        <div class="dashboard__stats">
+          <div
+            v-for="stat in stats"
+            :key="stat.title"
+            class="dashboard__stat-card"
+            :style="{ borderTopColor: stat.color }"
+            @click="goTo(stat.path)"
+          >
+            <div class="dashboard__stat-card-icon" :style="{ backgroundColor: stat.color }">
+              <img class="dashboard__stat-card-icon-img" src="@/pages/dashboard/images/dashboard.svg" alt="" />
+            </div>
+            <div class="dashboard__stat-card-body">
+              <h3 class="dashboard__stat-card-value">{{ stat.value.toLocaleString() }}</h3>
+              <p class="dashboard__stat-card-label">{{ stat.title }}</p>
+            </div>
           </div>
-          <span class="dashboard__inbox-item-time">{{ item.createdAt }}</span>
         </div>
-      </div>
-      <el-empty v-else description="暂无待办" :image-size="80" />
-    </div>
 
-    <div class="dashboard__actions">
-      <h2 class="dashboard__actions-title">快速操作</h2>
-      <div class="dashboard__actions-row">
-        <el-button type="primary" size="large" @click="goTo('/search')">统一检索</el-button>
-        <el-button type="success" size="large" @click="goTo('/user/search')">用户360</el-button>
-        <el-button type="warning" size="large" @click="goTo('/compliance/sessions')">会话审计</el-button>
-        <el-button type="danger" size="large" @click="goTo('/safety/cases')">工单处置</el-button>
-      </div>
-    </div>
+        <div class="dashboard__inbox">
+          <div class="dashboard__inbox-header">
+            <h2 class="dashboard__inbox-title">待办收件箱</h2>
+            <span class="dashboard__inbox-total">共 {{ inboxTotal }} 条</span>
+          </div>
+          <div v-if="inboxList.length" class="dashboard__inbox-list">
+            <div
+              v-for="item in inboxList"
+              :key="`${item.category}-${item.entityId}`"
+              class="dashboard__inbox-item"
+              @click="goInboxItem(item)"
+            >
+              <el-tag class="dashboard__inbox-tag" size="small">{{ categoryLabel(item.category) }}</el-tag>
+              <div class="dashboard__inbox-item-body">
+                <div class="dashboard__inbox-item-title">{{ item.title }}</div>
+                <div class="dashboard__inbox-item-summary">{{ item.summary }}</div>
+              </div>
+              <span class="dashboard__inbox-item-time">{{ item.createdAt }}</span>
+            </div>
+          </div>
+          <el-empty v-else description="暂无待办" :image-size="80" />
+        </div>
+
+        <div class="dashboard__actions">
+          <h2 class="dashboard__actions-title">快速操作</h2>
+          <div class="dashboard__actions-row">
+            <el-button type="primary" size="large" @click="goTo('/user/list')">用户管理</el-button>
+            <el-button type="success" size="large" @click="goTo('/compliance/sessions')">会话审计</el-button>
+            <el-button type="danger" size="large" @click="goTo('/safety/cases')">待办处置</el-button>
+          </div>
+        </div>
+      </el-tab-pane>
+
+      <el-tab-pane label="近7日趋势" name="trends">
+        <div class="dashboard__trends">
+          <div v-for="series in trendSeries" :key="series.key" class="dashboard__trend-panel">
+            <div class="dashboard__trend-panel-title">{{ series.label }}</div>
+            <div class="dashboard__trend-bars">
+              <div v-for="(val, idx) in series.values" :key="`${series.key}-${idx}`" class="dashboard__trend-bar-wrap">
+                <div
+                  class="dashboard__trend-bar"
+                  :style="{ height: barHeight(val, series.max) }"
+                  :title="`${trendDays[idx]}: ${val}`"
+                />
+                <span class="dashboard__trend-bar-value">{{ val }}</span>
+                <span class="dashboard__trend-bar-label">{{ formatDayLabel(trendDays[idx]) }}</span>
+              </div>
+            </div>
+          </div>
+          <el-empty v-if="!trendSeries.length" description="暂无趋势数据" :image-size="80" />
+        </div>
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
 <script lang="ts">
-import type { IDashboardInboxItem, IDashboardOverview } from "@/types/api/overview"
+import type { IDashboardInboxItem, IDashboardOverview, IDashboardTrendSeries } from "@/types/api/overview"
 import { ElMessage } from "element-plus"
-import { getDashboardInboxApi, getDashboardOverviewApi } from "@/api/overview"
+import { getDashboardInboxApi, getDashboardOverviewApi, getDashboardTrendsApi } from "@/api/overview"
 
 export default defineComponent({
   setup() {
     const router = useRouter()
+    const route = useRoute()
     const username = localStorage.getItem("username") || "管理员"
     const loading = ref(false)
+    const activeTab = ref("overview")
     const todayText = new Date().toLocaleDateString()
+    const trendDays = ref<string[]>([])
+    const trendSeries = ref<(IDashboardTrendSeries & { max: number })[]>([])
 
     const overview = ref<IDashboardOverview>({
       userTotal: 0,
@@ -91,13 +118,24 @@ export default defineComponent({
     const inboxTotal = ref(0)
 
     const stats = computed(() => [
-      { title: "用户总数", value: overview.value.userTotal, color: "#409eff", path: "/user/search" },
-      { title: "群组总数", value: overview.value.groupTotal, color: "#67c23a", path: "/group/search" },
+      { title: "用户总数", value: overview.value.userTotal, color: "#409eff", path: "/user/list" },
+      { title: "群组总数", value: overview.value.groupTotal, color: "#67c23a", path: "/compliance/sessions" },
       { title: "聊天消息", value: overview.value.messageTotal, color: "#f56c6c", path: "/compliance/sessions" },
-      { title: "待处理举报", value: overview.value.pendingReportCount, color: "#e6a23c", path: "/safety/reports" },
-      { title: "待处理工单", value: overview.value.pendingCaseCount, color: "#909399", path: "/safety/cases" },
-      { title: "待处理反馈", value: overview.value.pendingFeedbackCount, color: "#b88230", path: "/service/tickets" }
+      { title: "待处理举报", value: overview.value.pendingReportCount, color: "#e6a23c", path: "/safety/cases?tab=reports" },
+      { title: "待处理工单", value: overview.value.pendingCaseCount, color: "#909399", path: "/safety/cases?tab=cases" },
+      { title: "待处理反馈", value: overview.value.pendingFeedbackCount, color: "#b88230", path: "/service/feedback" }
     ])
+
+    const barHeight = (val: number, max: number) => {
+      if (!max) return "4px"
+      const pct = Math.max(8, Math.round((val / max) * 100))
+      return `${pct}%`
+    }
+
+    const formatDayLabel = (day: string) => {
+      if (!day || day.length < 10) return day
+      return day.slice(5)
+    }
 
     const categoryLabel = (category: string) => {
       const map: Record<string, string> = {
@@ -112,17 +150,27 @@ export default defineComponent({
 
     const fetchData = async () => {
       loading.value = true
-      const overviewRes = await getDashboardOverviewApi()
+      const [overviewRes, inboxRes, trendsRes] = await Promise.all([
+        getDashboardOverviewApi(),
+        getDashboardInboxApi(20),
+        getDashboardTrendsApi(7)
+      ])
+      loading.value = false
       if (overviewRes.code === 0) {
         overview.value = overviewRes.result
       } else {
         ElMessage.error(overviewRes.msg || "获取概览失败")
       }
-      const inboxRes = await getDashboardInboxApi(20)
-      loading.value = false
       if (inboxRes.code === 0) {
         inboxList.value = inboxRes.result.list || []
         inboxTotal.value = inboxRes.result.total || 0
+      }
+      if (trendsRes.code === 0) {
+        trendDays.value = trendsRes.result.days || []
+        trendSeries.value = (trendsRes.result.series || []).map(s => ({
+          ...s,
+          max: Math.max(...(s.values || []), 1)
+        }))
       }
     }
 
@@ -136,16 +184,27 @@ export default defineComponent({
       }
     }
 
-    onMounted(fetchData)
+    onMounted(() => {
+      const tab = route.query.tab as string
+      if (tab === "trends" || tab === "overview") {
+        activeTab.value = tab
+      }
+      fetchData()
+    })
 
     return {
       username,
       loading,
+      activeTab,
       todayText,
       stats,
       inboxList,
       inboxTotal,
+      trendDays,
+      trendSeries,
       categoryLabel,
+      barHeight,
+      formatDayLabel,
       goTo,
       goInboxItem,
       fetchData
@@ -186,11 +245,19 @@ export default defineComponent({
     }
   }
 
+  .dashboard__tabs {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 0 20px 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
   .dashboard__stats {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 16px;
     margin-bottom: 24px;
+    padding-top: 8px;
   }
 
   .dashboard__stat-card {
@@ -242,9 +309,8 @@ export default defineComponent({
   .dashboard__inbox {
     margin-bottom: 24px;
     padding: 20px;
-    background-color: #ffffff;
+    background-color: #fafafa;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
     .dashboard__inbox-header {
       display: flex;
@@ -310,9 +376,8 @@ export default defineComponent({
 
   .dashboard__actions {
     padding: 20px;
-    background-color: #ffffff;
+    background-color: #fafafa;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
     .dashboard__actions-title {
       margin-top: 0;
@@ -326,6 +391,57 @@ export default defineComponent({
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
+    }
+  }
+
+  .dashboard__trends {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    padding-top: 8px;
+
+    .dashboard__trend-panel {
+      padding: 16px;
+      background-color: #fafafa;
+      border-radius: 8px;
+
+      .dashboard__trend-panel-title {
+        font-weight: 500;
+        margin-bottom: 12px;
+      }
+
+      .dashboard__trend-bars {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        min-height: 120px;
+      }
+
+      .dashboard__trend-bar-wrap {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .dashboard__trend-bar {
+        width: 100%;
+        max-width: 32px;
+        background-color: #409eff;
+        border-radius: 4px 4px 0 0;
+        min-height: 4px;
+      }
+
+      .dashboard__trend-bar-value {
+        font-size: 11px;
+        color: #606266;
+      }
+
+      .dashboard__trend-bar-label {
+        font-size: 10px;
+        color: #909399;
+      }
     }
   }
 }

@@ -55,8 +55,8 @@
           <template #default="{ row }">
             <el-image
               v-if="row.fileKey"
-              :src="getFilePreviewUrl(row.fileKey)"
-              :preview-src-list="[getFilePreviewUrl(row.fileKey)]"
+              :src="row.fileKey"
+              :preview-src-list="row.fileKey ? [row.fileKey] : []"
               style="width: 40px; height: 40px"
               fit="cover"
             />
@@ -149,7 +149,6 @@ import {
   getEmojiListApi,
   updateEmojiApi
 } from "@/api/emoji"
-import { previewOnlineFileApi } from "@/api/file"
 import { uploadFile } from "@/api/upload"
 
 export default defineComponent({
@@ -190,12 +189,6 @@ export default defineComponent({
       fileId: [{ required: true, message: "请选择表情文件", trigger: "change" }]
     }
 
-    // 获取文件预览URL
-    const getFilePreviewUrl = (fileId) => {
-      return previewOnlineFileApi(fileId)
-    }
-
-    // 获取表情列表
     const fetchEmojiList = async () => {
       loading.value = true
       const res = await getEmojiListApi(searchForm)
@@ -300,7 +293,7 @@ export default defineComponent({
         authorId: row.authorId
       })
       selectedFile.value = null
-      previewUrl.value = row.fileId ? getFilePreviewUrl(row.fileId) : ''
+      previewUrl.value = row.fileKey || ''
       formDialogVisible.value = true
     }
 
@@ -378,7 +371,6 @@ export default defineComponent({
       uploading,
       previewUrl,
       selectedFile,
-      getFilePreviewUrl,
       fetchEmojiList,
       handleSearch,
       handleReset,

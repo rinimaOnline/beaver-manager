@@ -169,7 +169,7 @@ export default defineComponent({
     }
 
     const goUser = (userId: string) => router.push(`/user/profile/${userId}`)
-    const goBuckets = () => router.push("/data/buckets")
+    const goBuckets = () => router.push("/data/events")
     const goLogs = () => router.push({ path: "/data/logs", query: { bucketId: searchForm.bucketId } })
 
     onMounted(async () => {

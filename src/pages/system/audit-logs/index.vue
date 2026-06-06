@@ -25,7 +25,6 @@
         <el-button type="primary" :loading="loading" @click="handleSearch">查询</el-button>
         <el-button @click="handleReset">重置</el-button>
         <el-button :disabled="!logList.length" @click="exportCsv">导出 CSV</el-button>
-        <el-button link type="primary" @click="goSafetyAudit">安全审计</el-button>
       </el-form-item>
     </el-form>
 
@@ -102,6 +101,7 @@ const actionLabel = (action: string) => MODERATION_ACTION_LABELS[action] || acti
 export default defineComponent({
   setup() {
     const router = useRouter()
+    const route = useRoute()
     const loading = ref(false)
     const drawerVisible = ref(false)
     const currentLog = ref<IOperationLogInfo | null>(null)
@@ -115,13 +115,19 @@ export default defineComponent({
     })
     const pagination = reactive({ page: 1, pageSize: 20, total: 0 })
 
+    const sanctionsOnly = ref(false)
+
     const buildParams = (): IGetOperationLogListReq => {
       const params: IGetOperationLogListReq = {
         page: pagination.page,
         pageSize: pagination.pageSize
       }
       if (searchForm.operatorId) params.operatorId = searchForm.operatorId
-      if (searchForm.action) params.action = searchForm.action
+      if (searchForm.action) {
+        params.action = searchForm.action
+      } else if (sanctionsOnly.value) {
+        params.actions = "ban_user,unban_user"
+      }
       if (searchForm.targetType) params.targetType = searchForm.targetType
       if (searchForm.targetId) params.targetId = searchForm.targetId
       if (searchForm.caseId) params.caseId = Number.parseInt(searchForm.caseId, 10)
@@ -151,6 +157,7 @@ export default defineComponent({
       searchForm.targetType = ""
       searchForm.targetId = ""
       searchForm.caseId = ""
+      sanctionsOnly.value = false
       handleSearch()
     }
 
@@ -197,14 +204,23 @@ export default defineComponent({
       if (!currentLog.value) return
       router.push({ path: "/compliance/sessions", query: { conversationId: currentLog.value.targetId } })
     }
-    const goSafetyAudit = () => router.push("/safety/audit-logs")
 
-    onMounted(fetchLogs)
+    onMounted(() => {
+      const qTargetId = (route.query.targetId || route.query.userId) as string
+      if (qTargetId) searchForm.targetId = qTargetId
+      if (route.query.targetType) searchForm.targetType = route.query.targetType as string
+      if (route.query.action) searchForm.action = route.query.action as string
+      if (route.query.scope === "sanctions") {
+        sanctionsOnly.value = true
+        searchForm.targetType = searchForm.targetType || "user"
+      }
+      fetchLogs()
+    })
 
     return {
       loading, drawerVisible, currentLog, logList, searchForm, pagination,
       actionLabel, handleSearch, handleReset, onPageChange, selectLog, exportCsv,
-      goUser, goCase, goMessage, goSession, goSafetyAudit
+      goUser, goCase, goMessage, goSession
     }
   }
 })

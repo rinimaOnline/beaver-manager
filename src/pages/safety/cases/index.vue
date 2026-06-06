@@ -2,8 +2,8 @@
   <div class="safety-cases">
     <div class="page-header">
       <div>
-        <h2>运营处置中心</h2>
-        <span class="hint">发现举报 → 立案工单 → 查看跨域上下文 → 联动管控 → 留痕结案</span>
+        <h2>待办处置</h2>
+        <span class="hint">处理尚未关联到具体用户的举报与工单；已知用户请从用户360操作</span>
       </div>
     </div>
 
@@ -18,6 +18,12 @@
                 <el-option label="已立案" :value="2" />
                 <el-option label="已驳回" :value="3" />
                 <el-option label="已结案" :value="4" />
+              </el-select>
+              <el-select v-model="reportFilter.targetType" placeholder="对象类型" clearable size="small" @change="loadReports">
+                <el-option label="用户" :value="1" />
+                <el-option label="消息" :value="2" />
+                <el-option label="动态" :value="3" />
+                <el-option label="群组" :value="4" />
               </el-select>
             </div>
             <div v-loading="reportLoading" class="item-list">
@@ -252,6 +258,7 @@ import {
   getModerationCaseListApi,
   handleModerationCaseApi
 } from "@/api/moderation"
+import { navigateToUserGroup } from "@/utils/navigateGroup"
 
 const TARGET_TYPE: Record<number, string> = { 1: "用户", 2: "消息", 3: "动态", 4: "群组" }
 const REPORT_STATUS: Record<number, string> = { 1: "待处理", 2: "已立案", 3: "已驳回", 4: "已结案" }
@@ -273,7 +280,7 @@ export default defineComponent({
     const selectedCase = ref<IModerationCaseInfo | null>(null)
     const context = ref<IGetModerationCaseContextRes | null>(null)
 
-    const reportFilter = reactive({ status: 1 as number | undefined })
+    const reportFilter = reactive({ status: 1 as number | undefined, targetType: undefined as number | undefined })
     const caseFilter = reactive({ keyword: "", status: undefined as number | undefined })
     const reportPagination = reactive({ page: 1, pageSize: 10, total: 0 })
     const casePagination = reactive({ page: 1, pageSize: 10, total: 0 })
@@ -329,7 +336,8 @@ export default defineComponent({
       const res = await getContentReportListApi({
         page: reportPagination.page,
         pageSize: reportPagination.pageSize,
-        status: reportFilter.status
+        status: reportFilter.status,
+        targetType: reportFilter.targetType
       })
       reportLoading.value = false
       if (res.code === 0) {
@@ -450,7 +458,9 @@ export default defineComponent({
 
     const goUser = (userId: string) => router.push(`/user/profile/${userId}`)
 
-    const goGroup = (groupId: string) => router.push(`/group/profile/${groupId}`)
+    const goGroup = (groupId: string) => {
+      navigateToUserGroup(router, groupId, quickUserId.value || context.value?.targetUser?.userId)
+    }
 
     const goSession = (msg: { sendUserId: string; conversationId: string }) => {
       router.push({
@@ -460,7 +470,12 @@ export default defineComponent({
     }
 
     const goMoment = (momentId: string) => {
-      router.push({ path: "/community/moments", query: { momentId } })
+      const uid = context.value?.targetMoment?.userId || quickUserId.value
+      if (!uid) {
+        ElMessage.warning("无法定位动态所属用户")
+        return
+      }
+      router.push({ path: `/user/profile/${uid}`, query: { relation: "moments", momentId } })
     }
 
     const quickControl = async (action: string) => {
@@ -491,6 +506,24 @@ export default defineComponent({
     const onCasePageChange = (p: number) => { casePagination.page = p; loadCases() }
 
     const applyRouteQuery = async () => {
+      const qTab = route.query.tab as string
+      if (qTab === "cases" || qTab === "reports") {
+        activeTab.value = qTab
+      }
+      const qTargetType = route.query.targetType as string
+      if (qTargetType) {
+        const t = Number.parseInt(qTargetType, 10)
+        if (!Number.isNaN(t)) {
+          reportFilter.targetType = t
+        }
+      }
+      const qStatus = route.query.status as string
+      if (qStatus) {
+        const s = Number.parseInt(qStatus, 10)
+        if (!Number.isNaN(s)) {
+          reportFilter.status = s
+        }
+      }
       const qCaseId = route.query.caseId as string
       const qReportId = route.query.reportId as string
       if (qCaseId) {

@@ -73,6 +73,7 @@
               <el-icon><RefreshLeft /></el-icon>
               重置
             </el-button>
+            <el-button link type="primary" @click="filterBanned">已禁用用户</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -120,7 +121,7 @@
           <el-table-column prop="avatar" label="头像" width="80" align="center">
             <template #default="{ row }">
               <el-avatar 
-                :src="row.avatar ? previewOnlineFileApi(row.avatar) : ''" 
+                :src="row.avatar || ''" 
                 :size="40"
               >
               </el-avatar>
@@ -325,11 +326,10 @@ import {
   resetUserPasswordApi,
   updateUserApi
 } from "@/api/user"
-import { previewOnlineFileApi } from "@/api/file"
-
 export default defineComponent({
   setup() {
     const router = useRouter()
+    const route = useRoute()
     const loading = ref(false)
     const submitting = ref(false)
     const userList = ref<IUserInfo[]>([])
@@ -471,6 +471,11 @@ export default defineComponent({
         status: undefined,
         source: undefined
       })
+      handleSearch()
+    }
+
+    const filterBanned = () => {
+      searchForm.status = 2
       handleSearch()
     }
 
@@ -630,6 +635,17 @@ export default defineComponent({
     }
 
     onMounted(() => {
+      const q = route.query.keyword as string
+      const qStatus = route.query.status as string
+      if (q) {
+        searchForm.keyword = q
+      }
+      if (qStatus) {
+        const status = Number.parseInt(qStatus, 10)
+        if (!Number.isNaN(status)) {
+          searchForm.status = status
+        }
+      }
       fetchUserList()
     })
 
@@ -656,6 +672,7 @@ export default defineComponent({
       getSourceType,
       handleSearch,
       handleReset,
+      filterBanned,
       handleSelectionChange,
       handleSizeChange,
       handleCurrentChange,
@@ -670,7 +687,6 @@ export default defineComponent({
       handlePasswordSubmit,
       resetUserForm,
       resetPasswordForm,
-      previewOnlineFileApi,
       openUserProfile
     }
   }

@@ -5,13 +5,6 @@ import config from '@/config/env'
 import { ElMessage } from 'element-plus'
 
 /**
- * @description: 预览文件
- */
-export const previewOnlineFileApi = (fileKey: string) => {
-  return `${baseUrl}/api/file/preview/${fileKey}`
-}
-
-/**
  * @description: 通用文件上传函数
  */
 const uploadFileApiWithTarget = async (file: File, fileKey?: string, target: 'local' | 'qiniu' = 'local'): Promise<any> => {

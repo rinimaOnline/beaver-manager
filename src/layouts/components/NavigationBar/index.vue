@@ -1,21 +1,20 @@
 <script lang="ts">
-import { defineComponent, onMounted } from "vue"
+import { defineComponent, ref } from "vue"
 import { useRouter } from "vue-router"
 import { UserFilled } from "@element-plus/icons-vue"
 import { useUserStore } from "@/pinia/user/user"
+import GlobalSearchBar from "@/components/search/globalSearchBar.vue"
 
 export default defineComponent({
+  components: { GlobalSearchBar },
   setup() {
     const router = useRouter()
     const userStore = useUserStore()
 
-    // 登出
     const logout = () => {
       userStore.logout()
       router.push("/login")
     }
-
-    onMounted(() => {})
 
     return {
       UserFilled,
@@ -30,6 +29,10 @@ export default defineComponent({
   <div class="navigation-bar">
     <div class="left-menu">
       <span class="title">海狸IM 后台管理</span>
+    </div>
+
+    <div class="center-menu">
+      <GlobalSearchBar />
     </div>
 
     <div class="right-menu">
@@ -62,6 +65,8 @@ export default defineComponent({
 }
 
 .left-menu {
+  flex-shrink: 0;
+
   .title {
     font-size: 18px;
     font-weight: 500;
@@ -69,7 +74,16 @@ export default defineComponent({
   }
 }
 
+.center-menu {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 0 24px;
+}
+
 .right-menu {
+  flex-shrink: 0;
+
   .user-info {
     display: flex;
     align-items: center;

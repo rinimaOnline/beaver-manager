@@ -10,14 +10,17 @@
             <el-tag :type="profile.status === 2 ? 'danger' : 'success'" size="small">
               {{ profile.status === 2 ? "禁用" : "正常" }}
             </el-tag>
-            <el-tag type="info" size="small">{{ data.friendTotal }} 好友 · {{ data.groupTotal }} 群 · {{ data.sessionTotal }} 会话</el-tag>
+            <el-tag type="info" size="small">
+              {{ data.friendTotal }} 好友 · {{ data.groupTotal }} 群 · {{ data.momentTotal }} 动态
+            </el-tag>
           </div>
         </div>
         <div class="user-profile__header-actions">
-          <el-button @click="goSearch">返回检索</el-button>
+          <el-button @click="goBack">返回</el-button>
           <el-button @click="extraDrawerVisible = true">更多资料</el-button>
-          <el-button type="warning" @click="goSafety">内容安全</el-button>
+          <el-button type="warning" @click="goSafety">待办处置</el-button>
           <el-button @click="goSanctions">处置记录</el-button>
+          <el-button @click="goAppeals">申诉</el-button>
           <el-button
             v-if="profile.status === 2"
             type="success"
@@ -33,10 +36,11 @@
       <div class="user-profile__body">
         <aside class="user-profile__relations">
           <div class="user-profile__relations-head">
-            <el-radio-group v-model="relationMode" size="small" class="user-profile__mode">
-              <el-radio-button value="sessions">会话</el-radio-button>
-              <el-radio-button value="friends">好友</el-radio-button>
-              <el-radio-button value="groups">群组</el-radio-button>
+            <el-radio-group v-model="relationMode" size="small" class="user-profile__mode" @change="onModeChange">
+              <el-radio-button value="private">私聊</el-radio-button>
+              <el-radio-button value="groups">群聊</el-radio-button>
+              <el-radio-button value="moments">动态</el-radio-button>
+              <el-radio-button value="emojis">表情</el-radio-button>
             </el-radio-group>
             <el-input
               v-model="relationKeyword"
@@ -45,39 +49,94 @@
               size="small"
               class="user-profile__search"
             />
+            <el-button v-if="relationMode === 'private'" link type="primary" size="small" @click="friendRequestsVisible = true">
+              好友申请
+            </el-button>
           </div>
 
-          <div v-loading="relationsLoading" class="user-profile__relation-list">
-            <div
-              v-for="item in filteredRelations"
-              :key="item.key"
-              class="user-profile__relation-item"
-              :class="{ active: activeRelation?.key === item.key }"
-              @click="selectRelation(item)"
-            >
-              <div class="user-profile__relation-top">
-                <el-tag size="small" :type="item.conversationType === 1 ? 'primary' : 'success'">
-                  {{ item.conversationType === 1 ? "私聊" : "群聊" }}
-                </el-tag>
-                <span v-if="item.lastMessageTime" class="user-profile__relation-time">{{ formatTime(item.lastMessageTime) }}</span>
+          <div v-loading="sidebarLoading" class="user-profile__relation-list">
+            <template v-if="relationMode === 'private' || relationMode === 'groups'">
+              <div
+                v-for="item in filteredRelations"
+                :key="item.key"
+                class="user-profile__relation-item"
+                :class="{ active: activeRelation?.key === item.key }"
+                @click="selectRelation(item)"
+              >
+                <div class="user-profile__relation-top">
+                  <el-tag size="small" :type="item.conversationType === 1 ? 'primary' : 'success'">
+                    {{ item.conversationType === 1 ? "私聊" : "群聊" }}
+                  </el-tag>
+                  <span v-if="item.lastMessageTime" class="user-profile__relation-time">{{ formatTime(item.lastMessageTime) }}</span>
+                </div>
+                <div class="user-profile__relation-title">{{ item.title }}</div>
+                <div class="user-profile__relation-preview">{{ item.subtitle }}</div>
+                <div v-if="item.messageCount != null" class="user-profile__relation-meta">{{ item.messageCount }} 条消息</div>
+                <div class="user-profile__relation-actions" @click.stop>
+                  <el-button v-if="item.peerUserId" link type="primary" size="small" @click="goUser(item.peerUserId)">用户360</el-button>
+                </div>
               </div>
-              <div class="user-profile__relation-title">{{ item.title }}</div>
-              <div class="user-profile__relation-preview">{{ item.subtitle }}</div>
-              <div v-if="item.messageCount != null" class="user-profile__relation-meta">{{ item.messageCount }} 条消息</div>
-              <div class="user-profile__relation-actions" @click.stop>
-                <el-button v-if="item.peerUserId" link type="primary" size="small" @click="goUser(item.peerUserId)">用户360</el-button>
-                <el-button v-if="item.groupId" link type="primary" size="small" @click="goGroup(item.groupId)">群组360</el-button>
+              <el-empty v-if="!sidebarLoading && !filteredRelations.length" :description="emptyRelationHint" :image-size="64" />
+            </template>
+
+            <template v-else-if="relationMode === 'moments'">
+              <div
+                v-for="m in filteredMoments"
+                :key="m.momentId"
+                class="user-profile__relation-item"
+                :class="{ active: activeMomentId === m.momentId }"
+                @click="selectMoment(m.momentId)"
+              >
+                <div class="user-profile__relation-top">
+                  <el-tag size="small" :type="m.isDeleted ? 'danger' : 'success'">{{ m.isDeleted ? "已删" : "正常" }}</el-tag>
+                  <span class="user-profile__relation-time">{{ formatTime(m.createdAt) }}</span>
+                </div>
+                <div class="user-profile__relation-title">{{ m.content || m.momentId }}</div>
+                <div class="user-profile__relation-meta">{{ m.commentCount }} 评论 · {{ m.likeCount }} 点赞</div>
               </div>
-            </div>
-            <el-empty v-if="!relationsLoading && !filteredRelations.length" :description="emptyRelationHint" :image-size="64" />
+              <el-empty v-if="!sidebarLoading && !momentList.length" description="该用户暂无动态" :image-size="64" />
+            </template>
+
+            <template v-else-if="relationMode === 'emojis'">
+              <div
+                v-for="e in filteredEmojis"
+                :key="e.id"
+                class="user-profile__relation-item"
+                :class="{ active: activeEmoji?.id === e.id }"
+                @click="selectEmoji(e)"
+              >
+                <div class="user-profile__relation-title">{{ e.title }}</div>
+                <div class="user-profile__relation-meta">{{ e.createTime }}</div>
+              </div>
+              <el-empty v-if="!sidebarLoading && !emojiList.length" description="该用户暂无表情" :image-size="64" />
+            </template>
           </div>
         </aside>
 
         <ChatAuditPanel
+          v-if="relationMode === 'private'"
           :conversation-id="activeConversationId"
           :title="activeConversationTitle"
           :participant-names="activeParticipantNames"
           @cleared="loadRelations"
+        />
+        <UserGroupPanel
+          v-else-if="relationMode === 'groups' && activeGroupId"
+          :group-id="activeGroupId"
+          :conversation-id="activeConversationId || ''"
+          @go-user="goUser"
+          @changed="loadRelations"
+        />
+        <UserMomentPanel
+          v-else-if="relationMode === 'moments'"
+          :moment-id="activeMomentId"
+          @deleted="onMomentDeleted"
+          @go-user="goUser"
+        />
+        <UserEmojiPanel
+          v-else-if="relationMode === 'emojis'"
+          :emoji="activeEmoji"
+          @deleted="onEmojiDeleted"
         />
       </div>
     </template>
@@ -85,17 +144,6 @@
 
     <el-drawer v-model="extraDrawerVisible" title="更多资料" size="520px">
       <el-tabs v-model="extraTab">
-        <el-tab-pane label="动态" name="moments">
-          <div v-for="m in data.moments" :key="m.momentId" class="user-profile__extra-item">
-            <p>{{ m.content }}</p>
-            <div class="user-profile__extra-meta">
-              <el-tag :type="m.isDeleted ? 'danger' : 'success'" size="small">{{ m.isDeleted ? "已删" : "正常" }}</el-tag>
-              <span>{{ m.createdAt }}</span>
-              <el-button link type="primary" @click="goMoments(m.momentId)">查看</el-button>
-            </div>
-          </div>
-          <el-empty v-if="!data.moments.length" description="暂无动态" />
-        </el-tab-pane>
         <el-tab-pane label="举报" name="reports">
           <div v-for="r in data.reports" :key="r.id" class="user-profile__extra-item">
             <p>{{ targetTypeLabel(r.targetType) }} · {{ r.targetId }}</p>
@@ -118,20 +166,32 @@
         </el-tab-pane>
       </el-tabs>
     </el-drawer>
+
+    <UserFriendRequestsDialog v-model:visible="friendRequestsVisible" :user-id="userId" />
   </div>
 </template>
 
 <script lang="ts">
 import type { IChatSessionInfo } from "@/types/api/chat"
+import type { IEmojiInfo } from "@/types/api/emoji"
 import type { IFriendInfo } from "@/types/api/friend"
+import type { MomentInfo } from "@/types/api/moment"
 import type { IGetUserOperationsProfileRes } from "@/types/api/operations"
 import { ElMessage, ElMessageBox } from "element-plus"
 import { getUserOperationsProfileApi } from "@/api/operations"
 import { executeUserControlApi } from "@/api/moderation"
 import { getFriendListApi } from "@/api/friend"
 import { getChatSessionListApi } from "@/api/chat"
+import { getEmojiListApi } from "@/api/emoji"
+import { getMomentListApi } from "@/api/moment"
 import ChatAuditPanel from "@/components/chat/ChatAuditPanel.vue"
+import UserGroupPanel from "./components/userGroupPanel.vue"
+import UserFriendRequestsDialog from "./components/userFriendRequestsDialog.vue"
+import UserEmojiPanel from "./components/userEmojiPanel.vue"
+import UserMomentPanel from "./components/userMomentPanel.vue"
 import { buildGroupConversationCandidates, buildPrivateConversationId } from "@/utils/conversation"
+
+type RelationMode = "private" | "groups" | "moments" | "emojis"
 
 interface IRelationItem {
   key: string
@@ -155,54 +215,81 @@ const emptyData = (): IGetUserOperationsProfileRes => ({
 })
 
 export default defineComponent({
-  components: { ChatAuditPanel },
+  components: { ChatAuditPanel, UserMomentPanel, UserEmojiPanel, UserGroupPanel, UserFriendRequestsDialog },
   setup() {
     const route = useRoute()
     const router = useRouter()
     const loading = ref(false)
+    const sidebarLoading = ref(false)
     const controlLoading = ref(false)
-    const relationsLoading = ref(false)
     const data = ref<IGetUserOperationsProfileRes>(emptyData())
 
-    const relationMode = ref<"sessions" | "friends" | "groups">("sessions")
+    const relationMode = ref<RelationMode>("private")
     const relationKeyword = ref("")
     const relationItems = ref<IRelationItem[]>([])
     const activeRelation = ref<IRelationItem | null>(null)
 
+    const momentList = ref<MomentInfo[]>([])
+    const activeMomentId = ref("")
+
+    const emojiList = ref<IEmojiInfo[]>([])
+    const activeEmoji = ref<IEmojiInfo | null>(null)
+
     const extraDrawerVisible = ref(false)
-    const extraTab = ref("moments")
+    const extraTab = ref("reports")
+    const friendRequestsVisible = ref(false)
 
     const userId = computed(() => route.params.userId as string)
     const profile = computed(() => data.value.profile?.userId ? data.value.profile : null)
 
     const activeConversationId = computed(() => activeRelation.value?.conversationId || null)
+    const activeGroupId = computed(() => activeRelation.value?.groupId || "")
     const activeConversationTitle = computed(() => activeRelation.value?.title || "")
     const activeParticipantNames = computed(() => activeRelation.value?.participantNames || [])
 
     const emptyRelationHint = computed(() => {
-      const map = { sessions: "该用户暂无会话", friends: "该用户暂无好友", groups: "该用户暂无群组" }
+      const map: Record<RelationMode, string> = {
+        private: "该用户暂无私聊",
+        groups: "该用户暂无群聊",
+        moments: "该用户暂无动态",
+        emojis: "该用户暂无表情"
+      }
       return map[relationMode.value]
     })
 
     const filteredRelations = computed(() => {
       const kw = relationKeyword.value.trim().toLowerCase()
       let list = relationItems.value
-      if (relationMode.value === "sessions") {
-        list = list.filter(i => i.kind === "session")
-      } else if (relationMode.value === "friends") {
+      if (relationMode.value === "private") {
         list = list.filter(i => i.kind === "friend" || (i.kind === "session" && i.conversationType === 1))
       } else {
         list = list.filter(i => i.kind === "group" || (i.kind === "session" && i.conversationType === 2))
       }
-      if (!kw) {
-        return list
-      }
+      if (!kw) return list
       return list.filter(i =>
         i.title.toLowerCase().includes(kw) ||
         i.subtitle.toLowerCase().includes(kw) ||
         i.conversationId.toLowerCase().includes(kw) ||
         (i.peerUserId || "").toLowerCase().includes(kw) ||
         (i.groupId || "").toLowerCase().includes(kw)
+      )
+    })
+
+    const filteredMoments = computed(() => {
+      const kw = relationKeyword.value.trim().toLowerCase()
+      if (!kw) return momentList.value
+      return momentList.value.filter(m =>
+        (m.content || "").toLowerCase().includes(kw) ||
+        m.momentId.toLowerCase().includes(kw)
+      )
+    })
+
+    const filteredEmojis = computed(() => {
+      const kw = relationKeyword.value.trim().toLowerCase()
+      if (!kw) return emojiList.value
+      return emojiList.value.filter(e =>
+        (e.title || "").toLowerCase().includes(kw) ||
+        e.id.toLowerCase().includes(kw)
       )
     })
 
@@ -253,10 +340,7 @@ export default defineComponent({
       for (const f of friends) {
         const { peerUserId, peerUserName } = getPeerFromFriend(f)
         const convId = buildPrivateConversationId(userId.value, peerUserId)
-        const existing = sessionMap.get(convId)
-        if (existing) {
-          continue
-        }
+        if (sessionMap.has(convId)) continue
         items.push({
           key: `friend-${peerUserId}`,
           kind: "friend",
@@ -271,23 +355,17 @@ export default defineComponent({
 
       const groupSeen = new Set<string>()
       for (const s of sessions) {
-        if (s.conversationType !== 2) {
-          continue
-        }
-        const gid = s.peerUserId || s.conversationId.replace(/^group_/, "")
-        groupSeen.add(gid)
+        if (s.conversationType !== 2) continue
+        groupSeen.add(s.peerUserId || s.conversationId.replace(/^group_/, ""))
       }
       for (const g of data.value.groups || []) {
-        if (groupSeen.has(g.groupId)) {
-          continue
-        }
-        const candidates = buildGroupConversationCandidates(g.groupId)
+        if (groupSeen.has(g.groupId)) continue
         items.push({
           key: `group-${g.groupId}`,
           kind: "group",
           title: g.title || g.groupId,
           subtitle: "点击查看群聊记录",
-          conversationId: candidates[0],
+          conversationId: buildGroupConversationCandidates(g.groupId)[0],
           conversationType: 2,
           groupId: g.groupId
         })
@@ -302,48 +380,136 @@ export default defineComponent({
     }
 
     const loadRelations = async () => {
-      if (!userId.value) {
-        return
-      }
-      relationsLoading.value = true
+      if (!userId.value) return
+      sidebarLoading.value = true
       const [sessionRes, friendRes] = await Promise.all([
         getChatSessionListApi({ userId: userId.value, page: 1, pageSize: 200 }),
         getFriendListApi({ userId: userId.value, page: 1, pageSize: 500, isDeleted: false })
       ])
-      relationsLoading.value = false
+      sidebarLoading.value = false
       const sessions = sessionRes.code === 0 ? sessionRes.result.list || [] : []
       const friends = friendRes.code === 0 ? friendRes.result.list || [] : []
       buildRelations(sessions, friends)
+    }
+
+    const loadMoments = async () => {
+      if (!userId.value) return
+      sidebarLoading.value = true
+      const res = await getMomentListApi({ page: 1, limit: 100, userId: userId.value })
+      sidebarLoading.value = false
+      if (res.code === 0) {
+        momentList.value = res.result.list || []
+        if (!activeMomentId.value && momentList.value.length) {
+          activeMomentId.value = momentList.value[0].momentId
+        }
+      } else {
+        momentList.value = []
+        ElMessage.error(res.msg || "加载动态失败")
+      }
+    }
+
+    const loadEmojis = async () => {
+      if (!userId.value) return
+      sidebarLoading.value = true
+      const res = await getEmojiListApi({ page: 1, pageSize: 100, authorId: userId.value })
+      sidebarLoading.value = false
+      if (res.code === 0) {
+        emojiList.value = res.result.list || []
+        if (!activeEmoji.value && emojiList.value.length) {
+          activeEmoji.value = emojiList.value[0]
+        }
+      } else {
+        emojiList.value = []
+        ElMessage.error(res.msg || "加载表情失败")
+      }
+    }
+
+    const onModeChange = () => {
+      relationKeyword.value = ""
+      if (relationMode.value === "moments") {
+        loadMoments()
+      } else if (relationMode.value === "emojis") {
+        loadEmojis()
+      }
     }
 
     const selectRelation = (item: IRelationItem) => {
       activeRelation.value = item
     }
 
+    const selectMoment = (momentId: string) => {
+      activeMomentId.value = momentId
+    }
+
+    const selectEmoji = (emoji: IEmojiInfo) => {
+      activeEmoji.value = emoji
+    }
+
+    const onMomentDeleted = async () => {
+      activeMomentId.value = ""
+      await loadMoments()
+      if (momentList.value.length) {
+        activeMomentId.value = momentList.value[0].momentId
+      }
+      loadProfile()
+    }
+
+    const onEmojiDeleted = async () => {
+      activeEmoji.value = null
+      await loadEmojis()
+      if (emojiList.value.length) {
+        activeEmoji.value = emojiList.value[0]
+      }
+    }
+
     const applyRouteQuery = () => {
+      const qRelation = route.query.relation as string
+      if (qRelation === "private" || qRelation === "groups" || qRelation === "moments" || qRelation === "emojis") {
+        relationMode.value = qRelation
+      }
+      if (qRelation === "friends") {
+        relationMode.value = "private"
+      }
+      if (qRelation === "sessions") {
+        relationMode.value = "private"
+      }
+
+      const qMomentId = route.query.momentId as string
+      if (qMomentId) {
+        relationMode.value = "moments"
+        activeMomentId.value = qMomentId
+      }
+
+      const qExtra = route.query.extra as string
+      if (qExtra === "blocks" || qExtra === "reports") {
+        extraTab.value = qExtra
+        extraDrawerVisible.value = true
+      }
+
+      const qGroupId = route.query.groupId as string
+      if (qGroupId) {
+        relationMode.value = "groups"
+        const found = relationItems.value.find(i => i.groupId === qGroupId)
+        if (found) activeRelation.value = found
+      }
+
       const qConvId = route.query.conversationId as string
       const qPeerId = route.query.peerUserId as string
       if (qConvId) {
         const found = relationItems.value.find(i => i.conversationId === qConvId)
         if (found) {
           activeRelation.value = found
-          relationMode.value = found.conversationType === 1 ? "friends" : "groups"
-          return
+          relationMode.value = found.conversationType === 1 ? "private" : "groups"
         }
-      }
-      if (qPeerId) {
+      } else if (qPeerId) {
+        relationMode.value = "private"
         const found = relationItems.value.find(i => i.peerUserId === qPeerId)
-        if (found) {
-          activeRelation.value = found
-          relationMode.value = "friends"
-        }
+        if (found) activeRelation.value = found
       }
     }
 
     const loadProfile = async () => {
-      if (!userId.value) {
-        return
-      }
+      if (!userId.value) return
       loading.value = true
       const res = await getUserOperationsProfileApi(userId.value)
       loading.value = false
@@ -351,9 +517,18 @@ export default defineComponent({
         data.value = res.result
         await loadRelations()
         applyRouteQuery()
-        if (!activeRelation.value && relationItems.value.length) {
-          const firstSession = relationItems.value.find(i => i.kind === "session")
-          activeRelation.value = firstSession || relationItems.value[0]
+        if (relationMode.value === "moments") {
+          await loadMoments()
+          const qMomentId = route.query.momentId as string
+          if (qMomentId) activeMomentId.value = qMomentId
+        } else if (relationMode.value === "emojis") {
+          await loadEmojis()
+        }
+        if ((relationMode.value === "private" || relationMode.value === "groups") && !activeRelation.value) {
+          const list = relationMode.value === "private"
+            ? filteredRelations.value
+            : filteredRelations.value
+          if (list.length) activeRelation.value = list[0]
         }
       } else {
         ElMessage.error(res.msg || "加载用户360失败")
@@ -377,24 +552,31 @@ export default defineComponent({
     const handleBan = () => doControl("ban_user", "封禁")
     const handleUnban = () => doControl("unban_user", "解封")
 
-    const goSearch = () => router.push("/user/search")
-    const goSafety = () => router.push("/safety/cases")
-    const goSanctions = () => router.push({ path: "/user/sanctions", query: { userId: userId.value } })
+    const goBack = () => {
+      if (window.history.length > 1) router.back()
+      else router.push("/user/list")
+    }
+    const goSafety = () => router.push({ path: "/safety/cases", query: { tab: "reports" } })
+    const goSanctions = () => router.push({ path: "/system/audit-logs", query: { userId: userId.value, scope: "sanctions" } })
+    const goAppeals = () => router.push({ path: "/safety/appeals", query: { userId: userId.value } })
+    const goFriendRequests = () => { friendRequestsVisible.value = true }
     const goUser = (id: string) => router.push(`/user/profile/${id}`)
-    const goGroup = (groupId: string) => router.push(`/group/profile/${groupId}`)
-    const goMoments = (momentId: string) => router.push({ path: "/community/moments", query: { momentId } })
-    const goReport = (reportId: number) => router.push({ path: "/safety/reports", query: { reportId: String(reportId) } })
+    const goReport = (reportId: number) => router.push({ path: "/safety/cases", query: { tab: "reports", reportId: String(reportId) } })
 
     watch(userId, loadProfile, { immediate: true })
 
     return {
-      loading, controlLoading, relationsLoading, data, profile,
+      loading, sidebarLoading, controlLoading, data, profile, userId,
       relationMode, relationKeyword, filteredRelations, activeRelation,
-      activeConversationId, activeConversationTitle, activeParticipantNames,
-      emptyRelationHint, extraDrawerVisible, extraTab,
-      formatTime, targetTypeLabel, selectRelation, loadRelations,
+      momentList, filteredMoments, activeMomentId,
+      emojiList, filteredEmojis, activeEmoji,
+      activeConversationId, activeGroupId, activeConversationTitle, activeParticipantNames,
+      emptyRelationHint, extraDrawerVisible, extraTab, friendRequestsVisible,
+      formatTime, targetTypeLabel,
+      selectRelation, selectMoment, selectEmoji, loadRelations, onModeChange,
+      onMomentDeleted, onEmojiDeleted,
       handleBan, handleUnban,
-      goSearch, goSafety, goSanctions, goUser, goGroup, goMoments, goReport
+      goBack, goSafety, goSanctions, goAppeals, goFriendRequests, goUser, goReport
     }
   }
 })
@@ -475,12 +657,15 @@ export default defineComponent({
   .user-profile__mode {
     width: 100%;
     margin-bottom: 8px;
+    display: flex;
 
     .el-radio-button {
       flex: 1;
 
       .el-radio-button__inner {
         width: 100%;
+        padding-left: 6px;
+        padding-right: 6px;
       }
     }
   }
@@ -525,6 +710,9 @@ export default defineComponent({
     font-weight: 600;
     font-size: 14px;
     margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .user-profile__relation-preview {
