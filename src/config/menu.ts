@@ -9,7 +9,6 @@ import {
   Lock,
   Message,
   Platform,
-  Rank,
   Service,
   Share,
   TrendCharts,
@@ -64,10 +63,13 @@ export const menuConfig: MenuItem[] = [
     children: [
       { path: "/open/developers", title: "开发者", icon: UserFilled },
       { path: "/open/apps", title: "开放应用", icon: Platform },
-      { path: "/open/integrations", title: "机器人集成", icon: Connection },
-      { path: "/release/versions", title: "客户端版本", icon: Rank },
-      { path: "/release/strategies", title: "发布策略", icon: Upload }
+      { path: "/open/integrations", title: "机器人集成", icon: Connection }
     ]
+  },
+  {
+    path: "/release/apps",
+    title: "版本发布",
+    icon: Upload
   },
   {
     path: "/data",
@@ -96,6 +98,7 @@ export const menuConfig: MenuItem[] = [
       { path: "/system/roles", title: "角色权限", icon: Lock },
       { path: "/system/admins", title: "管理员", icon: User },
       { path: "/system/config", title: "系统配置", icon: Platform },
+      { path: "/system/online", title: "连接监控", icon: Connection },
       { path: "/safety/policy", title: "内容策略", icon: Grid },
       { path: "/system/audit-logs", title: "操作审计", icon: Document }
     ]

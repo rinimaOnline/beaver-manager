@@ -7,6 +7,7 @@ export type UploadFileType = 'image' | 'video' | 'audio' | 'file'
 // 上传结果的基础结构
 export interface UploadResult {
   fileKey: string
+  fileUrl?: string
   style: UploadStyle
   type: UploadFileType
   originalName?: string
@@ -125,6 +126,7 @@ export const uploadFile = async (file: File): Promise<UploadResult> => {
 
   return {
     fileKey: uploadResult.fileKey,
+    fileUrl: uploadResult.fileUrl,
     style,
     type: fileType,
     originalName: uploadResult.originalName,

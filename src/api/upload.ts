@@ -36,6 +36,7 @@ const uploadFileApiWithTarget = async (file: File, fileKey?: string, target: 'lo
 
   return {
     fileKey: result.result.fileKey,
+    fileUrl: result.result.fileUrl,
     originalName: result.result.originalName,
     fileInfo,
   }

@@ -10,6 +10,7 @@ export interface IDashboardOverview {
   pendingFeedbackCount: number
   pendingReportCount: number
   pendingCaseCount: number
+  onlineUserCount: number
 }
 
 export interface IDashboardInboxItem {

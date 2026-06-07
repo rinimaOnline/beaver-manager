@@ -79,7 +79,7 @@ export interface IGetArchitecturesRes {
 export interface IAddVersionReq {
   architectureId: number
   version: string
-  fileName: string
+  fileUrl: string
   description?: string
   releaseNotes?: string
 }
@@ -92,7 +92,7 @@ export interface IVersionInfo {
   versionId: number
   architectureId: number
   version: string
-  fileName: string
+  fileUrl: string
   description: string
   releaseNotes: string
   releaseDate: string
@@ -112,81 +112,44 @@ export interface IGetVersionListRes {
   versions: IVersionInfo[]
 }
 
-// 简化版本信息（用于城市策略管理）
-export interface ISimpleVersionInfo {
-  versionId: number
-  version: string
-}
-
-// 架构版本信息
-export interface IArchitectureVersionInfo {
-  architectureId: number
-  archId: number
-  description: string
-  versions: ISimpleVersionInfo[]
-}
-
-// 获取应用下所有版本请求
-export interface IGetAppVersionsReq {
+// Release Policy
+export interface IUpsertReleasePolicyReq {
   appId: string
-  page?: number
-  pageSize?: number
-}
-
-// 获取应用下所有版本响应
-export interface IGetAppVersionsRes {
-  total: number
-  architectures: IArchitectureVersionInfo[]
-}
-
-// City Strategy Management
-export interface IStrategyInfo {
   architectureId: number
-  versionId: number
-  forceUpdate: boolean
-  isActive: boolean
+  stableVersionId: number
+  grayVersionId?: number
+  rolloutPercent: number
+  minVersion?: string
+  forceUpdate?: boolean
+  isActive?: boolean
 }
 
-// 策略信息（API响应，包含版本号）
-export interface IStrategyInfoWithVersion {
-  architectureId: number
-  versionId: number
-  version: string
-  forceUpdate: boolean
-  isActive: boolean
+export interface IUpsertReleasePolicyRes {
+  id: number
 }
 
-// 更新城市策略请求 - 根据后端新接口定义
-export interface IUpdateCityStrategyReq {
-  appId: string
-  cityIds: string[]
-  strategy: IStrategyInfo[]
-  updateType?: 'single' | 'global'
-}
-
-export interface IUpdateCityStrategyRes {}
-
-// 城市策略信息（API响应，包含版本号）
-export interface ICityStrategyInfo {
+export interface IReleasePolicyItem {
   id: number
   appId: string
-  cityId: string
-  strategy: IStrategyInfoWithVersion[]
+  architectureId: number
+  stableVersionId: number
+  grayVersionId: number
+  rolloutPercent: number
+  minVersion: string
+  forceUpdate: boolean
   isActive: boolean
+  stableVersion: string
+  grayVersion: string
   createdAt: string
   updatedAt: string
 }
 
-export interface IGetCityStrategiesReq {
-  appId?: string
-  isActive?: boolean
-  page?: number
-  pageSize?: number
+export interface IGetReleasePoliciesReq {
+  appId: string
 }
 
-export interface IGetCityStrategiesRes {
-  total: number
-  strategies: ICityStrategyInfo[]
+export interface IGetReleasePoliciesRes {
+  policies: IReleasePolicyItem[]
 }
 
 // Upload File

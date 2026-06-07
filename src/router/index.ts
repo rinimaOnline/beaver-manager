@@ -22,8 +22,9 @@ const adminRoutes: RouteRecordRaw[] = [
   { path: "/open/apps", name: "OpenApps", component: () => import("@/pages/open/apps/index.vue") },
   { path: "/open/integrations", name: "OpenIntegrations", component: () => import("@/pages/open/integrations/index.vue") },
 
-  { path: "/release/versions", name: "ReleaseVersions", component: () => import("@/pages/release/versions/index.vue") },
-  { path: "/release/strategies", name: "ReleaseStrategies", component: () => import("@/pages/release/strategies/index.vue") },
+  { path: "/release/apps", name: "ReleaseApps", component: () => import("@/pages/release/apps/index.vue") },
+  { path: "/release/versions", redirect: "/release/apps" },
+  { path: "/release/strategies", redirect: "/release/apps" },
 
   { path: "/data/events", name: "DataEvents", component: () => import("@/pages/data/events/index.vue") },
   { path: "/data/logs", name: "DataLogs", component: () => import("@/pages/data/logs/index.vue") },
@@ -35,7 +36,8 @@ const adminRoutes: RouteRecordRaw[] = [
   { path: "/system/roles", name: "SystemRoles", component: () => import("@/pages/system/roles/index.vue") },
   { path: "/system/admins", name: "SystemAdmins", component: () => import("@/pages/system/admins/index.vue") },
   { path: "/system/config", name: "SystemConfig", component: () => import("@/pages/system/config/index.vue") },
-  { path: "/system/audit-logs", name: "SystemAuditLogs", component: () => import("@/pages/system/audit-logs/index.vue") }
+  { path: "/system/audit-logs", name: "SystemAuditLogs", component: () => import("@/pages/system/audit-logs/index.vue") },
+  { path: "/system/online", name: "SystemOnline", component: () => import("@/pages/system/online/index.vue"), meta: { title: "连接监控" } }
 ]
 
 const router = createRouter({

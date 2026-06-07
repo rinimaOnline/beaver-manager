@@ -122,6 +122,7 @@ export interface UploadResult {
 // 文件上传API返回结果
 export interface IFileUploadResult {
   fileKey: string
+  fileUrl?: string
   originalName: string
   fileInfo: any
 }
@@ -129,6 +130,7 @@ export interface IFileUploadResult {
 // 文件上传API响应（result部分）
 export interface IFileRes {
   fileKey: string
+  fileUrl?: string
   originalName: string
   filePath?: string
   md5?: string
@@ -225,6 +227,7 @@ export const uploadFileApiWithTarget = async (file: File, fileKey?: string, targ
 
   return {
     fileKey: result.result.fileKey,
+    fileUrl: result.result.fileUrl,
     originalName: result.result.originalName,
     fileInfo,
   }

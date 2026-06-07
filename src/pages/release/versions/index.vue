@@ -3,22 +3,35 @@
     <div class="page-header">
       <div class="header-left">
         <h2 class="page-title">版本管理</h2>
-        <el-select 
-          v-model="state.selectedAppId" 
+        <el-select
+          v-model="state.selectedAppId"
           placeholder="请选择应用"
           @change="handleAppChange"
           class="app-select"
         >
-          <el-option 
-            v-for="app in state.apps" 
-            :key="app.appId" 
-            :label="app.name" 
+          <el-option
+            v-for="app in state.apps"
+            :key="app.appId"
+            :label="app.name"
             :value="app.appId"
           />
         </el-select>
+        <el-button link type="primary" @click="goApps">返回</el-button>
       </div>
     </div>
-    <div v-if="state.selectedAppId" class="arch-tabs-container">
+
+    <el-empty v-if="!state.apps.length" description="请先在版本发布中创建应用并添加架构">
+      <el-button type="primary" @click="goApps">去版本发布</el-button>
+    </el-empty>
+
+    <el-empty
+      v-else-if="state.selectedAppId && !state.architectures.length"
+      description="当前应用还没有架构，请先添加需要的端（如 WinX64、Android）"
+    >
+      <el-button type="primary" @click="goApps">去添加架构</el-button>
+    </el-empty>
+
+    <div v-if="state.selectedAppId && state.architectures.length" class="arch-tabs-container">
       <el-tabs
         v-model="state.selectedArchId"
         type="card"
@@ -57,7 +70,7 @@
         :header-cell-style="{ background: '#f5f7fa' }"
       >
         <el-table-column prop="version" label="版本号" width="120" />
-        <el-table-column prop="fileKey" label="文件ID" width="280" show-overflow-tooltip />
+        <el-table-column prop="fileUrl" label="下载地址" min-width="280" show-overflow-tooltip />
         <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
         <el-table-column prop="updatedAt" label="更新日志" min-width="200" show-overflow-tooltip />
         <el-table-column prop="createdAt" label="发布时间" width="180" />
@@ -103,7 +116,7 @@
             <template #prefix>v</template>
           </el-input>
         </el-form-item>
-        <el-form-item label="安装包" prop="fileKey">
+        <el-form-item label="安装包">
           <el-upload
             class="upload-demo"
             action="#"
@@ -202,7 +215,7 @@ export default defineComponent({
       form: {
         architectureId: 0,
         version: '',
-        fileKey: '',
+        fileUrl: '',
         description: '',
         releaseNotes: '',
         releaseDate: ''
@@ -287,7 +300,7 @@ export default defineComponent({
       state.form = {
         architectureId: state.selectedArchId,
         version: '',
-        fileKey: '',
+        fileUrl: '',
         description: '',
         releaseNotes: '',
         releaseDate: ''
@@ -328,13 +341,13 @@ export default defineComponent({
     const handleFileChange = async (file: { raw?: File }) => {
       if (!file.raw) return
       const result = await uploadFile(file.raw)
-      state.form.fileKey = result.fileKey
+      state.form.fileUrl = result.fileUrl || result.fileKey
       ElMessage.success('文件上传成功')
     }
 
     const handleSubmit = async () => {
       if (!formRef.value) return
-      if (!state.form.fileKey) {
+      if (!state.form.fileUrl) {
         ElMessage.error('请先上传安装包文件')
         return
       }
@@ -353,7 +366,11 @@ export default defineComponent({
     }
 
     const goStrategies = () => {
-      router.push({ path: '/release/strategies', query: { appId: state.selectedAppId } })
+      router.push({ path: '/release/apps', query: { appId: state.selectedAppId } })
+    }
+
+    const goApps = () => {
+      router.push('/release/apps')
     }
 
     onMounted(async () => {
@@ -363,9 +380,16 @@ export default defineComponent({
       if (qAppId) {
         state.selectedAppId = qAppId
         await fetchArchitectures(qAppId)
+      } else if (state.apps.length > 0) {
+        state.selectedAppId = state.apps[0].appId
+        await fetchArchitectures(state.selectedAppId)
       }
       if (qArchId) {
         state.selectedArchId = Number(qArchId)
+      } else if (state.architectures.length > 0) {
+        state.selectedArchId = state.architectures[0].id
+      }
+      if (state.selectedAppId && state.selectedArchId) {
         fetchData()
       }
     })
@@ -387,7 +411,8 @@ export default defineComponent({
       handleSizeChange,
       handleCurrentChange,
       handleFileChange,
-      goStrategies
+      goStrategies,
+      goApps
     }
   }
 })

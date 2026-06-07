@@ -111,13 +111,15 @@ export default defineComponent({
       pendingAppCount: 0,
       pendingFeedbackCount: 0,
       pendingReportCount: 0,
-      pendingCaseCount: 0
+      pendingCaseCount: 0,
+      onlineUserCount: 0
     })
 
     const inboxList = ref<IDashboardInboxItem[]>([])
     const inboxTotal = ref(0)
 
     const stats = computed(() => [
+      { title: "在线用户", value: overview.value.onlineUserCount, color: "#ff7d45", path: "/system/online" },
       { title: "用户总数", value: overview.value.userTotal, color: "#409eff", path: "/user/list" },
       { title: "群组总数", value: overview.value.groupTotal, color: "#67c23a", path: "/compliance/sessions" },
       { title: "聊天消息", value: overview.value.messageTotal, color: "#f56c6c", path: "/compliance/sessions" },

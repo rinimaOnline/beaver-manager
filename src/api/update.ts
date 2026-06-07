@@ -8,9 +8,8 @@ import type {
   IGetArchitecturesReq, IGetArchitecturesRes,
   IAddVersionReq, IAddVersionRes,
   IGetVersionListReq, IGetVersionListRes,
-  IGetAppVersionsReq, IGetAppVersionsRes,
-  IUpdateCityStrategyReq, IUpdateCityStrategyRes,
-  IGetCityStrategiesReq, IGetCityStrategiesRes,
+  IUpsertReleasePolicyReq, IUpsertReleasePolicyRes,
+  IGetReleasePoliciesReq, IGetReleasePoliciesRes,
   IUploadFileRes
 } from '@/types/api/update'
 
@@ -73,15 +72,6 @@ export const getVersionListApi = (params: IGetVersionListReq) => {
   })
 }
 
-// 获取应用下所有版本
-export const getAppVersionsApi = (params: IGetAppVersionsReq) => {
-  return ajax<IGetAppVersionsRes>({
-    url: `${config.baseAPI}/admin/update/versions`,
-    method: 'get',
-    params
-  })
-}
-
 // 删除版本
 export function deleteVersionApi(id: number) {
   return ajax<void>({
@@ -90,19 +80,19 @@ export function deleteVersionApi(id: number) {
   })
 }
 
-// City Strategy Management
-export function updateCityStrategyApi(data: IUpdateCityStrategyReq) {
-  return ajax<IUpdateCityStrategyRes>({
+// 发版策略
+export function upsertReleasePolicyApi(data: IUpsertReleasePolicyReq) {
+  return ajax<IUpsertReleasePolicyRes>({
     method: 'POST',
-    url: `${config.baseAPI}/admin/update/cityStrategyUpdate`,
+    url: `${config.baseAPI}/admin/update/releasePolicy`,
     data
   })
 }
 
-export function getCityStrategiesApi(params: IGetCityStrategiesReq) {
-  return ajax<IGetCityStrategiesRes>({
+export function getReleasePoliciesApi(params: IGetReleasePoliciesReq) {
+  return ajax<IGetReleasePoliciesRes>({
     method: 'GET',
-    url: `${config.baseAPI}/admin/update/cityStrategies`,
+    url: `${config.baseAPI}/admin/update/releasePolicies`,
     params
   })
 }

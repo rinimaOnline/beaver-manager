@@ -35,7 +35,7 @@
         </el-row>
         <div class="system-config__links">
           <el-button @click="goTo('/safety/policy')">敏感词库管理</el-button>
-          <el-button @click="goTo('/release/strategies')">发布策略</el-button>
+          <el-button @click="goTo('/release/apps')">版本发布</el-button>
           <el-button @click="goTo('/system/roles')">角色与权限</el-button>
           <el-button @click="goTo('/data/events')">事件统计</el-button>
         </div>
@@ -60,7 +60,7 @@
 
       <el-tab-pane label="快捷入口" name="links">
         <div class="system-config__links">
-          <el-button @click="goTo('/release/strategies')">发布策略（城市灰度）</el-button>
+          <el-button @click="goTo('/release/apps')">版本发布</el-button>
           <el-button @click="goTo('/system/roles')">角色与权限</el-button>
           <el-button @click="goTo('/data/events')">事件统计</el-button>
           <el-button @click="goTo('/safety/policy')">敏感词与策略</el-button>
