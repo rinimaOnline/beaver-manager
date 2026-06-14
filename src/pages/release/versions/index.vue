@@ -341,7 +341,7 @@ export default defineComponent({
     const handleFileChange = async (file: { raw?: File }) => {
       if (!file.raw) return
       const result = await uploadFile(file.raw)
-      state.form.fileUrl = result.fileUrl || result.fileKey
+      state.form.fileUrl = result.fileUrl
       ElMessage.success('文件上传成功')
     }
 

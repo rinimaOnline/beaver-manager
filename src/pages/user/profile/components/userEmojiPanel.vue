@@ -6,12 +6,12 @@
         <el-button type="danger" size="small" @click="handleDelete">删除表情</el-button>
       </div>
       <el-descriptions :column="1" border size="small">
-        <el-descriptions-item label="表情ID">{{ emoji.id }}</el-descriptions-item>
+        <el-descriptions-item label="表情ID">{{ emoji.emojiId }}</el-descriptions-item>
         <el-descriptions-item label="预览">
           <el-image
-            v-if="emoji.fileKey"
-            :src="emoji.fileKey"
-            :preview-src-list="[emoji.fileKey]"
+            v-if="emoji.fileUrl"
+            :src="emoji.fileUrl"
+            :preview-src-list="[emoji.fileUrl]"
             style="width: 80px; height: 80px"
             fit="cover"
           />
@@ -42,7 +42,7 @@ export default defineComponent({
       if (!props.emoji) return
       await ElMessageBox.confirm(`确认删除表情「${props.emoji.title}」？`, "删除表情", { type: "warning" })
       loading.value = true
-      const res = await deleteEmojiApi(props.emoji.id)
+      const res = await deleteEmojiApi(props.emoji.emojiId)
       loading.value = false
       if (res.code === 0) {
         ElMessage.success("已删除")

@@ -213,7 +213,7 @@
           </template>
           
           <el-descriptions :column="4" border>
-            <el-descriptions-item label="表情包ID">{{ currentPackage.id }}</el-descriptions-item>
+            <el-descriptions-item label="表情包ID">{{ currentPackage.packageId }}</el-descriptions-item>
             <el-descriptions-item label="创建者">{{ currentPackage.userId }}</el-descriptions-item>
             <el-descriptions-item label="类型">
               <el-tag :type="currentPackage.type === 'official' ? 'success' : 'info'">
@@ -239,14 +239,14 @@
           <div v-else class="emoji-grid">
             <div 
               v-for="emoji in emojiList" 
-              :key="emoji.id" 
+              :key="emoji.emojiId" 
               class="emoji-item"
             >
               <div class="emoji-preview">
                 <el-image
-                  v-if="emoji.fileKey"
-                  :src="emoji.fileKey"
-                  :preview-src-list="emoji.fileKey ? [emoji.fileKey] : []"
+                  v-if="emoji.fileUrl"
+                  :src="emoji.fileUrl"
+                  :preview-src-list="emoji.fileUrl ? [emoji.fileUrl] : []"
                   fit="cover"
                 />
                 <div v-else class="no-image">无图片</div>
@@ -271,7 +271,7 @@
         <el-form-item label="表情名称" prop="title">
           <el-input v-model="emojiForm.title" placeholder="请输入表情名称" />
         </el-form-item>
-        <el-form-item label="表情文件" prop="fileKey">
+        <el-form-item label="表情文件" prop="fileUrl">
           <input
             ref="emojiFileInput"
             type="file"
@@ -399,16 +399,16 @@ export default defineComponent({
     // 表情表单数据
     const emojiForm = reactive({
       title: "",
-      fileKey: "",
+      fileUrl: "",
       packageId: "",
       emojiInfo: { width: 0, height: 0 },
-      authorId: "" // 添加创建者ID字段
+      authorId: ""
     })
 
     // 表情表单验证规则
     const emojiFormRules = {
       title: [{ required: true, message: "请输入表情名称", trigger: "blur" }],
-      fileKey: [{ required: true, message: "请选择表情文件", trigger: "change" }]
+      fileUrl: [{ required: true, message: "请选择表情文件", trigger: "change" }]
     }
 
     // 获取状态标签类型
@@ -506,8 +506,8 @@ export default defineComponent({
       const result = await uploadFile(file)
       uploading.value = false
       selectedFile.value = file
-      form.coverFile = result.fileKey
-      previewUrl.value = URL.createObjectURL(file)
+      form.coverFile = result.fileUrl
+      previewUrl.value = result.fileUrl
       ElMessage.success("文件上传成功")
     }
 
@@ -547,15 +547,18 @@ export default defineComponent({
       const result = await uploadFile(file)
       emojiUploading.value = false
       emojiSelectedFile.value = file
-      emojiForm.fileKey = result.fileKey
-      emojiForm.emojiInfo = result.style
-      emojiPreviewUrl.value = URL.createObjectURL(file)
+      emojiForm.fileUrl = result.fileUrl
+      emojiForm.emojiInfo = {
+        width: result.style.width || 0,
+        height: result.style.height || 0,
+      }
+      emojiPreviewUrl.value = result.fileUrl
       ElMessage.success("文件上传成功")
     }
 
     const removeEmojiFile = () => {
       emojiSelectedFile.value = null
-      emojiForm.fileKey = ''
+      emojiForm.fileUrl = ''
       emojiPreviewUrl.value = ''
       if (emojiFileInput.value) {
         emojiFileInput.value.value = ''
@@ -594,7 +597,7 @@ export default defineComponent({
     const handleEdit = (row) => {
       isEdit.value = true
       Object.assign(form, {
-        packageId: row.id,
+        packageId: row.packageId,
         title: row.title,
         coverFile: row.coverFile,
         description: row.description,
@@ -641,9 +644,9 @@ export default defineComponent({
       }
     }
 
-    const handleDelete = async (row: { id: string; title: string }) => {
+    const handleDelete = async (row: { packageId: string; title: string }) => {
       await ElMessageBox.confirm(`确定删除表情包「${row.title}」？`, "确认删除", { type: "warning" })
-      const res = await deleteEmojiPackageApi(row.id)
+      const res = await deleteEmojiPackageApi(row.packageId)
       if (res.code === 0) {
         ElMessage.success("删除成功")
         fetchPackageList()
@@ -658,14 +661,14 @@ export default defineComponent({
     const submitEmojiForm = async () => {
       if (!emojiFormRef.value) return
       await emojiFormRef.value.validate()
-      if (!emojiForm.fileKey) {
+      if (!emojiForm.fileUrl) {
         ElMessage.error("请选择表情文件")
         return
       }
       emojiUploading.value = true
       const res = await addEmojiToPackageApi({
         packageId: emojiForm.packageId,
-        fileKey: emojiForm.fileKey,
+        fileUrl: emojiForm.fileUrl,
         title: emojiForm.title,
         emojiInfo: emojiForm.emojiInfo,
         authorId: emojiForm.authorId
@@ -675,7 +678,7 @@ export default defineComponent({
         ElMessage.success("添加成功")
         emojiFormDialogVisible.value = false
         fetchEmojiList(currentPackage.value.packageId)
-        Object.assign(emojiForm, { title: "", fileKey: "", emojiInfo: { width: 0, height: 0 }, authorId: "" })
+        Object.assign(emojiForm, { title: "", fileUrl: "", emojiInfo: { width: 0, height: 0 }, authorId: "" })
         emojiSelectedFile.value = null
         emojiPreviewUrl.value = ""
       } else {
@@ -683,11 +686,11 @@ export default defineComponent({
       }
     }
 
-    const handleDeleteEmoji = async (row: { id: string; title: string }) => {
+    const handleDeleteEmoji = async (row: { emojiId: string; title: string }) => {
       await ElMessageBox.confirm(`确认移除表情「${row.title}」？`, "确认移除", { type: "warning" })
       const res = await removeEmojiFromPackageApi({
         packageId: currentPackage.value.packageId,
-        emojiId: row.id
+        emojiId: row.emojiId
       })
       if (res.code === 0) {
         ElMessage.success("移除成功")

@@ -31,7 +31,9 @@
         <el-table-column label="用户" width="180">
           <template #default="{ row }">
             <div class="system-online__user-cell">
-              <el-avatar :size="36">{{ row.nickName?.charAt(0) || row.userId?.charAt(0) || "U" }}</el-avatar>
+              <el-avatar :size="36" :src="row.avatar || undefined">
+                {{ row.nickName?.charAt(0) || row.userId?.charAt(0) || "U" }}
+              </el-avatar>
               <div>
                 <div class="system-online__nick">{{ row.nickName || "-" }}</div>
                 <div class="system-online__sub">{{ row.email || "-" }}</div>
@@ -39,25 +41,28 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="在线终端" width="160">
+        <el-table-column label="在线终端" min-width="160">
           <template #default="{ row }">
-            <el-tag
-              v-for="(slot, index) in row.slots"
-              :key="`${slot.instanceId}-${slot.slot}-${index}`"
-              size="small"
-              class="system-online__slot-tag"
-              :type="slotTagType(slot.slot)"
-            >
-              {{ slotLabel(slot.slot) }}
-            </el-tag>
+            <div class="system-online__slot-list">
+              <el-tag
+                v-for="(slot, index) in row.slots"
+                :key="`${slot.instanceId}-${slot.slot}-${index}`"
+                size="small"
+                class="system-online__slot-tag"
+                :type="slotTagType(slot.slot)"
+              >
+                {{ slotLabel(slot.slot) }}
+              </el-tag>
+            </div>
             <span v-if="!row.slots?.length">-</span>
           </template>
         </el-table-column>
         <el-table-column label="WS 实例" min-width="180" show-overflow-tooltip>
           <template #default="{ row }">{{ formatInstances(row.slots) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="120" fixed="right" align="center">
+        <el-table-column label="操作" width="180" fixed="right" align="center">
           <template #default="{ row }">
+            <el-button link type="primary" @click="openDeviceDetail(row)">设备详情</el-button>
             <el-button link type="primary" @click="goUserProfile(row.userId)">用户360</el-button>
           </template>
         </el-table-column>
@@ -76,13 +81,42 @@
         />
       </div>
     </el-card>
+
+    <el-dialog
+      v-model="deviceDialog.visible"
+      :title="deviceDialog.title"
+      width="900px"
+      destroy-on-close
+    >
+      <el-table v-loading="deviceDialog.loading" :data="deviceDialog.list" border stripe>
+        <el-table-column label="状态" width="80" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.isOnline ? 'success' : 'info'" size="small">
+              {{ row.isOnline ? "在线" : "离线" }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="终端" width="90">
+          <template #default="{ row }">{{ deviceTypeLabel(row.deviceType) }}</template>
+        </el-table-column>
+        <el-table-column prop="deviceName" label="设备名称" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="deviceModel" label="设备型号" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="deviceOs" label="系统" width="100" show-overflow-tooltip />
+        <el-table-column prop="deviceOsVersion" label="系统版本" width="120" show-overflow-tooltip />
+        <el-table-column prop="lastLoginIp" label="登录 IP" width="140" show-overflow-tooltip />
+        <el-table-column prop="lastLoginTime" label="最近登录" width="170" show-overflow-tooltip />
+      </el-table>
+      <template #footer>
+        <el-button @click="deviceDialog.visible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script lang="ts">
-import type { IOnlineStats, IOnlineUserItem } from "@/types/api/monitor"
+import type { IOnlineStats, IOnlineUserItem, IUserOnlineDeviceItem } from "@/types/api/monitor"
 import { ElMessage } from "element-plus"
-import { getOnlineStatsApi, getOnlineUserListApi } from "@/api/monitor"
+import { getOnlineStatsApi, getOnlineUserListApi, getUserOnlineDevicesApi } from "@/api/monitor"
 
 export default defineComponent({
   setup() {
@@ -96,6 +130,12 @@ export default defineComponent({
     })
     const searchForm = reactive({ keyword: "" })
     const pagination = reactive({ page: 1, pageSize: 20, total: 0 })
+    const deviceDialog = reactive({
+      visible: false,
+      loading: false,
+      title: "登录设备",
+      list: [] as IUserOnlineDeviceItem[]
+    })
 
     const slotLabel = (slot: string) => {
       if (slot === "mobile") return "移动端"
@@ -107,6 +147,12 @@ export default defineComponent({
       if (slot === "mobile") return "success"
       if (slot === "desktop") return "primary"
       return "info"
+    }
+
+    const deviceTypeLabel = (deviceType: string) => {
+      if (deviceType === "mobile") return "移动端"
+      if (deviceType === "desktop") return "PC 端"
+      return deviceType || "-"
     }
 
     const formatInstances = (slots: IOnlineUserItem["slots"]) => {
@@ -149,9 +195,7 @@ export default defineComponent({
     const handleReset = () => {
       searchForm.keyword = ""
       pagination.page = 1
-      userList.value = []
-      pagination.total = 0
-      stats.value = { userCount: 0, desktopCount: 0, mobileCount: 0 }
+      fetchData()
     }
 
     const onPageChange = (page: number) => {
@@ -165,9 +209,27 @@ export default defineComponent({
       fetchList()
     }
 
+    const openDeviceDetail = async (row: IOnlineUserItem) => {
+      deviceDialog.visible = true
+      deviceDialog.title = `登录设备 - ${row.nickName || row.userId}`
+      deviceDialog.list = []
+      deviceDialog.loading = true
+      const res = await getUserOnlineDevicesApi(row.userId)
+      deviceDialog.loading = false
+      if (res.code !== 0) {
+        ElMessage.error(res.msg || "加载设备列表失败")
+        return
+      }
+      deviceDialog.list = res.result?.list || []
+    }
+
     const goUserProfile = (userId: string) => {
       router.push(`/user/profile/${userId}`)
     }
+
+    onMounted(() => {
+      fetchData()
+    })
 
     return {
       loading,
@@ -175,13 +237,16 @@ export default defineComponent({
       stats,
       searchForm,
       pagination,
+      deviceDialog,
       slotLabel,
       slotTagType,
+      deviceTypeLabel,
       formatInstances,
       handleSearch,
       handleReset,
       onPageChange,
       onSizeChange,
+      openDeviceDetail,
       goUserProfile
     }
   }
@@ -228,8 +293,14 @@ export default defineComponent({
     color: var(--beaver-text-secondary, #636e72);
   }
 
+  &__slot-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
   &__slot-tag {
-    margin-right: 6px;
+    margin-right: 0;
   }
 
   &__pagination {

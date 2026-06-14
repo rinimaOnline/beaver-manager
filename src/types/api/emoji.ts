@@ -1,8 +1,7 @@
 // 表情信息
 export interface IEmojiInfo {
-  id: string
-  fileName: string
-  fileKey?: string
+  emojiId: string
+  fileUrl?: string
   title: string
   authorId: string
   createTime: string
@@ -52,7 +51,7 @@ export interface IGetEmojiListRes {
 
 // 创建表情
 export interface ICreateEmojiReq {
-  fileKey: string
+  fileUrl: string
   title: string
   emojiInfo: {
     width: number
@@ -66,8 +65,8 @@ export interface ICreateEmojiRes {
 
 // 更新表情
 export interface IUpdateEmojiReq {
-  id: string
-  fileName?: string
+  emojiId: string
+  fileUrl?: string
   title?: string
 }
 
@@ -119,8 +118,12 @@ export interface IGetEmojiPackageEmojisRes {
 // 向表情包集合中添加表情图片
 export interface IAddEmojiToPackageReq {
   packageId: string
-  fileId: string
+  fileUrl: string
   title: string
+  emojiInfo: {
+    width: number
+    height: number
+  }
   authorId: string
 }
 

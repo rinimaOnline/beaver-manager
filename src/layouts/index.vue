@@ -47,19 +47,14 @@ export default defineComponent({
 
 .sidebar-container {
   width: 210px;
-  height: 100%;
-  position: fixed;
-  left: 0;
-  top: 0;
   background-color: #304156;
-  overflow: auto;
 }
 
 .main-container {
   flex: 1;
-  margin-left: 210px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .navbar {

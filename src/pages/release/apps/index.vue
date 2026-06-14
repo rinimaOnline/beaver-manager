@@ -127,7 +127,7 @@
         <el-form-item label="版本号" prop="version">
           <el-input v-model="versionForm.version" placeholder="如：1.0.0" />
         </el-form-item>
-        <el-form-item label="安装包" prop="fileKey">
+        <el-form-item label="安装包" prop="fileUrl">
           <el-upload action="#" :auto-upload="false" :limit="1" :on-change="handleFileChange">
             <el-button type="primary">选择文件</el-button>
           </el-upload>
@@ -387,7 +387,7 @@ export default defineComponent({
     const handleFileChange = async (file: { raw?: File }) => {
       if (!file.raw) return
       const result = await uploadFile(file.raw)
-      versionForm.value.fileUrl = result.fileUrl || result.fileKey
+      versionForm.value.fileUrl = result.fileUrl
       ElMessage.success('文件上传成功')
     }
 

@@ -27,3 +27,19 @@ export interface IGetOnlineUserListRes {
   list: IOnlineUserItem[]
   total: number
 }
+
+export interface IUserOnlineDeviceItem {
+  deviceId: string
+  deviceType: string
+  deviceName: string
+  deviceOs: string
+  deviceModel: string
+  deviceOsVersion: string
+  lastLoginTime: string
+  lastLoginIp: string
+  isOnline: boolean
+}
+
+export interface IGetUserOnlineDevicesRes {
+  list: IUserOnlineDeviceItem[]
+}

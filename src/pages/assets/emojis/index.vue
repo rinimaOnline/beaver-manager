@@ -51,12 +51,12 @@
       <!-- 序号 -->
         <el-table-column prop="emojiId" label="表情id" width="200" />
         <el-table-column prop="title" label="表情名称" min-width="150" />
-        <el-table-column prop="fileKey" label="文件预览" width="120">
+        <el-table-column prop="fileUrl" label="文件预览" width="120">
           <template #default="{ row }">
             <el-image
-              v-if="row.fileKey"
-              :src="row.fileKey"
-              :preview-src-list="row.fileKey ? [row.fileKey] : []"
+              v-if="row.fileUrl"
+              :src="row.fileUrl"
+              :preview-src-list="row.fileUrl ? [row.fileUrl] : []"
               style="width: 40px; height: 40px"
               fit="cover"
             />
@@ -98,7 +98,7 @@
         <el-form-item label="表情名称" prop="title">
           <el-input v-model="form.title" placeholder="请输入表情名称" />
         </el-form-item>
-        <el-form-item label="表情文件" prop="fileId">
+        <el-form-item label="表情文件" prop="fileUrl">
           <input
             ref="fileInput"
             type="file"
@@ -176,9 +176,9 @@ export default defineComponent({
 
     // 创建/编辑表单
     const form = reactive({
+      emojiId: "",
       title: "",
-      fileId: "",
-      fileName: "",
+      fileUrl: "",
       emojiInfo: { width: 0, height: 0 },
       authorId: ""
     })
@@ -186,7 +186,7 @@ export default defineComponent({
     // 表单验证规则
     const formRules = {
       title: [{ required: true, message: "请输入表情名称", trigger: "blur" }],
-      fileId: [{ required: true, message: "请选择表情文件", trigger: "change" }]
+      fileUrl: [{ required: true, message: "请选择表情文件", trigger: "change" }]
     }
 
     const fetchEmojiList = async () => {
@@ -256,9 +256,12 @@ export default defineComponent({
       const result = await uploadFile(file)
       uploading.value = false
       selectedFile.value = file
-      form.fileId = result.fileKey
-      form.emojiInfo = result.style
-      previewUrl.value = URL.createObjectURL(file)
+      form.fileUrl = result.fileUrl
+      form.emojiInfo = {
+        width: result.style.width || 0,
+        height: result.style.height || 0,
+      }
+      previewUrl.value = result.fileUrl
       ElMessage.success("文件上传成功")
     }
 
@@ -267,7 +270,7 @@ export default defineComponent({
     // 删除文件
     const removeFile = () => {
       selectedFile.value = null
-      form.fileId = ''
+      form.fileUrl = ''
       previewUrl.value = ''
       if (fileInput.value) {
         fileInput.value.value = ''
@@ -277,7 +280,7 @@ export default defineComponent({
     // 新增表情
     const handleCreate = () => {
       isEdit.value = false
-      Object.assign(form, { title: "", fileId: "", authorId: "" })
+      Object.assign(form, { title: "", fileUrl: "", authorId: "" })
       selectedFile.value = null
       previewUrl.value = ''
       formDialogVisible.value = true
@@ -287,13 +290,13 @@ export default defineComponent({
     const handleEdit = (row) => {
       isEdit.value = true
       Object.assign(form, {
-        id: row.id,
+        emojiId: row.emojiId,
         title: row.title,
-        fileName: row.fileName,
+        fileUrl: row.fileUrl || "",
         authorId: row.authorId
       })
       selectedFile.value = null
-      previewUrl.value = row.fileKey || ''
+      previewUrl.value = row.fileUrl || ''
       formDialogVisible.value = true
     }
 
@@ -304,12 +307,12 @@ export default defineComponent({
       uploading.value = true
 
       if (isEdit.value) {
-        let fileId = form.fileId
-        if (selectedFile.value && !form.fileId) {
+        let fileUrl = form.fileUrl
+        if (selectedFile.value) {
           const result = await uploadFile(selectedFile.value)
-          fileId = result.fileKey
+          fileUrl = result.fileUrl
         }
-        const res = await updateEmojiApi(form.id, { title: form.title, fileId })
+        const res = await updateEmojiApi(form.emojiId, { title: form.title, fileUrl })
         uploading.value = false
         if (res.code === 0) {
           ElMessage.success("更新成功")
@@ -319,14 +322,14 @@ export default defineComponent({
           ElMessage.error(res.msg || "更新失败")
         }
       } else {
-        if (!form.fileId) {
+        if (!form.fileUrl) {
           uploading.value = false
           ElMessage.error("请选择表情文件")
           return
         }
         const res = await createEmojiApi({
           title: form.title,
-          fileKey: form.fileId,
+          fileUrl: form.fileUrl,
           emojiInfo: form.emojiInfo
         })
         uploading.value = false
@@ -342,7 +345,7 @@ export default defineComponent({
 
     const handleDelete = async (row: IEmojiInfo) => {
       await ElMessageBox.confirm(`确定删除表情「${row.title}」？`, "确认删除", { type: "warning" })
-      const res = await deleteEmojiApi(row.id)
+      const res = await deleteEmojiApi(row.emojiId)
       if (res.code === 0) {
         ElMessage.success("删除成功")
         fetchEmojiList()

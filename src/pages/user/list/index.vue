@@ -52,6 +52,18 @@
               <el-option label="禁用" :value="2" />
             </el-select>
           </el-form-item>
+          <el-form-item label="类型">
+            <el-select
+              v-model="searchForm.userType"
+              placeholder="请选择类型"
+              clearable
+              style="width: 140px"
+            >
+              <el-option label="普通用户" :value="1" />
+              <el-option label="推送机器人" :value="2" />
+              <el-option label="智能机器人" :value="3" />
+            </el-select>
+          </el-form-item>
           <el-form-item label="来源">
             <el-select
               v-model="searchForm.source"
@@ -129,6 +141,13 @@
           </el-table-column>
           <el-table-column prop="email" label="邮箱" width="200" show-overflow-tooltip />
 
+          <el-table-column prop="userType" label="类型" width="120" align="center">
+            <template #default="{ row }">
+              <el-tag :type="getUserTypeTag(row.userType)" size="small" plain>
+                {{ getUserTypeText(row.userType) }}
+              </el-tag>
+            </template>
+          </el-table-column>
           <el-table-column prop="status" label="状态" width="100" align="center">
             <template #default="{ row }">
               <el-tag :type="getStatusType(row.status)" size="small">
@@ -340,7 +359,8 @@ export default defineComponent({
       keyword: "",
       email: "",
       status: undefined as number | undefined,
-      source: undefined as number | undefined
+      source: undefined as number | undefined,
+      userType: undefined as number | undefined
     })
 
     // 分页数据
@@ -420,7 +440,8 @@ export default defineComponent({
         keyword: searchForm.keyword || undefined,
         email: searchForm.email || undefined,
         status: searchForm.status,
-        source: searchForm.source
+        source: searchForm.source,
+        userType: searchForm.userType
       })
       loading.value = false
       if (response.code === 0) {
@@ -458,6 +479,24 @@ export default defineComponent({
       return typeMap[source] || "info"
     }
 
+    const getUserTypeText = (userType: number) => {
+      const typeMap: Record<number, string> = {
+        1: "普通用户",
+        2: "推送机器人",
+        3: "智能机器人"
+      }
+      return typeMap[userType] || "未知"
+    }
+
+    const getUserTypeTag = (userType: number) => {
+      const typeMap: Record<number, "success" | "warning" | "info" | "danger" | undefined> = {
+        1: "info",
+        2: "warning",
+        3: "success"
+      }
+      return typeMap[userType] || "info"
+    }
+
     // 事件处理
     const handleSearch = () => {
       pagination.page = 1
@@ -469,7 +508,8 @@ export default defineComponent({
         keyword: "",
         email: "",
         status: undefined,
-        source: undefined
+        source: undefined,
+        userType: undefined
       })
       handleSearch()
     }
@@ -670,6 +710,8 @@ export default defineComponent({
       getStatusText,
       getSourceText,
       getSourceType,
+      getUserTypeText,
+      getUserTypeTag,
       handleSearch,
       handleReset,
       filterBanned,
