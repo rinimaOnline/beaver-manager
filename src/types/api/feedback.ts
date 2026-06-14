@@ -37,12 +37,11 @@ export interface IGetFeedbackDetailReq {
 // 获取反馈详情响应
 export interface IGetFeedbackDetailRes extends IFeedbackInfo {}
 
-// 处理反馈请求参数
+// 处理反馈请求参数（处理人由后端从 Beaver-User-Id 请求头写入）
 export interface IHandleFeedbackReq {
   id: number
   status: number
   handleResult: string
-  handlerId: number
 }
 
 // 处理反馈响应

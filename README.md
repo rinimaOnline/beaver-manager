@@ -1,12 +1,15 @@
 # 🦫 Beaver Manager - 海狸IM后台管理系统
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-2.0.1-blue.svg)](VERSION)
 [![Vue](https://img.shields.io/badge/Vue-3.x-brightgreen.svg)](https://vuejs.org/)
 [![Element Plus](https://img.shields.io/badge/Element%20Plus-2.x-blue.svg)](https://element-plus.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
 [![QQ群](https://img.shields.io/badge/QQ群-1013328597-blue.svg)](https://qm.qq.com/q/82rbf7QBzO)
 
 > 🚀 **现代化后台管理系统** - 基于 Vue 3 + Element Plus + TypeScript 构建，为海狸IM提供全面的管理和监控功能
+
+**当前版本：[2.0.1](VERSION)**（以仓库根目录 [`VERSION`](VERSION) 文件为准，与 `package.json` 同步）
 
 [English](README_EN.md) | [中文](README.md)
 
@@ -20,6 +23,7 @@
 - 😀 **表情包管理** - 表情包审核、分类管理、版本控制
 - 🔄 **版本管理** - 应用更新发布、版本控制、灰度发布
 - 📊 **数据统计** - 用户活跃度分析、消息量统计、系统监控
+- 📡 **连接监控** - 在线用户汇总、登录设备详情
 - 🔧 **系统设置** - 参数配置、功能开关、权限角色管理
 - 🎨 **现代化UI** - 基于 Element Plus 的美观界面设计
 
@@ -90,6 +94,8 @@ npm run build_test
 | **beaver-mobile** | [GitHub](https://github.com/wsrh8888/beaver-mobile) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-mobile) | 移动端应用 |
 | **beaver-desktop** | [GitHub](https://github.com/wsrh8888/beaver-desktop) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-desktop) | 桌面端应用 |
 | **beaver-manager** | [GitHub](https://github.com/wsrh8888/beaver-manager) | 后台管理系统 |
+| **beaver-open** | [GitHub](https://github.com/wsrh8888/beaver-open) | 开放平台门户 |
+| **beaver-oauth** | [GitHub](https://github.com/wsrh8888/beaver-oauth) | OAuth 授权登录页 |
 
 ## 📚 文档与帮助
 

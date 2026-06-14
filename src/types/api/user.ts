@@ -4,9 +4,10 @@ export interface IUserInfo {
   nickName: string
   email: string
   abstract: string
-  fileName: string
+  avatar: string
   status: number
   source: number
+  userType: number
   lastLoginIp: string
   createTime: string
   updateTime: string
@@ -17,8 +18,10 @@ export interface IGetUserListReq {
   page?: number
   pageSize?: number
   email?: string
+  keyword?: string
   status?: number
   source?: number
+  userType?: number
 }
 
 // 获取用户列表响应
@@ -110,4 +113,11 @@ export enum UserSource {
   REGISTER = 1, // 注册
   ADMIN = 2, // 管理员创建
   IMPORT = 3 // 导入
+}
+
+// 用户类型枚举
+export enum UserType {
+  NORMAL = 1, // 普通用户
+  BOT = 2, // 推送机器人
+  ROBOT = 3 // 智能机器人
 }

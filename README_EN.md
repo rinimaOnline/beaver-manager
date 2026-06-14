@@ -1,12 +1,15 @@
 # 🦫 Beaver Manager - Beaver IM Admin System
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-2.0.1-blue.svg)](VERSION)
 [![Vue](https://img.shields.io/badge/Vue-3.x-brightgreen.svg)](https://vuejs.org/)
 [![Element Plus](https://img.shields.io/badge/Element%20Plus-2.x-blue.svg)](https://element-plus.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
 [![QQ Group](https://img.shields.io/badge/QQ%20Group-1013328597-blue.svg)](https://qm.qq.com/q/82rbf7QBzO)
 
 > 🚀 **Modern Admin Management System** - Built with Vue 3 + Element Plus + TypeScript, providing comprehensive management and monitoring for Beaver IM
+
+**Current Version: [2.0.1](VERSION)** (see [`VERSION`](VERSION) at repository root, synced with `package.json`)
 
 [中文](README.md) | [English](README_EN.md)
 
@@ -20,6 +23,7 @@
 - 😀 **Emoji Management** - Emoji package review, category management, version control
 - 🔄 **Version Management** - App update release, version control, gray release
 - 📊 **Data Statistics** - User activity analysis, message statistics, system monitoring
+- 📡 **Connection Monitor** - Online user summary and login device details
 - 🔧 **System Settings** - Parameter configuration, feature toggles, role permissions management
 - 🎨 **Modern UI** - Beautiful interface design based on Element Plus
 
@@ -90,6 +94,8 @@ For detailed configuration, please refer to [Environment Configuration Documenta
 | **beaver-mobile** | [GitHub](https://github.com/wsrh8888/beaver-mobile) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-mobile) | Mobile Application |
 | **beaver-desktop** | [GitHub](https://github.com/wsrh8888/beaver-desktop) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-desktop) | Desktop Application |
 | **beaver-manager** | [GitHub](https://github.com/wsrh8888/beaver-manager) | Admin Management System |
+| **beaver-open** | [GitHub](https://github.com/wsrh8888/beaver-open) | Open Platform Portal |
+| **beaver-oauth** | [GitHub](https://github.com/wsrh8888/beaver-oauth) | OAuth Login Pages |
 
 ## 📚 Documentation & Help
 

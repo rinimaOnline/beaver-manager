@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# vue-tsc 误生成的编译产物（源码只用 .ts / .vue）
+src/**/*.js
+src/**/*.vue.js
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

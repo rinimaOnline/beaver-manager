@@ -6,6 +6,8 @@ import type {
   IDeleteFriendRes,
   IDeleteFriendVerifyReq,
   IDeleteFriendVerifyRes,
+  IGetFriendBlockListReq,
+  IGetFriendBlockListRes,
   IGetFriendDetailRes,
   IGetFriendListReq,
   IGetFriendListRes,
@@ -14,7 +16,9 @@ import type {
   IGetFriendVerifyListReq,
   IGetFriendVerifyListRes,
   IRestoreFriendReq,
-  IRestoreFriendRes
+  IRestoreFriendRes,
+  IUnblockFriendUsersReq,
+  IUnblockFriendUsersRes
 } from "@/types/api/friend"
 import config from "@/config/env"
 import { ajax } from "@/utils/request"
@@ -94,6 +98,24 @@ export function batchDeleteFriendVerifyApi(data: IBatchDeleteFriendVerifyReq) {
   return ajax<IBatchDeleteFriendVerifyRes>({
     method: "DELETE",
     url: `${config.baseAPI}/admin/friend/verifybatch`,
+    data
+  })
+}
+
+// 获取好友黑名单列表
+export function getFriendBlockListApi(params: IGetFriendBlockListReq) {
+  return ajax<IGetFriendBlockListRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/friend/blocklist`,
+    params
+  })
+}
+
+// 解除黑名单
+export function unblockFriendUsersApi(data: IUnblockFriendUsersReq) {
+  return ajax<IUnblockFriendUsersRes>({
+    method: "DELETE",
+    url: `${config.baseAPI}/admin/friend/blockbatch`,
     data
   })
 }

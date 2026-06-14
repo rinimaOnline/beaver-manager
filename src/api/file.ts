@@ -46,11 +46,6 @@ export function batchDeleteFileApi(data: IBatchDeleteFileReq) {
   })
 }
 
-// 预览文件
-export function previewOnlineFileApi(fileId: string) {
-  return `${config.apiApi}/api/file/preview/${fileId}`
-}
-
 // Token缓存
 let tokenCache: { token: string; expires: number } | null = null
 
@@ -110,7 +105,7 @@ export type UploadFileType = 'image' | 'video' | 'audio' | 'file'
 // 上传结果的基础结构
 export interface UploadResult {
   fileId?: string
-  fileKey?: string
+  fileUrl: string
   type: UploadFileType
   originalName?: string
   size?: number
@@ -126,14 +121,14 @@ export interface UploadResult {
 
 // 文件上传API返回结果
 export interface IFileUploadResult {
-  fileKey: string
+  fileUrl: string
   originalName: string
   fileInfo: any
 }
 
 // 文件上传API响应（result部分）
 export interface IFileRes {
-  fileKey: string
+  fileUrl: string
   originalName: string
   filePath?: string
   md5?: string
@@ -186,21 +181,14 @@ const getFileStyle = async (file: File, type: UploadFileType): Promise<UploadSty
 /**
  * @description: 文件上传总入口
  */
-export const uploadFileApi = async (file: File, fileKey?: string): Promise<IFileUploadResult> => {
-
-    //  if(source === 'local') {
-      // return await uploadToLocalApi(file, fileKey)
-      // } else if(source === 'qiniu') {
-      return await uploadQiniuApi(file, fileKey);
-      // }
-      //  return Promise.reject(new Error('Invalid source'));
-
+export const uploadFileApi = async (file: File): Promise<IFileUploadResult> => {
+  return await uploadToLocalApi(file)
 }
 
 /**
  * @description: 通用文件上传函数（通过后端API）
  */
-export const uploadFileApiWithTarget = async (file: File, fileKey?: string, target: 'local' | 'qiniu' = 'local'): Promise<IFileUploadResult> => {
+export const uploadFileApiWithTarget = async (file: File, target: 'local' | 'qiniu' = 'local'): Promise<IFileUploadResult> => {
   // 根据目标选择URL
   const baseEndpoint = target === 'qiniu' ? 'uploadQiniu' : 'uploadLocal'
   const uploadUrl = `${config.baseAPI}/admin/file/${baseEndpoint}`
@@ -229,7 +217,7 @@ export const uploadFileApiWithTarget = async (file: File, fileKey?: string, targ
   }
 
   return {
-    fileKey: result.result.fileKey,
+    fileUrl: result.result.fileUrl,
     originalName: result.result.originalName,
     fileInfo,
   }
@@ -238,12 +226,12 @@ export const uploadFileApiWithTarget = async (file: File, fileKey?: string, targ
 /**
  * @description: 上传文件到本地（通过后端API）
  */
-export const uploadToLocalApi = (file: File, fileKey?: string) => uploadFileApiWithTarget(file, fileKey, 'local')
+export const uploadToLocalApi = (file: File) => uploadFileApiWithTarget(file, 'local')
 
 /**
  * @description: 上传文件到七牛云（通过后端API）
  */
-export const uploadQiniuApi = (file: File, fileKey?: string) => uploadFileApiWithTarget(file, fileKey, 'qiniu')
+export const uploadQiniuApi = (file: File) => uploadFileApiWithTarget(file, 'qiniu')
 
 // =================== 文件上传工具函数（直接上传） ===================
 
@@ -252,7 +240,6 @@ export const uploadQiniuApi = (file: File, fileKey?: string) => uploadFileApiWit
  * @param file 要上传的文件
  * @param path 上传路径（仅七牛云使用）
  * @param target 上传目标：'local' | 'qiniu'，默认 'qiniu'
- * @param fileKey 文件key（可选，仅本地使用）
  * @param argument 自定义参数（仅七牛云使用）
  * @returns Promise<UploadResult>
  */
@@ -260,7 +247,6 @@ export const uploadFileWithTarget = async (
   file: File,
   path: string,
   target: 'local' | 'qiniu' = 'qiniu',
-  fileKey?: string,
   argument?: any
 ): Promise<UploadResult> => {
   try {
@@ -269,7 +255,7 @@ export const uploadFileWithTarget = async (
     const fileType: UploadFileType = detectedType === 'other' ? 'file' : detectedType as UploadFileType
 
     let uploadResult: {
-      fileKey?: string
+      fileUrl: string
       filePath: string
       md5: string
       originalName?: string
@@ -282,13 +268,13 @@ export const uploadFileWithTarget = async (
 
     if (target === 'local') {
       // 本地上传（通过后端API）
-      const result = await uploadToLocalApi(file, fileKey)
+      const result = await uploadToLocalApi(file)
       const md5 = await getMd5(file)
       const ext = file.name.substring(file.name.lastIndexOf('.') + 1)
       
       uploadResult = {
-        fileKey: result.fileKey,
-        filePath: result.fileInfo?.filePath || result.fileKey || '',
+        fileUrl: result.fileUrl,
+        filePath: result.fileInfo?.filePath || result.fileUrl,
         md5: md5,
         originalName: result.originalName,
         size: file.size,
@@ -307,6 +293,7 @@ export const uploadFileWithTarget = async (
       })
 
       uploadResult = {
+        fileUrl: uploadInfo.filePath,
         filePath: uploadInfo.filePath,
         md5: uploadInfo.md5,
         size: uploadInfo.size,
@@ -327,7 +314,7 @@ export const uploadFileWithTarget = async (
       md5: uploadResult.md5,
       filePath: uploadResult.filePath,
       ext: uploadResult.ext || file.name.substring(file.name.lastIndexOf('.') + 1),
-      fileKey: uploadResult.fileKey,
+      fileUrl: uploadResult.fileUrl,
       width: style.width || uploadResult.width,
       height: style.height || uploadResult.height,
       duration: style.duration || uploadResult.duration || 0,

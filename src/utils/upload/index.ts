@@ -6,7 +6,7 @@ export type UploadFileType = 'image' | 'video' | 'audio' | 'file'
 
 // 上传结果的基础结构
 export interface UploadResult {
-  fileKey: string
+  fileUrl: string
   style: UploadStyle
   type: UploadFileType
   originalName?: string
@@ -118,13 +118,13 @@ export const uploadFile = async (file: File): Promise<UploadResult> => {
   const fileType: UploadFileType = detectedType === 'other' ? 'file' : detectedType as UploadFileType
 
   // 先上传文件
-  const uploadResult = await uploadFileApi(file, file.name)
+  const uploadResult = await uploadFileApi(file)
 
   // 根据类型获取样式信息
   const style = await getFileStyle(file, fileType)
 
   return {
-    fileKey: uploadResult.fileKey,
+    fileUrl: uploadResult.fileUrl,
     style,
     type: fileType,
     originalName: uploadResult.originalName,

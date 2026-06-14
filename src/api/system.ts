@@ -1,14 +1,26 @@
 import type {
+  ICreateAdminUserReq,
+  ICreateAdminUserRes,
   ICreateAuthorityReq,
   ICreateAuthorityRes,
+  IDeleteAuthorityReq,
+  IDeleteAuthorityRes,
   ICreateMenuReq,
   ICreateMenuRes,
   IDeleteMenuReq,
   IDeleteMenuRes,
+  IGetAdminUserListReq,
+  IGetAdminUserListRes,
+  IGetAuthorityListRes,
+  IGetAuthorityMenusRes,
   IGetMenuListReq,
   IGetMenuListRes,
+  IUpdateAdminUserReq,
+  IUpdateAdminUserRes,
   IUpdateAuthorityMenuReq,
   IUpdateAuthorityMenuRes,
+  IUpdateAuthorityReq,
+  IUpdateAuthorityRes,
   IUpdateMenuReq,
   IUpdateMenuRes
 } from "@/types/api/system"
@@ -69,6 +81,60 @@ export function updateAuthorityMenuApi(data: IUpdateAuthorityMenuReq) {
   return ajax<IUpdateAuthorityMenuRes>({
     method: "PUT",
     url: `${config.baseAPI}/admin/system/updateAuthorityMenu`,
+    data
+  })
+}
+
+export function getAuthorityListApi() {
+  return ajax<IGetAuthorityListRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/system/authorities`
+  })
+}
+
+export function updateAuthorityApi(data: IUpdateAuthorityReq) {
+  return ajax<IUpdateAuthorityRes>({
+    method: "PUT",
+    url: `${config.baseAPI}/admin/system/authority`,
+    data
+  })
+}
+
+export function deleteAuthorityApi(data: IDeleteAuthorityReq) {
+  return ajax<IDeleteAuthorityRes>({
+    method: "DELETE",
+    url: `${config.baseAPI}/admin/system/authority`,
+    data
+  })
+}
+
+export function getAuthorityMenusApi(authorityId: number) {
+  return ajax<IGetAuthorityMenusRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/system/authority/${authorityId}/menus`
+  })
+}
+
+export function getAdminUserListApi(params: IGetAdminUserListReq) {
+  return ajax<IGetAdminUserListRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/system/admins`,
+    params
+  })
+}
+
+export function createAdminUserApi(data: ICreateAdminUserReq) {
+  return ajax<ICreateAdminUserRes>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/system/admins`,
+    data
+  })
+}
+
+export function updateAdminUserApi(userId: string, data: IUpdateAdminUserReq) {
+  return ajax<IUpdateAdminUserRes>({
+    method: "PUT",
+    url: `${config.baseAPI}/admin/system/admins/${userId}`,
     data
   })
 }

@@ -6,7 +6,7 @@ export interface FileInfo {
 
 // 动态信息
 export interface MomentInfo {
-  id: number
+  momentId: string
   userId: string
   content: string
   files: FileInfo[]

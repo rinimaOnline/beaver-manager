@@ -149,6 +149,34 @@ export interface IBatchDeleteFriendVerifyReq {
 // 批量删除好友验证记录响应
 export interface IBatchDeleteFriendVerifyRes {}
 
+// 好友黑名单信息
+export interface IFriendBlockInfo {
+  id: string
+  userId: string
+  userName: string
+  blockedUserId: string
+  blockedUserName: string
+  createTime: string
+}
+
+export interface IGetFriendBlockListReq {
+  page?: number
+  pageSize?: number
+  userId?: string
+  blockedUserId?: string
+}
+
+export interface IGetFriendBlockListRes {
+  list: IFriendBlockInfo[]
+  total: number
+}
+
+export interface IUnblockFriendUsersReq {
+  ids: string[]
+}
+
+export interface IUnblockFriendUsersRes {}
+
 // 好友验证状态枚举
 export enum FriendVerifyStatus {
   PENDING = 0, // 未处理

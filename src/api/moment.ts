@@ -1,15 +1,11 @@
 import type {
-  DeleteMomentCommentRes,
-  DeleteMomentRes,
   GetMomentCommentListReq,
   GetMomentCommentListRes,
   GetMomentDetailRes,
   GetMomentListReq,
   GetMomentListRes,
-  GetMomentReportListReq,
-  GetMomentReportListRes,
-  HandleMomentReportReq,
-  HandleMomentReportRes
+  DeleteMomentCommentRes,
+  DeleteMomentRes
 } from "@/types/api/moment"
 import config from "@/config/env"
 import { ajax } from "@/utils/request"
@@ -24,18 +20,18 @@ export function getMomentListApi(params: GetMomentListReq) {
 }
 
 // 获取动态详情
-export function getMomentDetailApi(id: number) {
+export function getMomentDetailApi(momentId: string) {
   return ajax<GetMomentDetailRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/moment/${id}`
+    url: `${config.baseAPI}/admin/moment/${momentId}`
   })
 }
 
 // 删除动态
-export function deleteMomentApi(id: number) {
+export function deleteMomentApi(momentId: string) {
   return ajax<DeleteMomentRes>({
     method: "DELETE",
-    url: `${config.baseAPI}/admin/moment/${id}`
+    url: `${config.baseAPI}/admin/moment/${momentId}`
   })
 }
 
@@ -53,23 +49,5 @@ export function deleteMomentCommentApi(id: number) {
   return ajax<DeleteMomentCommentRes>({
     method: "DELETE",
     url: `${config.baseAPI}/admin/moment/comment/${id}`
-  })
-}
-
-// 获取动态举报列表
-export function getMomentReportListApi(params: GetMomentReportListReq) {
-  return ajax<GetMomentReportListRes>({
-    method: "GET",
-    url: `${config.baseAPI}/admin/moment/reports`,
-    params
-  })
-}
-
-// 处理动态举报
-export function handleMomentReportApi(id: number, data: Omit<HandleMomentReportReq, "id">) {
-  return ajax<HandleMomentReportRes>({
-    method: "PUT",
-    url: `${config.baseAPI}/admin/moment/report/${id}`,
-    data
   })
 }

@@ -7,8 +7,6 @@
     "dev": "vite serve --mode=dev",
     "serve_prod": "vite serve --mode=prod",
     "serve_test": "vite serve --mode=test",
-    "build_prod": "vue-tsc -b && vite build --mode=prod",
-    "build_test": "vue-tsc -b && vite build --mode=test",
     "lint": "eslint . --fix",
     "prepare": "husky"
   },

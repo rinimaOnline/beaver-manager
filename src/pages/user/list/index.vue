@@ -23,18 +23,23 @@
       <!-- 搜索筛选区域 -->
       <div class="search-section">
         <el-form :model="searchForm" inline class="search-form">
+          <el-form-item label="关键词">
+            <el-input
+              v-model="searchForm.keyword"
+              placeholder="昵称/邮箱/手机号"
+              clearable
+              style="width: 200px"
+              @keyup.enter="handleSearch"
+            />
+          </el-form-item>
           <el-form-item label="邮箱">
             <el-input
               v-model="searchForm.email"
-              placeholder="搜索邮箱"
+              placeholder="精确搜邮箱"
               clearable
-              style="width: 240px"
+              style="width: 200px"
               @keyup.enter="handleSearch"
-            >
-              <template #prefix>
-                <el-icon><Search /></el-icon>
-              </template>
-            </el-input>
+            />
           </el-form-item>
           <el-form-item label="状态">
             <el-select
@@ -45,6 +50,18 @@
             >
               <el-option label="正常" :value="1" />
               <el-option label="禁用" :value="2" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="类型">
+            <el-select
+              v-model="searchForm.userType"
+              placeholder="请选择类型"
+              clearable
+              style="width: 140px"
+            >
+              <el-option label="普通用户" :value="1" />
+              <el-option label="推送机器人" :value="2" />
+              <el-option label="智能机器人" :value="3" />
             </el-select>
           </el-form-item>
           <el-form-item label="来源">
@@ -68,6 +85,7 @@
               <el-icon><RefreshLeft /></el-icon>
               重置
             </el-button>
+            <el-button link type="primary" @click="filterBanned">已禁用用户</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -115,7 +133,7 @@
           <el-table-column prop="avatar" label="头像" width="80" align="center">
             <template #default="{ row }">
               <el-avatar 
-                :src="row.avatar ? previewOnlineFileApi(row.avatar) : ''" 
+                :src="row.avatar || ''" 
                 :size="40"
               >
               </el-avatar>
@@ -123,6 +141,13 @@
           </el-table-column>
           <el-table-column prop="email" label="邮箱" width="200" show-overflow-tooltip />
 
+          <el-table-column prop="userType" label="类型" width="120" align="center">
+            <template #default="{ row }">
+              <el-tag :type="getUserTypeTag(row.userType)" size="small" plain>
+                {{ getUserTypeText(row.userType) }}
+              </el-tag>
+            </template>
+          </el-table-column>
           <el-table-column prop="status" label="状态" width="100" align="center">
             <template #default="{ row }">
               <el-tag :type="getStatusType(row.status)" size="small">
@@ -138,8 +163,11 @@
             </template>
           </el-table-column>
           <el-table-column prop="createTime" label="创建时间" width="160" />
-          <el-table-column label="操作" width="280" fixed="right" align="center">
+          <el-table-column label="操作" width="360" fixed="right" align="center">
             <template #default="{ row }">
+              <el-button size="small" type="success" @click="openUserProfile(row.id)">
+                用户360
+              </el-button>
               <el-button size="small" type="primary" @click="handleEdit(row)">
                 <el-icon><Edit /></el-icon>
                 编辑
@@ -317,11 +345,10 @@ import {
   resetUserPasswordApi,
   updateUserApi
 } from "@/api/user"
-import { previewOnlineFileApi } from "@/api/file"
-
 export default defineComponent({
   setup() {
-    // 响应式数据
+    const router = useRouter()
+    const route = useRoute()
     const loading = ref(false)
     const submitting = ref(false)
     const userList = ref<IUserInfo[]>([])
@@ -329,9 +356,11 @@ export default defineComponent({
 
     // 搜索表单
     const searchForm = reactive({
+      keyword: "",
       email: "",
       status: undefined as number | undefined,
-      source: undefined as number | undefined
+      source: undefined as number | undefined,
+      userType: undefined as number | undefined
     })
 
     // 分页数据
@@ -404,26 +433,22 @@ export default defineComponent({
 
     // 获取用户列表
     const fetchUserList = async () => {
-      try {
-        loading.value = true
-        const response: IApiResponse<any> = await getUserListApi({
-          page: pagination.page,
-          pageSize: pagination.pageSize,
-          email: searchForm.email || undefined,
-          status: searchForm.status,
-          source: searchForm.source
-        })
-
-        if (response.code === 0) {
-          userList.value = response.result.list
-          pagination.total = response.result.total
-        } else {
-          ElMessage.error(response.msg || "获取用户列表失败")
-        }
-      } catch (error) {
-        ElMessage.error((error as any)?.message || "获取用户列表失败")
-      } finally {
-        loading.value = false
+      loading.value = true
+      const response = await getUserListApi({
+        page: pagination.page,
+        pageSize: pagination.pageSize,
+        keyword: searchForm.keyword || undefined,
+        email: searchForm.email || undefined,
+        status: searchForm.status,
+        source: searchForm.source,
+        userType: searchForm.userType
+      })
+      loading.value = false
+      if (response.code === 0) {
+        userList.value = response.result.list || []
+        pagination.total = response.result.total || 0
+      } else {
+        ElMessage.error(response.msg || "获取用户列表失败")
       }
     }
 
@@ -454,6 +479,24 @@ export default defineComponent({
       return typeMap[source] || "info"
     }
 
+    const getUserTypeText = (userType: number) => {
+      const typeMap: Record<number, string> = {
+        1: "普通用户",
+        2: "推送机器人",
+        3: "智能机器人"
+      }
+      return typeMap[userType] || "未知"
+    }
+
+    const getUserTypeTag = (userType: number) => {
+      const typeMap: Record<number, "success" | "warning" | "info" | "danger" | undefined> = {
+        1: "info",
+        2: "warning",
+        3: "success"
+      }
+      return typeMap[userType] || "info"
+    }
+
     // 事件处理
     const handleSearch = () => {
       pagination.page = 1
@@ -462,10 +505,17 @@ export default defineComponent({
 
     const handleReset = () => {
       Object.assign(searchForm, {
+        keyword: "",
         email: "",
         status: undefined,
-        source: undefined
+        source: undefined,
+        userType: undefined
       })
+      handleSearch()
+    }
+
+    const filterBanned = () => {
+      searchForm.status = 2
       handleSearch()
     }
 
@@ -498,24 +548,13 @@ export default defineComponent({
     }
 
     const handleDelete = async (row: IUserInfo) => {
-      try {
-        await ElMessageBox.confirm(`确认删除用户"${row.nickName}"吗？`, "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        })
-
-        const response: IApiResponse = await deleteUserApi(row.id)
-        if (response.code === 0) {
-          ElMessage.success("删除成功")
-          fetchUserList()
-        } else {
-          ElMessage.error(response.msg || "删除失败")
-        }
-      } catch (error) {
-        if (error !== "cancel") {
-          ElMessage.error((error as any)?.message || "删除失败")
-        }
+      await ElMessageBox.confirm(`确认删除用户「${row.nickName}」？`, "删除用户", { type: "warning" })
+      const response = await deleteUserApi(row.id)
+      if (response.code === 0) {
+        ElMessage.success("删除成功")
+        fetchUserList()
+      } else {
+        ElMessage.error(response.msg || "删除失败")
       }
     }
 
@@ -526,27 +565,13 @@ export default defineComponent({
     }
 
     const handleBatchDelete = async () => {
-      try {
-        await ElMessageBox.confirm(`确认删除选中的 ${selectedUserIds.value.length} 个用户吗？`, "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        })
-
-        const response: IApiResponse = await batchDeleteUsersApi({
-          ids: selectedUserIds.value
-        })
-
-        if (response.code === 0) {
-          ElMessage.success("批量删除成功")
-          fetchUserList()
-        } else {
-          ElMessage.error(response.msg || "批量删除失败")
-        }
-      } catch (error) {
-        if (error !== "cancel") {
-          ElMessage.error((error as any)?.message || "批量删除失败")
-        }
+      await ElMessageBox.confirm(`确认删除选中的 ${selectedUserIds.value.length} 个用户？`, "批量删除", { type: "warning" })
+      const response = await batchDeleteUsersApi({ ids: selectedUserIds.value })
+      if (response.code === 0) {
+        ElMessage.success("批量删除成功")
+        fetchUserList()
+      } else {
+        ElMessage.error(response.msg || "批量删除失败")
       }
     }
 
@@ -559,86 +584,54 @@ export default defineComponent({
     }
 
     const handleBatchUpdateStatus = async (status: number, action: string) => {
-      try {
-        await ElMessageBox.confirm(`确认${action}选中的 ${selectedUserIds.value.length} 个用户吗？`, "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        })
-
-        const response: IApiResponse = await batchUpdateUserStatusApi({
-          ids: selectedUserIds.value,
-          status
-        })
-
-        if (response.code === 0) {
-          ElMessage.success(`批量${action}成功`)
-          fetchUserList()
-        } else {
-          ElMessage.error(response.msg || `批量${action}失败`)
-        }
-      } catch (error) {
-        if (error !== "cancel") {
-          ElMessage.error((error as any)?.message || `批量${action}失败`)
-        }
+      await ElMessageBox.confirm(`确认${action}选中的 ${selectedUserIds.value.length} 个用户？`, "批量操作", { type: "warning" })
+      const response = await batchUpdateUserStatusApi({ ids: selectedUserIds.value, status })
+      if (response.code === 0) {
+        ElMessage.success(`批量${action}成功`)
+        fetchUserList()
+      } else {
+        ElMessage.error(response.msg || `批量${action}失败`)
       }
     }
 
     const handleSubmit = async () => {
-      try {
-        const valid = await userFormRef.value?.validate()
-        if (!valid) return
-
-        submitting.value = true
-
-        const formData = {
-          nickName: userForm.nickName,
-          email: userForm.email,
-          abstract: userForm.abstract,
-          status: userForm.status,
-          ...(isEdit.value ? {} : { password: MD5(userForm.password).toString() })
-        }
-
-        const response: IApiResponse = isEdit.value
-          ? await updateUserApi(userForm.id, formData)
-          : await createUserApi({ ...formData, password: formData.password || "" })
-
-        if (response.code === 0) {
-          ElMessage.success(isEdit.value ? "更新成功" : "创建成功")
-          showCreateDialog.value = false
-          fetchUserList()
-        } else {
-          ElMessage.error(response.msg || (isEdit.value ? "更新失败" : "创建失败"))
-        }
-      } catch (error) {
-        ElMessage.error((error as any)?.message || (isEdit.value ? "更新失败" : "创建失败"))
-      } finally {
-        submitting.value = false
+      if (!userFormRef.value) return
+      await userFormRef.value.validate()
+      submitting.value = true
+      const formData = {
+        nickName: userForm.nickName,
+        email: userForm.email,
+        abstract: userForm.abstract,
+        status: userForm.status,
+        ...(isEdit.value ? {} : { password: MD5(userForm.password).toString() })
+      }
+      const response = isEdit.value
+        ? await updateUserApi(userForm.id, formData)
+        : await createUserApi({ ...formData, password: formData.password || "" })
+      submitting.value = false
+      if (response.code === 0) {
+        ElMessage.success(isEdit.value ? "更新成功" : "创建成功")
+        showCreateDialog.value = false
+        fetchUserList()
+      } else {
+        ElMessage.error(response.msg || (isEdit.value ? "更新失败" : "创建失败"))
       }
     }
 
     const handlePasswordSubmit = async () => {
-      try {
-        const valid = await passwordFormRef.value?.validate()
-        if (!valid) return
-
-        submitting.value = true
-
-        const response: IApiResponse = await resetUserPasswordApi({
-          userId: passwordForm.userId,
-          newPassword: MD5(passwordForm.newPassword).toString()
-        })
-
-        if (response.code === 0) {
-          ElMessage.success("密码重置成功")
-          showPasswordDialog.value = false
-        } else {
-          ElMessage.error(response.msg || "密码重置失败")
-        }
-      } catch (error) {
-        ElMessage.error((error as any)?.message || "密码重置失败")
-      } finally {
-        submitting.value = false
+      if (!passwordFormRef.value) return
+      await passwordFormRef.value.validate()
+      submitting.value = true
+      const response = await resetUserPasswordApi({
+        userId: passwordForm.userId,
+        newPassword: MD5(passwordForm.newPassword).toString()
+      })
+      submitting.value = false
+      if (response.code === 0) {
+        ElMessage.success("密码重置成功")
+        showPasswordDialog.value = false
+      } else {
+        ElMessage.error(response.msg || "密码重置失败")
       }
     }
 
@@ -677,8 +670,22 @@ export default defineComponent({
       }
     })
 
-    // 初始化
+    const openUserProfile = (userId: string) => {
+      router.push(`/user/profile/${userId}`)
+    }
+
     onMounted(() => {
+      const q = route.query.keyword as string
+      const qStatus = route.query.status as string
+      if (q) {
+        searchForm.keyword = q
+      }
+      if (qStatus) {
+        const status = Number.parseInt(qStatus, 10)
+        if (!Number.isNaN(status)) {
+          searchForm.status = status
+        }
+      }
       fetchUserList()
     })
 
@@ -703,8 +710,11 @@ export default defineComponent({
       getStatusText,
       getSourceText,
       getSourceType,
+      getUserTypeText,
+      getUserTypeTag,
       handleSearch,
       handleReset,
+      filterBanned,
       handleSelectionChange,
       handleSizeChange,
       handleCurrentChange,
@@ -719,7 +729,7 @@ export default defineComponent({
       handlePasswordSubmit,
       resetUserForm,
       resetPasswordForm,
-      previewOnlineFileApi
+      openUserProfile
     }
   }
 })
