@@ -9,8 +9,8 @@ declare module "vue-router" {
      */
     title?: string
     /**
-     * @description 是否隐藏该路由
+     * @description 侧边栏高亮菜单 path（详情页等非菜单路由使用）
      */
-    hidden?: boolean
+    activeMenu?: string
   }
 }

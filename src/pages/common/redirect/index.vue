@@ -1,3 +1,9 @@
+<template>
+  <div class="redirect-page">
+    <p class="loading">页面跳转中...</p>
+  </div>
+</template>
+
 <script lang="ts">
 export default defineComponent({
   setup() {
@@ -12,14 +18,6 @@ export default defineComponent({
   }
 })
 </script>
-
-<template>
-  <div class="redirect-page">
-    <div class="loading">
-      <el-loading-text>页面跳转中...</el-loading-text>
-    </div>
-  </div>
-</template>
 
 <style lang="less" scoped>
 .redirect-page {

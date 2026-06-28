@@ -7,6 +7,8 @@
     "dev": "vite serve --mode=dev",
     "serve_prod": "vite serve --mode=prod",
     "serve_test": "vite serve --mode=test",
+    "build_prod": "vite build --mode=prod",
+    "build_test": "vite build --mode=test",
     "lint": "eslint . --fix",
     "prepare": "husky"
   },

@@ -162,8 +162,8 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="createTime" label="创建时间" width="160" />
-          <el-table-column label="操作" width="360" fixed="right" align="center">
+          <el-table-column prop="createTime" label="创建时间"  />
+          <el-table-column label="操作" fixed="right" align="center">
             <template #default="{ row }">
               <el-button size="small" type="success" @click="openUserProfile(row.id)">
                 用户360
@@ -746,6 +746,7 @@ export default defineComponent({
   height: 100%;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 
   .card-header {
     display: flex;

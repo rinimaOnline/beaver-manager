@@ -164,11 +164,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue'
+import {  ref, computed, onMounted } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
-import ReleasePolicyDialog from '@/components/release/releasePolicyDialog.vue'
+import ReleasePolicyDialog from './components/releasePolicyDialog.vue'
 import {
   addAppApi,
   getAppsApi,

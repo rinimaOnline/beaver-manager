@@ -18,8 +18,6 @@
         <div class="user-profile__header-actions">
           <el-button @click="goBack">返回</el-button>
           <el-button @click="extraDrawerVisible = true">更多资料</el-button>
-          <el-button type="warning" @click="goSafety">待办处置</el-button>
-          <el-button @click="goSanctions">处置记录</el-button>
           <el-button @click="goAppeals">申诉</el-button>
           <el-button
             v-if="profile.status === 2"
@@ -149,7 +147,6 @@
             <p>{{ targetTypeLabel(r.targetType) }} · {{ r.targetId }}</p>
             <div class="user-profile__extra-meta">
               <span>{{ r.createdAt }}</span>
-              <el-button link type="primary" @click="goReport(r.id)">详情</el-button>
             </div>
           </div>
           <el-empty v-if="!data.reports.length" description="暂无举报" />
@@ -184,7 +181,7 @@ import { getFriendListApi } from "@/api/friend"
 import { getChatSessionListApi } from "@/api/chat"
 import { getEmojiListApi } from "@/api/emoji"
 import { getMomentListApi } from "@/api/moment"
-import ChatAuditPanel from "@/components/chat/ChatAuditPanel.vue"
+import ChatAuditPanel from "./components/chatAuditPanel.vue"
 import UserGroupPanel from "./components/userGroupPanel.vue"
 import UserFriendRequestsDialog from "./components/userFriendRequestsDialog.vue"
 import UserEmojiPanel from "./components/userEmojiPanel.vue"
@@ -556,12 +553,9 @@ export default defineComponent({
       if (window.history.length > 1) router.back()
       else router.push("/user/list")
     }
-    const goSafety = () => router.push({ path: "/safety/cases", query: { tab: "reports" } })
-    const goSanctions = () => router.push({ path: "/system/audit-logs", query: { userId: userId.value, scope: "sanctions" } })
     const goAppeals = () => router.push({ path: "/safety/appeals", query: { userId: userId.value } })
     const goFriendRequests = () => { friendRequestsVisible.value = true }
     const goUser = (id: string) => router.push(`/user/profile/${id}`)
-    const goReport = (reportId: number) => router.push({ path: "/safety/cases", query: { tab: "reports", reportId: String(reportId) } })
 
     watch(userId, loadProfile, { immediate: true })
 
@@ -576,7 +570,7 @@ export default defineComponent({
       selectRelation, selectMoment, selectEmoji, loadRelations, onModeChange,
       onMomentDeleted, onEmojiDeleted,
       handleBan, handleUnban,
-      goBack, goSafety, goSanctions, goAppeals, goFriendRequests, goUser, goReport
+      goBack, goAppeals, goFriendRequests, goUser
     }
   }
 })

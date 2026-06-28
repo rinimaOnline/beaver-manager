@@ -5,139 +5,89 @@
 [![Vue](https://img.shields.io/badge/Vue-3.x-brightgreen.svg)](https://vuejs.org/)
 [![Element Plus](https://img.shields.io/badge/Element%20Plus-2.x-blue.svg)](https://element-plus.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
-[![QQ Group](https://img.shields.io/badge/QQ%20Group-1013328597-blue.svg)](https://qm.qq.com/q/82rbf7QBzO)
+[![QQ Groups](https://img.shields.io/badge/QQ_Groups-1013328597%2B-blue.svg)](https://qm.qq.com/q/82rbf7QBzO)
 
-> 🚀 **Modern Admin Management System** - Built with Vue 3 + Element Plus + TypeScript, providing comprehensive management and monitoring for Beaver IM
+> **Admin web UI for Beaver IM** - Built with Vue 3 + Element Plus + TypeScript, connects to beaver-server admin APIs for user management, message review, release publishing, and system configuration
 
-**Current Version: [2.0.1](VERSION)** (see [`VERSION`](VERSION) at repository root, synced with `package.json`)
+**Current Version: [2.0.1](VERSION)** (see [`VERSION`](VERSION) at repository root)
 
-[中文](README.md) | [English](README_EN.md)
+[English](README_EN.md) | [中文](README.md)
 
 ---
 
 ## ✨ Core Features
 
-- 👥 **User Management** - User information management, permission control, account status management
-- 💬 **Chat Management** - Chat records viewing, content moderation, sensitive word filtering
-- 👨‍👩‍👧‍👦 **Group Management** - Group creation review, member management, group settings configuration
-- 😀 **Emoji Management** - Emoji package review, category management, version control
-- 🔄 **Version Management** - App update release, version control, gray release
-- 📊 **Data Statistics** - User activity analysis, message statistics, system monitoring
-- 📡 **Connection Monitor** - Online user summary and login device details
-- 🔧 **System Settings** - Parameter configuration, feature toggles, role permissions management
-- 🎨 **Modern UI** - Beautiful interface design based on Element Plus
+- 📊 **Operations Dashboard** - Overview metrics, todo inbox, 7-day trends
+- 👥 **User Management** - User search, status control, 360° user profile
+- 🔍 **Message Audit** - Message search and session compliance review
+- 🛡️ **Appeals** - User appeal review and handling
+- 💬 **Customer Feedback** - User feedback intake
+- 🧩 **Open Platform** - Developers, open apps, bot/Webhook integrations
+- 🔄 **Release Management** - App management, architecture config, package publishing
+- 📈 **Analytics** - Event statistics and raw log queries
+- 📦 **Assets** - File storage, emoji packages and emoji assets
+- ⚙️ **System Management** - Roles, admins, connection monitor
 
 ## 🛠️ Technology Stack
 
-| Technology | Version | Description |
-|------------|---------|-------------|
-| **Vue.js** | 3.5+ | Progressive JavaScript Framework |
-| **TypeScript** | 5.8+ | Type Safety |
-| **Element Plus** | 2.10+ | Vue 3 Component Library |
-| **Vite** | 7.0+ | Next Generation Frontend Build Tool |
-| **Pinia** | 3.0+ | Vue State Management |
-| **Vue Router** | 4.5+ | Official Routing Manager |
-| **Axios** | 1.10+ | HTTP Client |
+- **Vue 3** + **Vite** + **TypeScript** - Frontend rendering and tooling
+- **Element Plus** - UI component library
+- **Pinia** + **Vue Router** - State management and routing (Hash mode)
+- **Axios** - Admin API client for beaver-server
 
-## 📊 Feature Showcase
+## 📱 Feature Showcase
 
-### 🔄 Version Management
+### 🔄 Release Management
 <div align="center">
-  <img src="./static/manager/version-list.png" width="300" alt="Version List"/>
-  <img src="./static/manager/architecture-management.png" width="300" alt="Architecture Management"/>
   <img src="./static/manager/app-management.png" width="300" alt="App Management"/>
+  <img src="./static/manager/architecture-management.png" width="300" alt="Architecture Management"/>
+  <img src="./static/manager/version-list.png" width="300" alt="Version List"/>
 </div>
 
-### 😀 Emoji Management
+### 😀 Emoji Assets
 <div align="center">
-  <img src="./static/manager/emoji-collections.png" width="300" alt="Emoji Collections Management"/>
+  <img src="./static/manager/emoji-collections.png" width="300" alt="Emoji Packages"/>
   <img src="./static/manager/emoji-management.png" width="300" alt="Emoji Management"/>
   <img src="./static/manager/emoji-list.png" width="300" alt="Emoji List"/>
 </div>
-
-## 🚀 Quick Start
-
-### Environment Requirements
-- Node.js >= 18.0.0
-
-### Installation Steps
-```bash
-# Clone the project
-git clone https://github.com/wsrh8888/beaver-manager.git
-cd beaver-manager
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build_prod
-
-# Build for testing
-npm run build_test
-```
-
-### Environment Configuration
-1. Create `.env.development` file (development environment)
-2. Create `.env.test` file (testing environment)
-3. Create `.env.production` file (production environment)
-
-For detailed configuration, please refer to [Environment Configuration Documentation](https://wsrh8888.github.io/beaver-docs/manager/config).
 
 ## 🔗 Related Projects
 
 | Project | Repository | Description |
 |---------|------------|-------------|
-| **beaver-server** | [GitHub](https://github.com/wsrh8888/beaver-server) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-server) | Backend Service |
-| **beaver-mobile** | [GitHub](https://github.com/wsrh8888/beaver-mobile) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-mobile) | Mobile Application |
-| **beaver-desktop** | [GitHub](https://github.com/wsrh8888/beaver-desktop) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-desktop) | Desktop Application |
-| **beaver-manager** | [GitHub](https://github.com/wsrh8888/beaver-manager) | Admin Management System |
-| **beaver-open** | [GitHub](https://github.com/wsrh8888/beaver-open) | Open Platform Portal |
-| **beaver-oauth** | [GitHub](https://github.com/wsrh8888/beaver-oauth) | OAuth Login Pages |
-
+| **beaver-server** | [GitHub](https://github.com/wsrh8888/beaver-server) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-server) | Backend microservices |
+| **beaver-flutter** | [GitHub](https://github.com/wsrh8888/beaver-flutter) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-flutter) | Mobile (Flutter, recommended) |
+| **beaver-desktop** | [GitHub](https://github.com/wsrh8888/beaver-desktop) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-desktop) | Desktop (Electron) |
+| **beaver-manager** | [GitHub](https://github.com/wsrh8888/beaver-manager) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-manager) | Admin management system (this repo) |
+| **beaver-open** | [GitHub](https://github.com/wsrh8888/beaver-open) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-open) | Open platform |
+| **beaver-oauth** | [GitHub](https://github.com/wsrh8888/beaver-oauth) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-oauth) | OAuth authorization |
 ## 📚 Documentation & Help
 
-- 📖 **Detailed Documentation**: [Beaver IM Documentation](https://wsrh8888.github.io/beaver-docs/)
-- 🎥 **Video Tutorials**: [Bilibili Tutorials](https://www.bilibili.com/video/BV1HrrKYeEB4/)
-- 📱 **Mobile Experience APK**: [Android Experience Package](https://github.com/wsrh8888/beaver-docs/releases/download/lastest/latest.apk)
-- 💬 **QQ Group**: [1013328597](https://qm.qq.com/q/82rbf7QBzO)
+- 📖 **Detailed Documentation**: [Beaver IM Docs](https://wsrh8888.github.io/beaver-docs/manager/)
+- 🎥 **Video Tutorial**: [Bilibili Tutorial](https://www.bilibili.com/video/BV1HrrKYeEB4/)
+- 💬 **QQ Groups**:
+  - [1013328597](https://qm.qq.com/q/82rbf7QBzO) - Group 1
+  - [1044762885](https://qm.qq.com/q/82rbf7QBzO) - Group 2
+  - [1003121259](https://qm.qq.com/q/82rbf7QBzO) - Group 3
 
-## 🤝 Contributing
-
-We welcome all forms of contributions!
-
-1. Fork this repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## ⭐ Support the Project
+## ⭐ Support Project
 
 If this project helps you, please give us a ⭐ Star!
 
-## ☕ Buy the Developer a Coffee
+## ☕ Buy Me a Coffee
 
-If this project helps you, feel free to buy the developer a coffee ☕
+If this project helps you, welcome to buy me a coffee ☕
 
 <div align="center">
-  <img src="./static/sponsor/wechat.jpg" width="200" alt="WeChat Sponsorship Code"/>
-  <img src="./static/sponsor/zhifubao.jpg" width="200" alt="Alipay Sponsorship Code"/>
+  <img src="./static/sponsor/wechat.jpg" width="200" alt="WeChat Sponsor Code"/>
+  <img src="./static/sponsor/zhifubao.jpg" width="200" alt="Alipay Sponsor Code"/>
 </div>
 
-## 📄 Open Source License
+## 📄 License & Legal
 
-This project is licensed under the [MIT](LICENSE) License.
+- This project is licensed under the [MIT](LICENSE) License
+- Before use, modification, or commercial deployment, please read the [Legal Disclaimer](LEGAL.md) for permitted/prohibited uses and liability terms
 
 ## ⭐ Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=wsrh8888/beaver-manager&type=Date)](https://star-history.com/#wsrh8888/beaver-manager&Date)
-
----
-
-<div align="center">
-  <strong>Made with ❤️ by Beaver IM Team</strong><br>
-  <em>Enterprise Instant Messaging Platform Admin Management System</em>
-</div>

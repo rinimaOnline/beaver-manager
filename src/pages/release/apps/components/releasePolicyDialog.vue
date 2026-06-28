@@ -78,7 +78,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, watch } from 'vue'
+import {  ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getReleasePoliciesApi, upsertReleasePolicyApi } from '@/api/update'
 import type { IVersionInfo } from '@/types/api/update'

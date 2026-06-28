@@ -17,7 +17,6 @@
         <div class="user-group-panel__actions">
           <el-button size="small" @click="reportsDrawerVisible = true">举报</el-button>
           <el-button v-if="profile.status !== 3 && groupDbId" size="small" @click="openEditDialog">编辑</el-button>
-          <el-button size="small" type="warning" @click="goSafety">安全</el-button>
           <el-button v-if="profile.status !== 3 && groupDbId" size="small" type="danger" @click="handleDissolve">解散</el-button>
         </div>
       </div>
@@ -99,7 +98,6 @@
     <el-drawer v-model="reportsDrawerVisible" title="举报记录" size="420px">
       <div v-for="r in data.reports" :key="r.id" class="user-group-panel__report-item">
         <p>{{ r.reporterName }} · {{ r.createdAt }}</p>
-        <el-button link type="primary" @click="goReports(r.id)">举报中心</el-button>
       </div>
       <el-empty v-if="!data.reports.length" description="暂无举报" />
     </el-drawer>
@@ -131,7 +129,7 @@ import { ElMessage, ElMessageBox } from "element-plus"
 import { getGroupOperationsProfileApi } from "@/api/operations"
 import { deleteGroupApi, getGroupListApi, getGroupMemberListApi, muteGroupMemberApi, removeGroupMemberApi, updateGroupApi, updateMemberRoleApi } from "@/api/group"
 import { getChatMessageListApi } from "@/api/chat"
-import ChatAuditPanel from "@/components/chat/ChatAuditPanel.vue"
+import ChatAuditPanel from "./chatAuditPanel.vue"
 import { buildGroupConversationCandidates } from "@/utils/conversation"
 
 const emptyData = (): IGetGroupOperationsProfileRes => ({
@@ -159,7 +157,6 @@ export default defineComponent({
   },
   emits: ["go-user", "changed"],
   setup(props, { emit }) {
-    const router = useRouter()
     const loading = ref(false)
     const membersLoading = ref(false)
     const data = ref<IGetGroupOperationsProfileRes>(emptyData())
@@ -351,11 +348,6 @@ export default defineComponent({
       }
     }
 
-    const goSafety = () => router.push({ path: "/safety/cases", query: { tab: "reports", targetType: "4" } })
-    const goReports = (reportId: number) => {
-      router.push({ path: "/safety/cases", query: { tab: "reports", reportId: String(reportId) } })
-    }
-
     watch(() => props.groupId, loadProfile, { immediate: true })
     watch(() => props.conversationId, val => {
       if (val) resolvedConversationId.value = val
@@ -367,8 +359,7 @@ export default defineComponent({
       resolvedConversationId, memberKeyword, selectedMember, reportsDrawerVisible,
       editVisible, editSaving, editForm,
       roleLabel, openEditDialog, submitEdit, handleChangeRole,
-      handleRemoveMember, handleMute, handleDissolve, onChatCleared,
-      goSafety, goReports
+      handleRemoveMember, handleMute, handleDissolve, onChatCleared
     }
   }
 })

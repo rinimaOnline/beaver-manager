@@ -314,7 +314,7 @@
 <script lang="ts">
 import { ElMessage, ElMessageBox } from "element-plus"
 import { UploadFilled, Close } from "@element-plus/icons-vue"
-import { defineComponent, onMounted, reactive, ref } from "vue"
+import {  onMounted, reactive, ref } from "vue"
 
 import {
   createEmojiPackageApi,

@@ -166,7 +166,7 @@ const MSG_TYPE_MAP: Record<number, string> = {
 const PAGE_SIZE = 30
 
 export default defineComponent({
-  name: "ChatAuditPanel",
+  name: "chatAuditPanel",
   props: {
     conversationId: {
       type: String as PropType<string | null>,
