@@ -70,45 +70,6 @@ export interface IGetUserOperationsProfileRes {
   blocks: IUserOpsBlockItem[]
 }
 
-export interface ISearchUserHit {
-  userId: string
-  nickName: string
-  email: string
-  status: number
-}
-
-export interface ISearchGroupHit {
-  groupId: string
-  title: string
-  status: number
-}
-
-export interface ISearchMessageHit {
-  messageId: string
-  conversationId: string
-  sendUserId: string
-  msgPreview: string
-  createTime: string
-}
-
-export interface ISearchConversationHit {
-  conversationId: string
-  title: string
-  lastMessage: string
-}
-
-export interface IAdminUnifiedSearchReq {
-  keyword: string
-  limit?: number
-}
-
-export interface IAdminUnifiedSearchRes {
-  users: ISearchUserHit[]
-  groups: ISearchGroupHit[]
-  messages: ISearchMessageHit[]
-  conversations: ISearchConversationHit[]
-}
-
 export interface IGroupOpsProfileInfo {
   groupId: string
   title: string

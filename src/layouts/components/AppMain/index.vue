@@ -1,18 +1,16 @@
-<script lang="ts">
-export default defineComponent({
-  setup() {
-    onMounted(() => {})
-
-    return {}
-  }
-})
-</script>
-
 <template>
   <div class="app-main">
     <router-view />
   </div>
 </template>
+
+<script lang="ts">
+export default defineComponent({
+  setup() {
+    return {}
+  }
+})
+</script>
 
 <style lang="less" scoped>
 .app-main {

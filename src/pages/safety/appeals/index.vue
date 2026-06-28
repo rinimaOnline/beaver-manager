@@ -36,12 +36,11 @@
         </template>
       </el-table-column>
       <el-table-column prop="createdAt" label="提交时间" width="170" />
-      <el-table-column label="操作" width="280" fixed="right">
+      <el-table-column label="操作" width="220" fixed="right">
         <template #default="{ row }">
           <el-button link @click="handleDetail(row)">详情</el-button>
           <el-button link type="primary" @click="handleProcess(row)">处理</el-button>
           <el-button link type="success" @click="quickUnban(row)">解封</el-button>
-          <el-button link @click="goSanctions(row.userId)">处置记录</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -194,7 +193,6 @@ export default defineComponent({
     }
 
     const goUser = (userId: string) => router.push(`/user/profile/${userId}`)
-    const goSanctions = (userId: string) => router.push({ path: "/system/audit-logs", query: { userId, scope: "sanctions" } })
 
     onMounted(() => {
       const qUser = route.query.userId as string
@@ -206,7 +204,7 @@ export default defineComponent({
       loading, appealList, searchForm, pagination, currentAppeal, detailVisible, processVisible,
       processForm, processFormRef, processRules, statusLabel, statusTag,
       handleSearch, handleReset, onPageChange, handleDetail, handleProcess, submitProcess,
-      quickUnban, goUser, goSanctions
+      quickUnban, goUser
     }
   }
 })

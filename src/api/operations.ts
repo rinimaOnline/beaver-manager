@@ -1,6 +1,4 @@
 import type {
-  IAdminUnifiedSearchReq,
-  IAdminUnifiedSearchRes,
   IGetGroupOperationsProfileRes,
   IGetUserOperationsProfileRes
 } from "@/types/api/operations"
@@ -18,13 +16,5 @@ export function getGroupOperationsProfileApi(groupId: string) {
   return ajax<IGetGroupOperationsProfileRes>({
     method: "GET",
     url: `${config.baseAPI}/admin/operations/group/${groupId}/profile`
-  })
-}
-
-export function adminUnifiedSearchApi(params: IAdminUnifiedSearchReq) {
-  return ajax<IAdminUnifiedSearchRes>({
-    method: "GET",
-    url: `${config.baseAPI}/admin/operations/search`,
-    params
   })
 }

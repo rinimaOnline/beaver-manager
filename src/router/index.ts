@@ -1,44 +1,5 @@
-import type { RouteRecordRaw } from "vue-router"
 import { createRouter, createWebHashHistory } from "vue-router"
 import { useUserStore } from "@/pinia/user/user"
-
-/** 路由 path 与 src/pages 目录一一对应，无 redirect 兼容层 */
-const adminRoutes: RouteRecordRaw[] = [
-  { path: "/dashboard", name: "Dashboard", component: () => import("@/pages/dashboard/index.vue") },
-
-  { path: "/user/list", name: "UserList", component: () => import("@/pages/user/list/index.vue") },
-  { path: "/user/profile/:userId", name: "UserProfile", component: () => import("@/pages/user/profile/index.vue"), meta: { title: "用户360" } },
-
-  { path: "/compliance/messages", name: "ComplianceMessages", component: () => import("@/pages/compliance/messages/index.vue") },
-  { path: "/compliance/sessions", name: "ComplianceSessions", component: () => import("@/pages/compliance/sessions/index.vue") },
-
-  { path: "/safety/cases", name: "SafetyCases", component: () => import("@/pages/safety/cases/index.vue") },
-  { path: "/safety/appeals", name: "SafetyAppeals", component: () => import("@/pages/safety/appeals/index.vue") },
-  { path: "/safety/policy", name: "SafetyPolicy", component: () => import("@/pages/safety/policy/index.vue") },
-
-  { path: "/service/feedback", name: "ServiceFeedback", component: () => import("@/pages/service/feedback/index.vue") },
-
-  { path: "/open/developers", name: "OpenDevelopers", component: () => import("@/pages/open/developers/index.vue") },
-  { path: "/open/apps", name: "OpenApps", component: () => import("@/pages/open/apps/index.vue") },
-  { path: "/open/integrations", name: "OpenIntegrations", component: () => import("@/pages/open/integrations/index.vue") },
-
-  { path: "/release/apps", name: "ReleaseApps", component: () => import("@/pages/release/apps/index.vue") },
-  { path: "/release/versions", redirect: "/release/apps" },
-  { path: "/release/strategies", redirect: "/release/apps" },
-
-  { path: "/data/events", name: "DataEvents", component: () => import("@/pages/data/events/index.vue") },
-  { path: "/data/logs", name: "DataLogs", component: () => import("@/pages/data/logs/index.vue") },
-
-  { path: "/assets/files", name: "AssetsFiles", component: () => import("@/pages/assets/files/index.vue") },
-  { path: "/assets/emojis", name: "AssetsEmojis", component: () => import("@/pages/assets/emojis/index.vue") },
-  { path: "/assets/emoji-packages", name: "AssetsEmojiPackages", component: () => import("@/pages/assets/emoji-packages/index.vue") },
-
-  { path: "/system/roles", name: "SystemRoles", component: () => import("@/pages/system/roles/index.vue") },
-  { path: "/system/admins", name: "SystemAdmins", component: () => import("@/pages/system/admins/index.vue") },
-  { path: "/system/config", name: "SystemConfig", component: () => import("@/pages/system/config/index.vue") },
-  { path: "/system/audit-logs", name: "SystemAuditLogs", component: () => import("@/pages/system/audit-logs/index.vue") },
-  { path: "/system/online", name: "SystemOnline", component: () => import("@/pages/system/online/index.vue"), meta: { title: "连接监控" } }
-]
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -46,23 +7,175 @@ const router = createRouter({
     {
       path: "/",
       component: () => import("@/layouts/index.vue"),
-      redirect: "/dashboard",
-      children: adminRoutes
+      redirect: "/workspace/operations",
+      children: [
+        {
+          path: "workspace",
+          redirect: "/workspace/operations",
+          children: [
+            {
+              path: "operations",
+              name: "运营工作台",
+              component: () => import("@/pages/workspace/operations/index.vue")
+            }
+          ]
+        },
+        {
+          path: "user",
+          children: [
+            {
+              path: "list",
+              name: "用户管理",
+              component: () => import("@/pages/user/list/index.vue")
+            },
+            {
+              path: "profile/:userId",
+              name: "用户360",
+              component: () => import("@/pages/user/profile/index.vue"),
+              meta: { activeMenu: "/user/list" }
+            }
+          ]
+        },
+        {
+          path: "compliance",
+          children: [
+            {
+              path: "messages",
+              name: "消息检索",
+              component: () => import("@/pages/compliance/messages/index.vue")
+            },
+            {
+              path: "sessions",
+              name: "会话审计",
+              component: () => import("@/pages/compliance/sessions/index.vue")
+            }
+          ]
+        },
+        {
+          path: "safety",
+          children: [
+            {
+              path: "appeals",
+              name: "申诉",
+              component: () => import("@/pages/safety/appeals/index.vue")
+            }
+          ]
+        },
+        {
+          path: "service",
+          children: [
+            {
+              path: "feedback",
+              name: "用户反馈",
+              component: () => import("@/pages/service/feedback/index.vue")
+            }
+          ]
+        },
+        {
+          path: "open",
+          children: [
+            {
+              path: "developers",
+              name: "开发者",
+              component: () => import("@/pages/open/developers/index.vue")
+            },
+            {
+              path: "apps",
+              name: "开放应用",
+              component: () => import("@/pages/open/apps/index.vue")
+            },
+            {
+              path: "integrations",
+              name: "机器人集成",
+              component: () => import("@/pages/open/integrations/index.vue")
+            }
+          ]
+        },
+        {
+          path: "release",
+          redirect: "/release/apps",
+          children: [
+            {
+              path: "apps",
+              name: "版本发布",
+              component: () => import("@/pages/release/apps/index.vue")
+            }
+          ]
+        },
+        {
+          path: "data",
+          redirect: "/data/client-log",
+          children: [
+            {
+              path: "client-log",
+              name: "日志",
+              component: () => import("@/pages/data/clientLog/index.vue")
+            }
+          ]
+        },
+        {
+          path: "assets",
+          redirect: "/assets/files",
+          children: [
+            {
+              path: "files",
+              name: "文件存储",
+              component: () => import("@/pages/assets/files/index.vue")
+            },
+            {
+              path: "emoji",
+              redirect: "/assets/emoji/list",
+              children: [
+                {
+                  path: "list",
+                  name: "表情包列表",
+                  component: () => import("@/pages/assets/emojis/index.vue")
+                },
+                {
+                  path: "packages",
+                  name: "表情包合集",
+                  component: () => import("@/pages/assets/emoji-packages/index.vue")
+                }
+              ]
+            }
+          ]
+        },
+        {
+          path: "system",
+          children: [
+            {
+              path: "roles",
+              name: "角色权限",
+              component: () => import("@/pages/system/roles/index.vue")
+            },
+            {
+              path: "admins",
+              name: "管理员",
+              component: () => import("@/pages/system/admins/index.vue")
+            },
+            {
+              path: "online",
+              name: "连接监控",
+              component: () => import("@/pages/system/online/index.vue")
+            }
+          ]
+        }
+      ]
     },
     {
       path: "/login",
-      name: "Login",
-      component: () => import("@/pages/login/index.vue")
+      name: "登录",
+      component: () => import("@/pages/common/login/index.vue")
     },
     {
       path: "/redirect/:path(.*)",
-      name: "Redirect",
-      component: () => import("@/pages/redirect/index.vue")
+      name: "重定向",
+      component: () => import("@/pages/common/redirect/index.vue")
     },
     {
       path: "/error/404",
-      name: "Error404",
-      component: () => import("@/pages/error/404.vue")
+      name: "404",
+      component: () => import("@/pages/common/error/404.vue")
     },
     {
       path: "/:pathMatch(.*)*",

@@ -1,38 +1,7 @@
-<script lang="ts">
-import { defineComponent, ref } from "vue"
-import { useRouter } from "vue-router"
-import { UserFilled } from "@element-plus/icons-vue"
-import { useUserStore } from "@/pinia/user/user"
-import GlobalSearchBar from "@/components/search/globalSearchBar.vue"
-
-export default defineComponent({
-  components: { GlobalSearchBar },
-  setup() {
-    const router = useRouter()
-    const userStore = useUserStore()
-
-    const logout = () => {
-      userStore.logout()
-      router.push("/login")
-    }
-
-    return {
-      UserFilled,
-      userStore,
-      logout
-    }
-  }
-})
-</script>
-
 <template>
   <div class="navigation-bar">
     <div class="left-menu">
       <span class="title">海狸IM 后台管理</span>
-    </div>
-
-    <div class="center-menu">
-      <GlobalSearchBar />
     </div>
 
     <div class="right-menu">
@@ -53,6 +22,30 @@ export default defineComponent({
   </div>
 </template>
 
+<script lang="ts">
+import { useRouter } from "vue-router"
+import { UserFilled } from "@element-plus/icons-vue"
+import { useUserStore } from "@/pinia/user/user"
+
+export default defineComponent({
+  setup() {
+    const router = useRouter()
+    const userStore = useUserStore()
+
+    const logout = () => {
+      userStore.logout()
+      router.push("/login")
+    }
+
+    return {
+      UserFilled,
+      userStore,
+      logout
+    }
+  }
+})
+</script>
+
 <style lang="less" scoped>
 .navigation-bar {
   height: 50px;
@@ -60,46 +53,39 @@ export default defineComponent({
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #fff;
+  background-color: #ffffff;
   border-bottom: 1px solid #e8e8e8;
-}
 
-.left-menu {
-  flex-shrink: 0;
+  .left-menu {
+    flex-shrink: 0;
 
-  .title {
-    font-size: 18px;
-    font-weight: 500;
-    color: #333;
+    .title {
+      font-size: 18px;
+      font-weight: 500;
+      color: #333333;
+    }
   }
-}
 
-.center-menu {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  padding: 0 24px;
-}
+  .right-menu {
+    flex-shrink: 0;
 
-.right-menu {
-  flex-shrink: 0;
+    .user-info {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 4px;
+      transition: background-color 0.3s;
 
-  .user-info {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 4px;
-    transition: background-color 0.3s;
-
-    &:hover {
-      background-color: #f5f5f5;
+      .username {
+        margin-left: 8px;
+        font-size: 14px;
+        color: #333333;
+      }
     }
 
-    .username {
-      margin-left: 8px;
-      font-size: 14px;
-      color: #333;
+    .user-info:hover {
+      background-color: #f5f5f5;
     }
   }
 }

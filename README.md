@@ -5,11 +5,11 @@
 [![Vue](https://img.shields.io/badge/Vue-3.x-brightgreen.svg)](https://vuejs.org/)
 [![Element Plus](https://img.shields.io/badge/Element%20Plus-2.x-blue.svg)](https://element-plus.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
-[![QQ群](https://img.shields.io/badge/QQ群-1013328597-blue.svg)](https://qm.qq.com/q/82rbf7QBzO)
+[![QQ群](https://img.shields.io/badge/QQ群-1013328597%2B-blue.svg)](https://qm.qq.com/q/82rbf7QBzO)
 
-> 🚀 **现代化后台管理系统** - 基于 Vue 3 + Element Plus + TypeScript 构建，为海狸IM提供全面的管理和监控功能
+> **海狸 IM 的后台管理 Web 端** - 基于 Vue 3 + Element Plus + TypeScript 开发，对接 beaver-server 管理接口，供运营与管理员进行用户管理、消息审计、版本发布与系统运维
 
-**当前版本：[2.0.1](VERSION)**（以仓库根目录 [`VERSION`](VERSION) 文件为准，与 `package.json` 同步）
+**当前版本：[2.0.1](VERSION)**（以仓库根目录 [`VERSION`](VERSION) 文件为准）
 
 [English](README_EN.md) | [中文](README.md)
 
@@ -17,102 +17,82 @@
 
 ## ✨ 核心特性
 
-- 👥 **用户管理** - 用户信息管理、权限控制、账号状态管理
-- 💬 **聊天管理** - 聊天记录查看、内容审核、敏感词过滤
-- 👨‍👩‍👧‍👦 **群组管理** - 群组创建审核、成员管理、群设置配置
-- 😀 **表情包管理** - 表情包审核、分类管理、版本控制
-- 🔄 **版本管理** - 应用更新发布、版本控制、灰度发布
-- 📊 **数据统计** - 用户活跃度分析、消息量统计、系统监控
-- 📡 **连接监控** - 在线用户汇总、登录设备详情
-- 🔧 **系统设置** - 参数配置、功能开关、权限角色管理
-- 🎨 **现代化UI** - 基于 Element Plus 的美观界面设计
+- 📊 **运营工作台** - 数据概览、待办收件箱、近 7 日趋势与快捷入口
+- 👥 **用户管理** - 用户检索与状态管理、用户 360 视图（资料 / 会话 / 群聊审计）
+- 🔍 **消息审计** - 消息检索、会话审计，支持合规排查与消息处置
+- 💬 **客服反馈** - 用户意见与问题受理
+- 🧩 **产品与开放** - 开发者审核、开放应用、机器人 / Webhook 集成
+- 🔄 **版本发布** - 应用管理、架构配置、安装包与发布策略
+- 📋 **客户端日志** - 按 Logstore 查询客户端上报日志，支持时间范围与检索
+- 📦 **资源管理** - 文件存储、表情包与表情素材
+- ⚙️ **系统管理** - 角色权限、管理员、WebSocket 连接监控
 
 ## 🛠️ 技术栈
 
-| 技术 | 版本 | 说明 |
-|------|------|------|
-| **Vue.js** | 3.5+ | 渐进式前端框架 |
-| **TypeScript** | 5.8+ | 类型安全 |
-| **Element Plus** | 2.10+ | Vue 3 组件库 |
-| **Vite** | 7.0+ | 下一代前端构建工具 |
-| **Pinia** | 3.0+ | Vue 状态管理 |
-| **Vue Router** | 4.5+ | 官方路由管理器 |
-| **Axios** | 1.10+ | HTTP 客户端 |
+- **Vue 3** + **Vite** + **TypeScript** - 前端渲染与工程化
+- **Element Plus** - UI 组件库
+- **Pinia** + **Vue Router** - 状态管理与路由（Hash 模式）
+- **Axios** - 对接 beaver-server 管理端 API
 
-## 📊 功能展示
+## 📱 功能展示
 
-### 🔄 版本管理
+### 📊 运营工作台
 <div align="center">
-  <img src="./static/manager/version-list.png" width="300" alt="版本列表"/>
-  <img src="./static/manager/architecture-management.png" width="300" alt="架构管理"/>
-  <img src="./static/manager/app-management.png" width="300" alt="应用管理"/>
+  <img src="./static/manager/工作台.png" width="720" alt="运营工作台"/>
 </div>
 
-### 😀 表情包管理
+### 👥 用户管理
 <div align="center">
-  <img src="./static/manager/emoji-collections.png" width="300" alt="表情包合集管理"/>
-  <img src="./static/manager/emoji-management.png" width="300" alt="表情包管理"/>
-  <img src="./static/manager/emoji-list.png" width="300" alt="表情列表"/>
+  <img src="./static/manager/用户管理-用户列表.png" width="360" alt="用户列表"/>
+  <img src="./static/manager/用户管理-用户360.png" width="360" alt="用户360"/>
 </div>
 
-## 🚀 快速开始
+### 🔄 版本发布
+<div align="center">
+  <img src="./static/manager/版本发布-版本管理.png" width="360" alt="版本发布"/>
+  <img src="./static/manager/版本管理.png" width="360" alt="版本管理"/>
+</div>
 
-### 环境要求
-- Node.js >= 18.0.0
+### 📋 客户端日志
+<div align="center">
+  <img src="./static/manager/日志模块.png" width="720" alt="客户端日志"/>
+</div>
 
-### 安装步骤
-```bash
-# 克隆项目
-git clone https://github.com/wsrh8888/beaver-manager.git
-cd beaver-manager
+### 📦 资源管理
+<div align="center">
+  <img src="./static/manager/文件存储-文件列表.png" width="360" alt="文件存储"/>
+  <img src="./static/manager/表情包-表情包合理.png" width="360" alt="表情包合集"/>
+</div>
 
-# 安装依赖
-npm install
+### 🧩 产品与开放
+<div align="center">
+  <img src="./static/manager/产品与开放- 开发者.png" width="720" alt="开发者审核"/>
+</div>
 
-# 启动开发服务器
-npm run dev
-
-# 构建生产版本
-npm run build_prod
-
-# 测试环境构建
-npm run build_test
-```
-
-### 环境配置
-1. 创建 `.env.development` 文件（开发环境）
-2. 创建 `.env.test` 文件（测试环境）
-3. 创建 `.env.production` 文件（生产环境）
-
-详细配置请参考[环境配置文档](https://wsrh8888.github.io/beaver-docs/manager/config)。
+### ⚙️ 系统管理
+<div align="center">
+  <img src="./static/manager/连接监控.png" width="720" alt="连接监控"/>
+</div>
 
 ## 🔗 相关项目
 
 | 项目 | 仓库地址 | 说明 |
 |------|----------|------|
 | **beaver-server** | [GitHub](https://github.com/wsrh8888/beaver-server) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-server) | 后端服务 |
-| **beaver-mobile** | [GitHub](https://github.com/wsrh8888/beaver-mobile) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-mobile) | 移动端应用 |
+| **beaver-flutter** | [GitHub](https://github.com/wsrh8888/beaver-flutter) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-flutter) | 移动端应用 (Flutter - 推荐) |
 | **beaver-desktop** | [GitHub](https://github.com/wsrh8888/beaver-desktop) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-desktop) | 桌面端应用 |
-| **beaver-manager** | [GitHub](https://github.com/wsrh8888/beaver-manager) | 后台管理系统 |
-| **beaver-open** | [GitHub](https://github.com/wsrh8888/beaver-open) | 开放平台门户 |
-| **beaver-oauth** | [GitHub](https://github.com/wsrh8888/beaver-oauth) | OAuth 授权登录页 |
+| **beaver-manager** | [GitHub](https://github.com/wsrh8888/beaver-manager) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-manager) | 后台管理系统 |
+| **beaver-open** | [GitHub](https://github.com/wsrh8888/beaver-open) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-open) | 开放平台 |
+| **beaver-oauth** | [GitHub](https://github.com/wsrh8888/beaver-oauth) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-oauth) | OAuth 授权登录 |
 
 ## 📚 文档与帮助
 
-- 📖 **详细文档**: [Beaver IM 文档](https://wsrh8888.github.io/beaver-docs/)
+- 📖 **详细文档**: [Beaver IM 文档](https://wsrh8888.github.io/beaver-docs/manager/)
 - 🎥 **视频教程**: [B站教程](https://www.bilibili.com/video/BV1HrrKYeEB4/)
-- 📱 **移动端体验包**: [Android体验包](https://github.com/wsrh8888/beaver-docs/releases/download/lastest/latest.apk)
-- 💬 **QQ群**: [1013328597](https://qm.qq.com/q/82rbf7QBzO)
-
-## 🤝 贡献指南
-
-我们欢迎所有形式的贡献！
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
+- 💬 **QQ群**:
+  - [1013328597](https://qm.qq.com/q/82rbf7QBzO) - 群一
+  - [1044762885](https://qm.qq.com/q/82rbf7QBzO) - 群二
+  - [1003121259](https://qm.qq.com/q/82rbf7QBzO) - 群三
 
 ## ⭐ 支持项目
 
@@ -127,17 +107,11 @@ npm run build_test
   <img src="./static/sponsor/zhifubao.jpg" width="200" alt="支付宝赞助码"/>
 </div>
 
-## 📄 开源协议
+## 📄 开源协议与法律声明
 
-本项目基于 [MIT](LICENSE) 协议开源。
+- 本项目采用 [MIT](LICENSE) 协议开源
+- 使用、二次开发或商业部署前，请阅读 [法律免责声明](LEGAL.md)，了解允许/禁止用途及责任划分
 
 ## ⭐ Star历史
 
 [![Star History Chart](https://api.star-history.com/svg?repos=wsrh8888/beaver-manager&type=Date)](https://star-history.com/#wsrh8888/beaver-manager&Date)
-
----
-
-<div align="center">
-  <strong>Made with ❤️ by Beaver IM Team</strong><br>
-  <em>企业级即时通讯平台后台管理系统</em>
-</div>

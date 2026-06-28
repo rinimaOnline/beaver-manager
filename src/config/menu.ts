@@ -26,13 +26,9 @@ export interface MenuItem {
 
 export const menuConfig: MenuItem[] = [
   {
-    path: "/dashboard",
+    path: "/workspace/operations",
     title: "工作台",
-    icon: House,
-    children: [
-      { path: "/dashboard", title: "运营工作台", icon: House },
-      { path: "/safety/cases", title: "待办处置", icon: Document }
-    ]
+    icon: House
   },
   {
     path: "/user/list",
@@ -76,8 +72,7 @@ export const menuConfig: MenuItem[] = [
     title: "数据",
     icon: TrendCharts,
     children: [
-      { path: "/data/events", title: "事件统计", icon: TrendCharts },
-      { path: "/data/logs", title: "原始日志", icon: Document }
+      { path: "/data/client-log", title: "日志", icon: Document }
     ]
   },
   {
@@ -86,8 +81,15 @@ export const menuConfig: MenuItem[] = [
     icon: FolderOpened,
     children: [
       { path: "/assets/files", title: "文件存储", icon: FolderOpened },
-      { path: "/assets/emoji-packages", title: "表情包", icon: Grid },
-      { path: "/assets/emojis", title: "表情素材", icon: Share }
+      {
+        path: "/assets/emoji",
+        title: "表情包",
+        icon: Grid,
+        children: [
+          { path: "/assets/emoji/list", title: "表情包列表", icon: Share },
+          { path: "/assets/emoji/packages", title: "表情包合集", icon: Grid }
+        ]
+      }
     ]
   },
   {
@@ -97,10 +99,7 @@ export const menuConfig: MenuItem[] = [
     children: [
       { path: "/system/roles", title: "角色权限", icon: Lock },
       { path: "/system/admins", title: "管理员", icon: User },
-      { path: "/system/config", title: "系统配置", icon: Platform },
-      { path: "/system/online", title: "连接监控", icon: Connection },
-      { path: "/safety/policy", title: "内容策略", icon: Grid },
-      { path: "/system/audit-logs", title: "操作审计", icon: Document }
+      { path: "/system/online", title: "连接监控", icon: Connection }
     ]
   }
 ]
