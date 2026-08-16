@@ -9,15 +9,13 @@ import type {
   IAddVersionReq, IAddVersionRes,
   IGetVersionListReq, IGetVersionListRes,
   IUpsertReleasePolicyReq, IUpsertReleasePolicyRes,
-  IGetReleasePoliciesReq, IGetReleasePoliciesRes,
-  IUploadFileRes
+  IGetReleasePoliciesReq, IGetReleasePoliciesRes
 } from '@/types/api/update'
 
-// App Management
 export function addAppApi(data: IAddAppReq) {
   return ajax<IAddAppRes>({
     method: 'POST',
-    url: `${config.baseAPI}/admin/update/appAdd`,
+    url: `${config.baseAPI}/admin/update/v1/add_app`,
     data
   })
 }
@@ -25,16 +23,15 @@ export function addAppApi(data: IAddAppReq) {
 export function getAppsApi(params: IGetAppsReq) {
   return ajax<IGetAppsRes>({
     method: 'GET',
-    url: `${config.baseAPI}/admin/update/appsUpdate`,
+    url: `${config.baseAPI}/admin/update/v1/list_apps`,
     params
   })
 }
 
-// Architecture Management
 export function addArchitectureApi(data: IAddArchitectureReq) {
   return ajax<IAddArchitectureRes>({
     method: 'POST',
-    url: `${config.baseAPI}/admin/update/architectureAdd`,
+    url: `${config.baseAPI}/admin/update/v1/add_architecture`,
     data
   })
 }
@@ -42,7 +39,7 @@ export function addArchitectureApi(data: IAddArchitectureReq) {
 export function updateArchitectureApi(data: IUpdateArchitectureReq) {
   return ajax<void>({
     method: 'POST',
-    url: `${config.baseAPI}/admin/update/architectureUpdate`,
+    url: `${config.baseAPI}/admin/update/v1/update_architecture`,
     data
   })
 }
@@ -50,15 +47,14 @@ export function updateArchitectureApi(data: IUpdateArchitectureReq) {
 export function getArchitecturesApi(params: IGetArchitecturesReq) {
   return ajax<IGetArchitecturesRes>({
     method: 'GET',
-    url: `${config.baseAPI}/admin/update/architectures`,
+    url: `${config.baseAPI}/admin/update/v1/list_architectures`,
     params
   })
 }
 
-// Version APIs
 export const addVersionApi = (data: IAddVersionReq) => {
   return ajax<IAddVersionRes>({
-    url: `${config.baseAPI}/admin/update/versionAdd`,
+    url: `${config.baseAPI}/admin/update/v1/add_version`,
     method: 'post',
     data
   })
@@ -66,25 +62,24 @@ export const addVersionApi = (data: IAddVersionReq) => {
 
 export const getVersionListApi = (params: IGetVersionListReq) => {
   return ajax<IGetVersionListRes>({
-    url: `${config.baseAPI}/admin/update/versionList`,
+    url: `${config.baseAPI}/admin/update/v1/list_versions`,
     method: 'get',
     params
   })
 }
 
-// 删除版本
 export function deleteVersionApi(id: number) {
   return ajax<void>({
-    method: 'DELETE',
-    url: `${config.baseAPI}/admin/update/version/${id}`
+    method: 'POST',
+    url: `${config.baseAPI}/admin/update/v1/delete_version`,
+    data: { id }
   })
 }
 
-// 发版策略
 export function upsertReleasePolicyApi(data: IUpsertReleasePolicyReq) {
   return ajax<IUpsertReleasePolicyRes>({
     method: 'POST',
-    url: `${config.baseAPI}/admin/update/releasePolicy`,
+    url: `${config.baseAPI}/admin/update/v1/upsert_release_policy`,
     data
   })
 }
@@ -92,7 +87,7 @@ export function upsertReleasePolicyApi(data: IUpsertReleasePolicyReq) {
 export function getReleasePoliciesApi(params: IGetReleasePoliciesReq) {
   return ajax<IGetReleasePoliciesRes>({
     method: 'GET',
-    url: `${config.baseAPI}/admin/update/releasePolicies`,
+    url: `${config.baseAPI}/admin/update/v1/list_release_policies`,
     params
   })
 }

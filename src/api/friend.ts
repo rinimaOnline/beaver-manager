@@ -23,99 +23,90 @@ import type {
 import config from "@/config/env"
 import { ajax } from "@/utils/request"
 
-// 获取好友关系列表
 export function getFriendListApi(params: IGetFriendListReq) {
   return ajax<IGetFriendListRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/friend/list`,
+    url: `${config.baseAPI}/admin/friend/v1/list`,
     params
   })
 }
 
-// 获取好友关系详情
 export function getFriendDetailApi(id: string) {
   return ajax<IGetFriendDetailRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/friend/${id}`
+    url: `${config.baseAPI}/admin/friend/v1/detail`,
+    params: { id }
   })
 }
 
-// 强制删除好友关系
 export function deleteFriendApi(id: string) {
   return ajax<IDeleteFriendRes>({
-    method: "DELETE",
-    url: `${config.baseAPI}/admin/friend/${id}`
+    method: "POST",
+    url: `${config.baseAPI}/admin/friend/v1/delete`,
+    data: { id }
   })
 }
 
-// 批量删除好友关系
 export function batchDeleteFriendsApi(data: IBatchDeleteFriendsReq) {
   return ajax<IBatchDeleteFriendsRes>({
-    method: "DELETE",
-    url: `${config.baseAPI}/admin/friend/batch`,
+    method: "POST",
+    url: `${config.baseAPI}/admin/friend/v1/batch_delete`,
     data
   })
 }
 
-// 恢复好友关系
 export function restoreFriendApi(data: IRestoreFriendReq) {
   return ajax<IRestoreFriendRes>({
-    method: "PUT",
-    url: `${config.baseAPI}/admin/friend/restore`,
+    method: "POST",
+    url: `${config.baseAPI}/admin/friend/v1/restore`,
     data
   })
 }
 
-// 获取好友验证列表
 export function getFriendVerifyListApi(params: IGetFriendVerifyListReq) {
   return ajax<IGetFriendVerifyListRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/friend/verifylist`,
+    url: `${config.baseAPI}/admin/friend/v1/verify_list`,
     params
   })
 }
 
-// 获取好友验证详情
 export function getFriendVerifyDetailApi(params: IGetFriendVerifyDetailReq) {
   return ajax<IGetFriendVerifyDetailRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/friend/verify`,
+    url: `${config.baseAPI}/admin/friend/v1/verify_detail`,
     params
   })
 }
 
-// 删除好友验证记录
 export function deleteFriendVerifyApi(data: IDeleteFriendVerifyReq) {
   return ajax<IDeleteFriendVerifyRes>({
-    method: "DELETE",
-    url: `${config.baseAPI}/admin/friend/verify`,
+    method: "POST",
+    url: `${config.baseAPI}/admin/friend/v1/delete_verify`,
     data
   })
 }
 
-// 批量删除好友验证记录
 export function batchDeleteFriendVerifyApi(data: IBatchDeleteFriendVerifyReq) {
   return ajax<IBatchDeleteFriendVerifyRes>({
-    method: "DELETE",
-    url: `${config.baseAPI}/admin/friend/verifybatch`,
+    method: "POST",
+    url: `${config.baseAPI}/admin/friend/v1/batch_delete_verify`,
     data
   })
 }
 
-// 获取好友黑名单列表
 export function getFriendBlockListApi(params: IGetFriendBlockListReq) {
   return ajax<IGetFriendBlockListRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/friend/blocklist`,
+    url: `${config.baseAPI}/admin/friend/v1/block_list`,
     params
   })
 }
 
-// 解除黑名单
 export function unblockFriendUsersApi(data: IUnblockFriendUsersReq) {
   return ajax<IUnblockFriendUsersRes>({
-    method: "DELETE",
-    url: `${config.baseAPI}/admin/friend/blockbatch`,
+    method: "POST",
+    url: `${config.baseAPI}/admin/friend/v1/unblock_batch`,
     data
   })
 }

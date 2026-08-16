@@ -85,6 +85,11 @@ const router = createRouter({
               component: () => import("@/pages/open/apps/index.vue")
             },
             {
+              path: "workbench",
+              name: "工作台应用",
+              component: () => import("@/pages/open/workbench/index.vue")
+            },
+            {
               path: "integrations",
               name: "机器人集成",
               component: () => import("@/pages/open/integrations/index.vue")

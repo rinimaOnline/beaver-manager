@@ -8,13 +8,15 @@ import { ajax } from "@/utils/request"
 export function getUserOperationsProfileApi(userId: string) {
   return ajax<IGetUserOperationsProfileRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/operations/user/${userId}/profile`
+    url: `${config.baseAPI}/admin/operations/v1/user_profile`,
+    params: { userId }
   })
 }
 
 export function getGroupOperationsProfileApi(groupId: string) {
   return ajax<IGetGroupOperationsProfileRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/operations/group/${groupId}/profile`
+    url: `${config.baseAPI}/admin/operations/v1/group_profile`,
+    params: { groupId }
   })
 }
