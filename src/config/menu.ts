@@ -59,6 +59,7 @@ export const menuConfig: MenuItem[] = [
     children: [
       { path: "/open/developers", title: "开发者", icon: UserFilled },
       { path: "/open/apps", title: "开放应用", icon: Platform },
+      { path: "/open/workbench", title: "工作台应用", icon: Grid },
       { path: "/open/integrations", title: "机器人集成", icon: Connection }
     ]
   },

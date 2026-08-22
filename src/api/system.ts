@@ -27,60 +27,50 @@ import type {
 import config from "@/config/env"
 import { ajax } from "@/utils/request"
 
-// =================== 菜单管理 ===================
-
-// 获取菜单列表
 export function getMenuListApi(params: IGetMenuListReq) {
   return ajax<IGetMenuListRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/system/getMenuList`,
+    url: `${config.baseAPI}/admin/system/v1/list_menus`,
     params
   })
 }
 
-// 创建菜单
 export function createMenuApi(data: ICreateMenuReq) {
   return ajax<ICreateMenuRes>({
     method: "POST",
-    url: `${config.baseAPI}/admin/system/createMenu`,
+    url: `${config.baseAPI}/admin/system/v1/create_menu`,
     data
   })
 }
 
-// 更新菜单
 export function updateMenuApi(data: IUpdateMenuReq) {
   return ajax<IUpdateMenuRes>({
-    method: "PUT",
-    url: `${config.baseAPI}/admin/system/updateMenu`,
+    method: "POST",
+    url: `${config.baseAPI}/admin/system/v1/update_menu`,
     data
   })
 }
 
-// 删除菜单
 export function deleteMenuApi(data: IDeleteMenuReq) {
   return ajax<IDeleteMenuRes>({
-    method: "DELETE",
-    url: `${config.baseAPI}/admin/system/delete`,
+    method: "POST",
+    url: `${config.baseAPI}/admin/system/v1/delete_menu`,
     data
   })
 }
 
-// =================== 权限管理 ===================
-
-// 创建权限
 export function createAuthorityApi(data: ICreateAuthorityReq) {
   return ajax<ICreateAuthorityRes>({
     method: "POST",
-    url: `${config.baseAPI}/admin/system/createAuthority`,
+    url: `${config.baseAPI}/admin/system/v1/create_authority`,
     data
   })
 }
 
-// 更新权限菜单
 export function updateAuthorityMenuApi(data: IUpdateAuthorityMenuReq) {
   return ajax<IUpdateAuthorityMenuRes>({
-    method: "PUT",
-    url: `${config.baseAPI}/admin/system/updateAuthorityMenu`,
+    method: "POST",
+    url: `${config.baseAPI}/admin/system/v1/update_authority_menu`,
     data
   })
 }
@@ -88,22 +78,22 @@ export function updateAuthorityMenuApi(data: IUpdateAuthorityMenuReq) {
 export function getAuthorityListApi() {
   return ajax<IGetAuthorityListRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/system/authorities`
+    url: `${config.baseAPI}/admin/system/v1/list_authorities`
   })
 }
 
 export function updateAuthorityApi(data: IUpdateAuthorityReq) {
   return ajax<IUpdateAuthorityRes>({
-    method: "PUT",
-    url: `${config.baseAPI}/admin/system/authority`,
+    method: "POST",
+    url: `${config.baseAPI}/admin/system/v1/update_authority`,
     data
   })
 }
 
 export function deleteAuthorityApi(data: IDeleteAuthorityReq) {
   return ajax<IDeleteAuthorityRes>({
-    method: "DELETE",
-    url: `${config.baseAPI}/admin/system/authority`,
+    method: "POST",
+    url: `${config.baseAPI}/admin/system/v1/delete_authority`,
     data
   })
 }
@@ -111,14 +101,15 @@ export function deleteAuthorityApi(data: IDeleteAuthorityReq) {
 export function getAuthorityMenusApi(authorityId: number) {
   return ajax<IGetAuthorityMenusRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/system/authority/${authorityId}/menus`
+    url: `${config.baseAPI}/admin/system/v1/authority_menus`,
+    params: { id: authorityId }
   })
 }
 
 export function getAdminUserListApi(params: IGetAdminUserListReq) {
   return ajax<IGetAdminUserListRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/system/admins`,
+    url: `${config.baseAPI}/admin/system/v1/list_admins`,
     params
   })
 }
@@ -126,16 +117,15 @@ export function getAdminUserListApi(params: IGetAdminUserListReq) {
 export function createAdminUserApi(data: ICreateAdminUserReq) {
   return ajax<ICreateAdminUserRes>({
     method: "POST",
-    url: `${config.baseAPI}/admin/system/admins`,
+    url: `${config.baseAPI}/admin/system/v1/create_admin`,
     data
   })
 }
 
 export function updateAdminUserApi(userId: string, data: IUpdateAdminUserReq) {
   return ajax<IUpdateAdminUserRes>({
-    method: "PUT",
-    url: `${config.baseAPI}/admin/system/admins/${userId}`,
-    data
+    method: "POST",
+    url: `${config.baseAPI}/admin/system/v1/update_admin`,
+    data: { ...data, userId }
   })
 }
-

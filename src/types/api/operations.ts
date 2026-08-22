@@ -38,6 +38,15 @@ export interface IUserOpsMomentItem {
   createdAt: string
 }
 
+export interface IUserOpsCircleItem {
+  circleId: string
+  name: string
+  role: number
+  memberCount: number
+  postCount: number
+  isDeleted: boolean
+}
+
 export interface IUserOpsReportItem {
   id: number
   targetType: number
@@ -60,12 +69,14 @@ export interface IGetUserOperationsProfileRes {
   groupTotal: number
   sessionTotal: number
   momentTotal: number
+  circleTotal: number
   reportTotal: number
   blockTotal: number
   friends: IUserOpsFriendItem[]
   groups: IUserOpsGroupItem[]
   sessions: IUserOpsSessionItem[]
   moments: IUserOpsMomentItem[]
+  circles: IUserOpsCircleItem[]
   reports: IUserOpsReportItem[]
   blocks: IUserOpsBlockItem[]
 }

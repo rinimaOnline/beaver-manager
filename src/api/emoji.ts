@@ -28,128 +28,102 @@ import type {
 import config from "@/config/env"
 import { ajax } from "@/utils/request"
 
-// =================== 表情管理 ===================
-
-// 获取表情列表
 export function getEmojiListApi(params: IGetEmojiListReq) {
   return ajax<IGetEmojiListRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/emoji/list`,
+    url: `${config.baseAPI}/admin/emoji/v1/list`,
     params
   })
 }
 
-
-
-// 创建表情
 export function createEmojiApi(data: ICreateEmojiReq) {
   return ajax<ICreateEmojiRes>({
     method: "POST",
-    url: `${config.baseAPI}/admin/emoji/create`,
+    url: `${config.baseAPI}/admin/emoji/v1/create`,
     data
   })
 }
 
-// 更新表情
-export function updateEmojiApi(id: string, data: Omit<IUpdateEmojiReq, "id">) {
+export function updateEmojiApi(id: string, data: Omit<IUpdateEmojiReq, "emojiId">) {
   return ajax<IUpdateEmojiRes>({
-    method: "PUT",
-    url: `${config.baseAPI}/admin/emoji/${id}`,
-    data
+    method: "POST",
+    url: `${config.baseAPI}/admin/emoji/v1/update`,
+    data: { emojiId: id, ...data }
   })
 }
 
-// 删除表情
 export function deleteEmojiApi(id: string) {
   return ajax<IDeleteEmojiRes>({
-    method: "DELETE",
-    url: `${config.baseAPI}/admin/emoji/${id}`
+    method: "POST",
+    url: `${config.baseAPI}/admin/emoji/v1/delete`,
+    data: { emojiId: id }
   })
 }
 
-
-
-// =================== 表情包管理 ===================
-
-// 获取表情包列表
 export function getEmojiPackageListApi(params: IGetEmojiPackageListReq) {
   return ajax<IGetEmojiPackageListRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/emoji/packages`,
+    url: `${config.baseAPI}/admin/emoji/v1/package_list`,
     params
   })
 }
 
-
-
-// 创建表情包
 export function createEmojiPackageApi(data: ICreateEmojiPackageReq) {
   return ajax<ICreateEmojiPackageRes>({
     method: "POST",
-    url: `${config.baseAPI}/admin/emoji/packagecreate`,
+    url: `${config.baseAPI}/admin/emoji/v1/package_create`,
     data
   })
 }
 
-// 更新表情包集合
 export function updateEmojiPackageApi(data: IUpdateEmojiPackageReq) {
   return ajax<IUpdateEmojiPackageRes>({
-    method: "PUT",
-    url: `${config.baseAPI}/admin/emoji/packageupdate`,
+    method: "POST",
+    url: `${config.baseAPI}/admin/emoji/v1/package_update`,
     data
   })
 }
 
-// 删除表情包
 export function deleteEmojiPackageApi(packageId: string) {
   return ajax<IDeleteEmojiPackageRes>({
-    method: "DELETE",
-    url: `${config.baseAPI}/admin/emoji/packagedelete`,
+    method: "POST",
+    url: `${config.baseAPI}/admin/emoji/v1/package_delete`,
     data: { packageId }
   })
 }
 
-// 获取表情包内表情列表
 export function getEmojiPackageEmojisApi(params: IGetEmojiPackageEmojisReq) {
   return ajax<IGetEmojiPackageEmojisRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/emoji/packageemojis`,
+    url: `${config.baseAPI}/admin/emoji/v1/package_emojis`,
     params
   })
 }
 
-// 向表情包集合中添加表情图片
 export function addEmojiToPackageApi(data: IAddEmojiToPackageReq) {
   return ajax<IAddEmojiToPackageRes>({
     method: "POST",
-    url: `${config.baseAPI}/admin/emoji/packageaddemoji`,
+    url: `${config.baseAPI}/admin/emoji/v1/package_add_emoji`,
     data
   })
 }
 
-// 从表情包集合中移除表情图片
 export function removeEmojiFromPackageApi(data: IRemoveEmojiFromPackageReq) {
   return ajax<IRemoveEmojiFromPackageRes>({
-    method: "DELETE",
-    url: `${config.baseAPI}/admin/emoji/packageremoveemoji`,
+    method: "POST",
+    url: `${config.baseAPI}/admin/emoji/v1/package_remove_emoji`,
     data
   })
 }
 
-
-
-// =================== 收藏管理 ===================
-
-// 获取用户收藏表情列表
 export function getEmojiCollectListApi(params: IGetEmojiCollectListReq) {
   return ajax<IGetEmojiCollectListRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/emoji/collects`,
+    url: `${config.baseAPI}/admin/emoji/v1/collect_list`,
     params
   })
 }
 
-// 删除用户收藏记录
 export function deleteEmojiCollectApi(collectId: string) {
   return ajax<IDeleteEmojiCollectRes>({
     method: "DELETE",
@@ -158,7 +132,6 @@ export function deleteEmojiCollectApi(collectId: string) {
   })
 }
 
-// 批量删除收藏记录
 export function batchDeleteEmojiCollectsApi(data: IBatchDeleteEmojiCollectsReq) {
   return ajax<IBatchDeleteEmojiCollectsRes>({
     method: "DELETE",
@@ -166,5 +139,3 @@ export function batchDeleteEmojiCollectsApi(data: IBatchDeleteEmojiCollectsReq) 
     data
   })
 }
-
-

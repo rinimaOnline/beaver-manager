@@ -20,7 +20,7 @@ import { ajax } from "@/utils/request"
 export function getDeveloperListApi(params: IGetDeveloperListReq) {
   return ajax<IGetDeveloperListRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/open/developer/list`,
+    url: `${config.baseAPI}/admin/open/v1/developer/list`,
     params
   })
 }
@@ -28,7 +28,7 @@ export function getDeveloperListApi(params: IGetDeveloperListReq) {
 export function auditDeveloperApi(data: IAuditDeveloperReq) {
   return ajax<IAuditDeveloperRes>({
     method: "POST",
-    url: `${config.baseAPI}/admin/open/developer/audit`,
+    url: `${config.baseAPI}/admin/open/v1/developer/audit`,
     data
   })
 }
@@ -36,7 +36,7 @@ export function auditDeveloperApi(data: IAuditDeveloperReq) {
 export function applyDeveloperApi(data: IApplyDeveloperReq) {
   return ajax<IApplyDeveloperRes>({
     method: "POST",
-    url: `${config.baseAPI}/admin/open/developer/apply`,
+    url: `${config.baseAPI}/admin/open/v1/developer/apply`,
     data
   })
 }
@@ -44,7 +44,7 @@ export function applyDeveloperApi(data: IApplyDeveloperReq) {
 export function getOpenAppListApi(params: IGetOpenAppListReq) {
   return ajax<IGetOpenAppListRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/open/app/list`,
+    url: `${config.baseAPI}/admin/open/v1/app/list`,
     params
   })
 }
@@ -52,15 +52,15 @@ export function getOpenAppListApi(params: IGetOpenAppListReq) {
 export function auditOpenAppApi(data: IAuditOpenAppReq) {
   return ajax<IAuditOpenAppRes>({
     method: "POST",
-    url: `${config.baseAPI}/admin/open/app/audit`,
+    url: `${config.baseAPI}/admin/open/v1/app/audit`,
     data
   })
 }
 
 export function updateOpenAppStatusApi(data: IUpdateOpenAppStatusReq) {
   return ajax<IUpdateOpenAppStatusRes>({
-    method: "PUT",
-    url: `${config.baseAPI}/admin/open/app/status`,
+    method: "POST",
+    url: `${config.baseAPI}/admin/open/v1/app/update_status`,
     data
   })
 }
@@ -68,7 +68,7 @@ export function updateOpenAppStatusApi(data: IUpdateOpenAppStatusReq) {
 export function getOpenWebhookLogListApi(params: IGetOpenWebhookLogListReq) {
   return ajax<IGetOpenWebhookLogListRes>({
     method: "GET",
-    url: `${config.baseAPI}/admin/open/webhook/logs`,
+    url: `${config.baseAPI}/admin/open/v1/webhook/list_logs`,
     params
   })
 }

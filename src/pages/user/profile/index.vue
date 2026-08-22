@@ -11,7 +11,7 @@
               {{ profile.status === 2 ? "禁用" : "正常" }}
             </el-tag>
             <el-tag type="info" size="small">
-              {{ data.friendTotal }} 好友 · {{ data.groupTotal }} 群 · {{ data.momentTotal }} 动态
+              {{ data.friendTotal }} 好友 · {{ data.groupTotal }} 群 · {{ data.circleTotal }} 圈子 · {{ data.momentTotal }} 动态
             </el-tag>
           </div>
         </div>
@@ -37,6 +37,7 @@
             <el-radio-group v-model="relationMode" size="small" class="user-profile__mode" @change="onModeChange">
               <el-radio-button value="private">私聊</el-radio-button>
               <el-radio-button value="groups">群聊</el-radio-button>
+              <el-radio-button value="circles">圈子</el-radio-button>
               <el-radio-button value="moments">动态</el-radio-button>
               <el-radio-button value="emojis">表情</el-radio-button>
             </el-radio-group>
@@ -75,6 +76,24 @@
                 </div>
               </div>
               <el-empty v-if="!sidebarLoading && !filteredRelations.length" :description="emptyRelationHint" :image-size="64" />
+            </template>
+
+            <template v-else-if="relationMode === 'circles'">
+              <div
+                v-for="c in filteredCircles"
+                :key="c.circleId"
+                class="user-profile__relation-item"
+                :class="{ active: activeCircleId === c.circleId }"
+                @click="selectCircle(c.circleId)"
+              >
+                <div class="user-profile__relation-top">
+                  <el-tag size="small" :type="c.isDeleted ? 'danger' : 'success'">{{ c.isDeleted ? "已解散" : "正常" }}</el-tag>
+                  <el-tag size="small" type="info">{{ roleLabel(c.role) }}</el-tag>
+                </div>
+                <div class="user-profile__relation-title">{{ c.name || c.circleId }}</div>
+                <div class="user-profile__relation-meta">{{ c.memberCount }} 成员 · {{ c.postCount }} 帖子</div>
+              </div>
+              <el-empty v-if="!sidebarLoading && !circleList.length" description="该用户暂无圈子" :image-size="64" />
             </template>
 
             <template v-else-if="relationMode === 'moments'">
@@ -125,6 +144,12 @@
           @go-user="goUser"
           @changed="loadRelations"
         />
+        <UserCirclePanel
+          v-else-if="relationMode === 'circles'"
+          :circle-id="activeCircleId"
+          @go-user="goUser"
+          @changed="onCircleChanged"
+        />
         <UserMomentPanel
           v-else-if="relationMode === 'moments'"
           :moment-id="activeMomentId"
@@ -169,6 +194,7 @@
 </template>
 
 <script lang="ts">
+import type { CircleInfo } from "@/types/api/circle"
 import type { IChatSessionInfo } from "@/types/api/chat"
 import type { IEmojiInfo } from "@/types/api/emoji"
 import type { IFriendInfo } from "@/types/api/friend"
@@ -181,14 +207,16 @@ import { getFriendListApi } from "@/api/friend"
 import { getChatSessionListApi } from "@/api/chat"
 import { getEmojiListApi } from "@/api/emoji"
 import { getMomentListApi } from "@/api/moment"
+import { getCircleListApi } from "@/api/circle"
 import ChatAuditPanel from "./components/chatAuditPanel.vue"
 import UserGroupPanel from "./components/userGroupPanel.vue"
+import UserCirclePanel from "./components/userCirclePanel.vue"
 import UserFriendRequestsDialog from "./components/userFriendRequestsDialog.vue"
 import UserEmojiPanel from "./components/userEmojiPanel.vue"
 import UserMomentPanel from "./components/userMomentPanel.vue"
 import { buildGroupConversationCandidates, buildPrivateConversationId } from "@/utils/conversation"
 
-type RelationMode = "private" | "groups" | "moments" | "emojis"
+type RelationMode = "private" | "groups" | "circles" | "moments" | "emojis"
 
 interface IRelationItem {
   key: string
@@ -207,12 +235,12 @@ interface IRelationItem {
 
 const emptyData = (): IGetUserOperationsProfileRes => ({
   profile: { userId: "", nickName: "", email: "", avatar: "", abstract: "", status: 1, source: 1, createTime: "" },
-  friendTotal: 0, groupTotal: 0, sessionTotal: 0, momentTotal: 0, reportTotal: 0, blockTotal: 0,
-  friends: [], groups: [], sessions: [], moments: [], reports: [], blocks: []
+  friendTotal: 0, groupTotal: 0, sessionTotal: 0, momentTotal: 0, circleTotal: 0, reportTotal: 0, blockTotal: 0,
+  friends: [], groups: [], circles: [], sessions: [], moments: [], reports: [], blocks: []
 })
 
 export default defineComponent({
-  components: { ChatAuditPanel, UserMomentPanel, UserEmojiPanel, UserGroupPanel, UserFriendRequestsDialog },
+  components: { ChatAuditPanel, UserMomentPanel, UserEmojiPanel, UserGroupPanel, UserCirclePanel, UserFriendRequestsDialog },
   setup() {
     const route = useRoute()
     const router = useRouter()
@@ -228,6 +256,9 @@ export default defineComponent({
 
     const momentList = ref<MomentInfo[]>([])
     const activeMomentId = ref("")
+
+    const circleList = ref<(CircleInfo & { role?: number })[]>([])
+    const activeCircleId = ref("")
 
     const emojiList = ref<IEmojiInfo[]>([])
     const activeEmoji = ref<IEmojiInfo | null>(null)
@@ -248,6 +279,7 @@ export default defineComponent({
       const map: Record<RelationMode, string> = {
         private: "该用户暂无私聊",
         groups: "该用户暂无群聊",
+        circles: "该用户暂无圈子",
         moments: "该用户暂无动态",
         emojis: "该用户暂无表情"
       }
@@ -281,6 +313,15 @@ export default defineComponent({
       )
     })
 
+    const filteredCircles = computed(() => {
+      const kw = relationKeyword.value.trim().toLowerCase()
+      if (!kw) return circleList.value
+      return circleList.value.filter(c =>
+        (c.name || "").toLowerCase().includes(kw) ||
+        c.circleId.toLowerCase().includes(kw)
+      )
+    })
+
     const filteredEmojis = computed(() => {
       const kw = relationKeyword.value.trim().toLowerCase()
       if (!kw) return emojiList.value
@@ -300,8 +341,13 @@ export default defineComponent({
     }
 
     const targetTypeLabel = (t: number) => {
-      const map: Record<number, string> = { 1: "用户", 2: "消息", 3: "动态", 4: "群组" }
+      const map: Record<number, string> = { 1: "用户", 2: "消息", 3: "动态", 4: "群组", 5: "圈子" }
       return map[t] || `类型${t}`
+    }
+
+    const roleLabel = (role: number) => {
+      const map: Record<number, string> = { 1: "圈主", 2: "管理员", 3: "成员" }
+      return map[role] || "成员"
     }
 
     const getPeerFromFriend = (f: IFriendInfo) => {
@@ -405,6 +451,25 @@ export default defineComponent({
       }
     }
 
+    const loadCircles = async () => {
+      if (!userId.value) return
+      sidebarLoading.value = true
+      const res = await getCircleListApi({ page: 1, limit: 100, userId: userId.value })
+      sidebarLoading.value = false
+      if (res.code === 0) {
+        circleList.value = (res.result.list || []).map(c => {
+          const ops = data.value.circles?.find(o => o.circleId === c.circleId)
+          return { ...c, role: ops?.role || 0 }
+        })
+        if (!activeCircleId.value && circleList.value.length) {
+          activeCircleId.value = circleList.value[0].circleId
+        }
+      } else {
+        circleList.value = []
+        ElMessage.error(res.msg || "加载圈子失败")
+      }
+    }
+
     const loadEmojis = async () => {
       if (!userId.value) return
       sidebarLoading.value = true
@@ -425,6 +490,8 @@ export default defineComponent({
       relationKeyword.value = ""
       if (relationMode.value === "moments") {
         loadMoments()
+      } else if (relationMode.value === "circles") {
+        loadCircles()
       } else if (relationMode.value === "emojis") {
         loadEmojis()
       }
@@ -436,6 +503,10 @@ export default defineComponent({
 
     const selectMoment = (momentId: string) => {
       activeMomentId.value = momentId
+    }
+
+    const selectCircle = (circleId: string) => {
+      activeCircleId.value = circleId
     }
 
     const selectEmoji = (emoji: IEmojiInfo) => {
@@ -451,6 +522,14 @@ export default defineComponent({
       loadProfile()
     }
 
+    const onCircleChanged = async () => {
+      await loadCircles()
+      if (!circleList.value.find(c => c.circleId === activeCircleId.value)) {
+        activeCircleId.value = circleList.value[0]?.circleId || ""
+      }
+      loadProfile()
+    }
+
     const onEmojiDeleted = async () => {
       activeEmoji.value = null
       await loadEmojis()
@@ -461,7 +540,7 @@ export default defineComponent({
 
     const applyRouteQuery = () => {
       const qRelation = route.query.relation as string
-      if (qRelation === "private" || qRelation === "groups" || qRelation === "moments" || qRelation === "emojis") {
+      if (qRelation === "private" || qRelation === "groups" || qRelation === "circles" || qRelation === "moments" || qRelation === "emojis") {
         relationMode.value = qRelation
       }
       if (qRelation === "friends") {
@@ -481,6 +560,12 @@ export default defineComponent({
       if (qExtra === "blocks" || qExtra === "reports") {
         extraTab.value = qExtra
         extraDrawerVisible.value = true
+      }
+
+      const qCircleId = route.query.circleId as string
+      if (qCircleId) {
+        relationMode.value = "circles"
+        activeCircleId.value = qCircleId
       }
 
       const qGroupId = route.query.groupId as string
@@ -518,6 +603,10 @@ export default defineComponent({
           await loadMoments()
           const qMomentId = route.query.momentId as string
           if (qMomentId) activeMomentId.value = qMomentId
+        } else if (relationMode.value === "circles") {
+          await loadCircles()
+          const qCircleId = route.query.circleId as string
+          if (qCircleId) activeCircleId.value = qCircleId
         } else if (relationMode.value === "emojis") {
           await loadEmojis()
         }
@@ -563,12 +652,13 @@ export default defineComponent({
       loading, sidebarLoading, controlLoading, data, profile, userId,
       relationMode, relationKeyword, filteredRelations, activeRelation,
       momentList, filteredMoments, activeMomentId,
+      circleList, filteredCircles, activeCircleId,
       emojiList, filteredEmojis, activeEmoji,
       activeConversationId, activeGroupId, activeConversationTitle, activeParticipantNames,
       emptyRelationHint, extraDrawerVisible, extraTab, friendRequestsVisible,
-      formatTime, targetTypeLabel,
-      selectRelation, selectMoment, selectEmoji, loadRelations, onModeChange,
-      onMomentDeleted, onEmojiDeleted,
+      formatTime, targetTypeLabel, roleLabel,
+      selectRelation, selectMoment, selectCircle, selectEmoji, loadRelations, onModeChange,
+      onMomentDeleted, onCircleChanged, onEmojiDeleted,
       handleBan, handleUnban,
       goBack, goAppeals, goFriendRequests, goUser
     }
