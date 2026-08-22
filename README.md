@@ -1,7 +1,7 @@
 # 🦫 Beaver Manager - 海狸IM后台管理系统
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.1-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](VERSION)
 [![Vue](https://img.shields.io/badge/Vue-3.x-brightgreen.svg)](https://vuejs.org/)
 [![Element Plus](https://img.shields.io/badge/Element%20Plus-2.x-blue.svg)](https://element-plus.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
@@ -9,7 +9,7 @@
 
 > **海狸 IM 的后台管理 Web 端** - 基于 Vue 3 + Element Plus + TypeScript 开发，对接 beaver-server 管理接口，供运营与管理员进行用户管理、消息审计、版本发布与系统运维
 
-**当前版本：[2.0.1](VERSION)**（以仓库根目录 [`VERSION`](VERSION) 文件为准）
+**当前版本：[2.1.0](VERSION)**（以仓库根目录 [`VERSION`](VERSION) 文件为准）
 
 [English](README_EN.md) | [中文](README.md)
 

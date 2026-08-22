@@ -1,7 +1,7 @@
 # 🦫 Beaver Manager - Beaver IM Admin System
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.1-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](VERSION)
 [![Vue](https://img.shields.io/badge/Vue-3.x-brightgreen.svg)](https://vuejs.org/)
 [![Element Plus](https://img.shields.io/badge/Element%20Plus-2.x-blue.svg)](https://element-plus.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
@@ -9,7 +9,7 @@
 
 > **Admin web UI for Beaver IM** - Built with Vue 3 + Element Plus + TypeScript, connects to beaver-server admin APIs for user management, message review, release publishing, and system configuration
 
-**Current Version: [2.0.1](VERSION)** (see [`VERSION`](VERSION) at repository root)
+**Current Version: [2.1.0](VERSION)** (see [`VERSION`](VERSION) at repository root)
 
 [English](README_EN.md) | [中文](README.md)
 
