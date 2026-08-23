@@ -1,4 +1,4 @@
-# 🦫 Beaver Manager - Beaver IM Admin System
+﻿# 🦫 Beaver Manager - Beaver IM Admin System
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](VERSION)
@@ -83,10 +83,19 @@ If this project helps you, welcome to buy me a coffee ☕
   <img src="./static/sponsor/zhifubao.jpg" width="200" alt="Alipay Sponsor Code"/>
 </div>
 
-## 📄 License & Legal
+## 📄 License & Legal Disclaimer
 
-- This project is licensed under the [MIT](LICENSE) License
-- Before use, modification, or commercial deployment, please read the [Legal Disclaimer](LEGAL.md) for permitted/prohibited uses and liability terms
+This project is licensed under the [MIT License](LICENSE) — see [LICENSE](LICENSE).
+
+**Summary:**
+
+- Closed-source self-use and re-open-sourcing derivatives are free if you keep the root `LICENSE` and show About attribution when deployed (Based on Beaver IM + repo link)
+- Closed-source delivery to third parties, removing About, or running a paid IM SaaS requires a commercial license (written contract)
+- **Do not delete or alter `LICENSE`**, whether paid or free
+
+Full disclaimer & attribution: [LEGAL.md](LEGAL.md)  
+Commercial product lines & pricing: [Copyright & Commercial Licensing](https://wsrh8888.github.io/beaver-docs/community/license.html)  
+Contact: [751135385@qq.com](mailto:751135385@qq.com)
 
 ## ⭐ Star History
 

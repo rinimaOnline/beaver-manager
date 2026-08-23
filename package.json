@@ -10,7 +10,8 @@
     "build_prod": "vite build --mode=prod",
     "build_test": "vite build --mode=test",
     "lint": "eslint . --fix",
-    "prepare": "husky"
+    "prepare": "husky",
+    "add-copyright-header": "node scripts/add-copyright-header.mjs"
   },
   "dependencies": {
     "@element-plus/icons-vue": "2.3.1",
