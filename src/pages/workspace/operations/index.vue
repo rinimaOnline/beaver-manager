@@ -281,29 +281,34 @@ export default defineComponent({
 
     const fetchData = async () => {
       loading.value = true
-      const [overviewRes, inboxRes, trendsRes] = await Promise.all([
-        getDashboardOverviewApi(),
-        getDashboardInboxApi(20),
-        getDashboardTrendsApi(7)
-      ])
-      loading.value = false
-      if (overviewRes.code === 0) {
-        overview.value = overviewRes.result
-      } else {
-        ElMessage.error(overviewRes.msg || "获取概览失败")
-      }
-      if (inboxRes.code === 0) {
-        const list = (inboxRes.result.list || []).filter(item => isInboxCategory(item.category))
-        inboxList.value = list
-        inboxTotal.value = list.length
-      }
-      if (trendsRes.code === 0) {
-        trendDays.value = trendsRes.result.days || []
-        trendSeries.value = (trendsRes.result.series || []).map((s, i) => ({
-          ...s,
-          max: Math.max(...(s.values || []), 1),
-          color: trendColors[i % trendColors.length]
-        }))
+      try {
+        const [overviewRes, inboxRes, trendsRes] = await Promise.all([
+          getDashboardOverviewApi(),
+          getDashboardInboxApi(20),
+          getDashboardTrendsApi(7)
+        ])
+        if (overviewRes.code === 0) {
+          overview.value = overviewRes.result
+        } else {
+          ElMessage.error(overviewRes.msg || "获取概览失败")
+        }
+        if (inboxRes.code === 0) {
+          const list = (inboxRes.result.list || []).filter(item => isInboxCategory(item.category))
+          inboxList.value = list
+          inboxTotal.value = list.length
+        }
+        if (trendsRes.code === 0) {
+          trendDays.value = trendsRes.result.days || []
+          trendSeries.value = (trendsRes.result.series || []).map((s, i) => ({
+            ...s,
+            max: Math.max(...(s.values || []), 1),
+            color: trendColors[i % trendColors.length]
+          }))
+        }
+      } catch (error: any) {
+        ElMessage.error(error?.message || "工作台数据加载失败")
+      } finally {
+        loading.value = false
       }
     }
 
