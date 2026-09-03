@@ -79,6 +79,16 @@ const router = createRouter({
               path: "appeals",
               name: "申诉",
               component: () => import("@/pages/safety/appeals/index.vue")
+            },
+            {
+              path: "reports",
+              name: "举报队列",
+              component: () => import("@/pages/safety/reports/index.vue")
+            },
+            {
+              path: "wallet",
+              name: "钱包",
+              component: () => import("@/pages/safety/wallet/index.vue")
             }
           ]
         },
@@ -210,7 +220,7 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const userStore = useUserStore()
   if (to.path === "/login") {
     next()

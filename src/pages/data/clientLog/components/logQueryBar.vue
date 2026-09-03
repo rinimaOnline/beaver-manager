@@ -93,7 +93,7 @@ export default defineComponent({
     }
   },
   emits: ["update:queryText", "update:timePreset", "update:customTimeRange", "search"],
-  setup(props, { emit }) {
+  setup(_, { emit }) {
     const onQueryTextChange = (value: string) => emit("update:queryText", value)
 
     const onTimePresetChange = (value: string) => {

@@ -106,6 +106,7 @@
 
 <script lang="ts">
 import type { IFriendVerifyInfo } from "@/types/api/friend"
+import type { TagType } from "@/types/common"
 import { ElMessage, ElMessageBox } from "element-plus"
 import { batchDeleteFriendVerifyApi, deleteFriendVerifyApi, getFriendVerifyListApi } from "@/api/friend"
 
@@ -138,7 +139,10 @@ export default defineComponent({
     const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
 
     const getStatusText = (status: number) => statusOptions.find(o => o.value === status)?.label || "未知"
-    const getStatusTagType = (status: number) => ({ 0: "warning", 1: "success", 2: "danger", 3: "info", 4: "danger" }[status] || "info")
+    const getStatusTagType = (status: number): TagType => {
+      const map: Record<number, TagType> = { 0: "warning", 1: "success", 2: "danger", 3: "info", 4: "danger" }
+      return map[status] || "info"
+    }
 
     const buildParams = () => {
       const base = {

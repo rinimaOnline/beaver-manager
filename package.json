@@ -9,6 +9,7 @@
     "serve_test": "vite serve --mode=test",
     "build_prod": "vite build --mode=prod",
     "build_test": "vite build --mode=test",
+    "typecheck": "vue-tsc -b --force",
     "lint": "eslint . --fix",
     "prepare": "husky",
     "add-copyright-header": "node scripts/add-copyright-header.mjs"

@@ -127,6 +127,29 @@ export interface IGetAuthorityMenusRes {
   menuIds: number[]
 }
 
+/** 可授权的后台模块。module 是 /admin/<module>/v1/* 里的模块段 */
+export interface IAdminModuleItem {
+  module: string
+  title: string
+}
+
+export interface IListAdminModulesRes {
+  list: IAdminModuleItem[]
+}
+
+export interface IGetAuthorityModulesRes {
+  modules: string[]
+  /** 超管角色豁免全部模块，前端据此禁用配置 */
+  isSuper: boolean
+}
+
+export interface IUpdateAuthorityModuleReq {
+  id: number
+  modules: string[]
+}
+
+export interface IUpdateAuthorityModuleRes {}
+
 export interface IAdminUserInfo {
   id: number
   userId: string

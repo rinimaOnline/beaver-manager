@@ -22,13 +22,10 @@
 import type {
   IAddEmojiToPackageReq,
   IAddEmojiToPackageRes,
-  IBatchDeleteEmojiCollectsReq,
-  IBatchDeleteEmojiCollectsRes,
   ICreateEmojiPackageReq,
   ICreateEmojiPackageRes,
   ICreateEmojiReq,
   ICreateEmojiRes,
-  IDeleteEmojiCollectRes,
   IDeleteEmojiPackageRes,
   IDeleteEmojiRes,
   IGetEmojiCollectListReq,
@@ -145,18 +142,6 @@ export function getEmojiCollectListApi(params: IGetEmojiCollectListReq) {
   })
 }
 
-export function deleteEmojiCollectApi(collectId: string) {
-  return ajax<IDeleteEmojiCollectRes>({
-    method: "DELETE",
-    url: `${config.baseAPI}/admin/emoji/collectdelete`,
-    data: { collectId }
-  })
-}
-
-export function batchDeleteEmojiCollectsApi(data: IBatchDeleteEmojiCollectsReq) {
-  return ajax<IBatchDeleteEmojiCollectsRes>({
-    method: "DELETE",
-    url: `${config.baseAPI}/admin/emoji/collectbatch`,
-    data
-  })
-}
+// 收藏表情目前只有 collect_list 查询接口。删除 / 批量删除的封装曾指向
+// /admin/emoji/collectdelete 与 /admin/emoji/collectbatch，后端从未注册这两个路由，
+// 调用必然 404，且无页面引用，已移除。后端补上接口后再按 v1 前缀重新添加。

@@ -22,7 +22,7 @@
 // 表情信息
 export interface IEmojiInfo {
   emojiId: string
-  fileUrl?: string
+  fileUrl: string
   title: string
   authorId: string
   createTime: string
@@ -31,7 +31,7 @@ export interface IEmojiInfo {
 
 // 表情包信息
 export interface IEmojiPackageInfo {
-  id: string
+  packageId: string
   title: string
   coverFile: string
   userId: string
@@ -44,11 +44,11 @@ export interface IEmojiPackageInfo {
 
 // 表情收藏信息
 export interface IEmojiCollectInfo {
-  id: string
+  collectId: string
   userId: string
   emojiId: string
   emojiTitle: string
-  emojiFileName: string
+  emojiFileUrl: string
   createTime: string
   updateTime: string
 }
@@ -81,7 +81,7 @@ export interface ICreateEmojiReq {
 }
 
 export interface ICreateEmojiRes {
-  id: string
+  emojiId: string
 }
 
 // 更新表情
@@ -95,7 +95,7 @@ export interface IUpdateEmojiRes {}
 
 // 删除表情
 export interface IDeleteEmojiReq {
-  id: string
+  emojiId: string
 }
 
 export interface IDeleteEmojiRes {}
@@ -137,6 +137,7 @@ export interface IGetEmojiPackageEmojisRes {
 }
 
 // 向表情包集合中添加表情图片
+// authorId 不在这里：后端从 Beaver-User-Id 请求头取创建者，body 里传会被直接丢弃
 export interface IAddEmojiToPackageReq {
   packageId: string
   fileUrl: string
@@ -145,11 +146,10 @@ export interface IAddEmojiToPackageReq {
     width: number
     height: number
   }
-  authorId: string
 }
 
 export interface IAddEmojiToPackageRes {
-  id: string
+  relationId: string
 }
 
 // 从表情包集合中移除表情图片
@@ -172,7 +172,7 @@ export interface ICreateEmojiPackageReq {
 }
 
 export interface ICreateEmojiPackageRes {
-  id: string
+  packageId: string
 }
 
 // 更新表情包
@@ -215,20 +215,6 @@ export interface IGetEmojiCollectListRes {
   list: IEmojiCollectInfo[]
   total: number
 }
-
-// 删除用户收藏记录
-export interface IDeleteEmojiCollectReq {
-  collectId: string
-}
-
-export interface IDeleteEmojiCollectRes {}
-
-// 批量删除收藏记录
-export interface IBatchDeleteEmojiCollectsReq {
-  ids: string[]
-}
-
-export interface IBatchDeleteEmojiCollectsRes {}
 
 // 表情包类型枚举
 export enum EmojiPackageType {

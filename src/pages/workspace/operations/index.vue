@@ -139,14 +139,17 @@
 <script lang="ts">
 import type { Component } from "vue"
 import type { IDashboardInboxItem, IDashboardOverview, IDashboardTrendSeries } from "@/types/api/overview"
+import type { TagType } from "@/types/common"
 import {
   ArrowRight,
   ChatDotRound,
   ChatLineRound,
   Connection,
+  Grid,
   Refresh,
   User,
-  UserFilled
+  UserFilled,
+  Warning
 } from "@element-plus/icons-vue"
 import { ElMessage } from "element-plus"
 import { getDashboardInboxApi, getDashboardOverviewApi, getDashboardTrendsApi } from "@/api/overview"
@@ -240,6 +243,30 @@ export default defineComponent({
         icon: ChatLineRound,
         bg: "linear-gradient(135deg, #d4b06a, #b88230)",
         alert: true
+      },
+      {
+        title: "待处理举报",
+        value: overview.value.pendingReportCount,
+        path: "/safety/reports",
+        icon: Warning,
+        bg: "linear-gradient(135deg, #f89898, #f56c6c)",
+        alert: true
+      },
+      {
+        title: "待审开发者",
+        value: overview.value.pendingDeveloperCount,
+        path: "/open/developers",
+        icon: User,
+        bg: "linear-gradient(135deg, #b3a0e8, #8a6fd6)",
+        alert: true
+      },
+      {
+        title: "待审应用",
+        value: overview.value.pendingAppCount,
+        path: "/open/apps",
+        icon: Grid,
+        bg: "linear-gradient(135deg, #7bd3d3, #3ba9a9)",
+        alert: true
       }
     ])
 
@@ -268,16 +295,14 @@ export default defineComponent({
       return map[category] || category
     }
 
-    const categoryTagType = (category: string) => {
-      const map: Record<string, string> = {
-        feedback: "",
+    const categoryTagType = (category: string): TagType => {
+      const map: Record<string, TagType> = {
+        feedback: "primary",
         developer: "info",
         app: "success"
       }
       return map[category] || "info"
     }
-
-    const isInboxCategory = (category: string) => !["report", "case"].includes(category)
 
     const fetchData = async () => {
       loading.value = true
@@ -293,9 +318,9 @@ export default defineComponent({
           ElMessage.error(overviewRes.msg || "获取概览失败")
         }
         if (inboxRes.code === 0) {
-          const list = (inboxRes.result.list || []).filter(item => isInboxCategory(item.category))
-          inboxList.value = list
-          inboxTotal.value = list.length
+          inboxList.value = inboxRes.result.list || []
+          // 这里只取了前 20 条，条数要用服务端返回的 total，不能用当前页长度
+          inboxTotal.value = inboxRes.result.total ?? inboxList.value.length
         }
         if (trendsRes.code === 0) {
           trendDays.value = trendsRes.result.days || []

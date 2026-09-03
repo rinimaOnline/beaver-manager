@@ -138,9 +138,9 @@
             <template v-else-if="relationMode === 'emojis'">
               <div
                 v-for="e in filteredEmojis"
-                :key="e.id"
+                :key="e.emojiId"
                 class="user-profile__relation-item"
-                :class="{ active: activeEmoji?.id === e.id }"
+                :class="{ active: activeEmoji?.emojiId === e.emojiId }"
                 @click="selectEmoji(e)"
               >
                 <div class="user-profile__relation-title">{{ e.title }}</div>
@@ -193,6 +193,7 @@
             <p>{{ targetTypeLabel(r.targetType) }} · {{ r.targetId }}</p>
             <div class="user-profile__extra-meta">
               <span>{{ r.createdAt }}</span>
+              <el-button link type="primary" @click="goReport(r.id)">查看队列</el-button>
             </div>
           </div>
           <el-empty v-if="!data.reports.length" description="暂无举报" />
@@ -278,7 +279,7 @@ export default defineComponent({
     const momentList = ref<MomentInfo[]>([])
     const activeMomentId = ref("")
 
-    const circleList = ref<(CircleInfo & { role?: number })[]>([])
+    const circleList = ref<(CircleInfo & { role: number })[]>([])
     const activeCircleId = ref("")
 
     const emojiList = ref<IEmojiInfo[]>([])
@@ -348,7 +349,7 @@ export default defineComponent({
       if (!kw) return emojiList.value
       return emojiList.value.filter(e =>
         (e.title || "").toLowerCase().includes(kw) ||
-        e.id.toLowerCase().includes(kw)
+        e.emojiId.toLowerCase().includes(kw)
       )
     })
 
@@ -666,6 +667,7 @@ export default defineComponent({
     const goAppeals = () => router.push({ path: "/safety/appeals", query: { userId: userId.value } })
     const goFriendRequests = () => { friendRequestsVisible.value = true }
     const goUser = (id: string) => router.push(`/user/profile/${id}`)
+    const goReport = (id: number) => router.push(`/safety/reports?id=${id}`)
 
     watch(userId, loadProfile, { immediate: true })
 
@@ -681,7 +683,7 @@ export default defineComponent({
       selectRelation, selectMoment, selectCircle, selectEmoji, loadRelations, onModeChange,
       onMomentDeleted, onCircleChanged, onEmojiDeleted,
       handleBan, handleUnban,
-      goBack, goAppeals, goFriendRequests, goUser
+      goBack, goAppeals, goFriendRequests, goUser, goReport
     }
   }
 })

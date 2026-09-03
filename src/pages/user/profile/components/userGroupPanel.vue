@@ -203,9 +203,10 @@ export default defineComponent({
       const source = fullMembers.value.length
         ? fullMembers.value.map(m => ({
             userId: m.userId,
-            nickName: m.nickName || m.userId,
+            // 群成员列表接口把用户昵称放在 memberNickname，入群时间放在 createdAt
+            nickName: m.memberNickname || m.userId,
             role: m.role,
-            joinTime: m.joinTime || "",
+            joinTime: m.createdAt || "",
             memberDbId: m.id
           }))
         : (data.value.members || []).map(m => ({

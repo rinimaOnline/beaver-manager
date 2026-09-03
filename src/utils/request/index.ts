@@ -83,8 +83,9 @@ request.interceptors.response.use(
       localStorage.removeItem("userId")
       localStorage.removeItem("phone")
 
-      // 可以在这里添加路由跳转逻辑
-      window.location.href = "/login"
+      // 项目使用 hash 路由（createWebHashHistory），必须带上 #，
+      // 否则会请求服务器上并不存在的 /login 路径
+      window.location.hash = "#/login"
 
       return Promise.reject(new Error("认证失败，请重新登录"))
     }
@@ -92,6 +93,19 @@ request.interceptors.response.use(
     return response.data
   },
   (error: AxiosError) => {
+    // 后台加了身份中间件后，token 过期或被顶下线会在任意接口上返回 401。
+    // 原来只在 authentication 失败时跳登录，别的接口拿到 401 会静静卡住，
+    // 用户看到一片加载失败但不知道要重新登录。
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token")
+      localStorage.removeItem("userId")
+      localStorage.removeItem("phone")
+      window.location.hash = "#/login"
+      return Promise.reject(new Error("登录已失效，请重新登录"))
+    }
+    if (error.response?.status === 403) {
+      return Promise.reject(new Error("无权访问该功能，请联系管理员分配权限"))
+    }
     return Promise.reject(error)
   }
 )

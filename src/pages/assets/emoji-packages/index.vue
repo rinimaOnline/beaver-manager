@@ -333,8 +333,10 @@
 </template>
 
 <script lang="ts">
+import type { FormInstance } from "element-plus"
+import type { TagType } from "@/types/common"
+import type { IEmojiInfo, IEmojiPackageInfo } from "@/types/api/emoji"
 import { ElMessage, ElMessageBox } from "element-plus"
-import { UploadFilled, Close } from "@element-plus/icons-vue"
 import {  onMounted, reactive, ref } from "vue"
 
 import {
@@ -354,28 +356,28 @@ export default defineComponent({
   setup() {
     const router = useRouter()
     const loading = ref(false)
-    const packageList = ref([])
+    const packageList = ref<IEmojiPackageInfo[]>([])
     const total = ref(0)
     const formDialogVisible = ref(false)
     const emojiDialogVisible = ref(false)
     const emojiFormDialogVisible = ref(false)
     const isEdit = ref(false)
-    const currentPackage = ref(null)
-    const formRef = ref<any>(null)
+    const currentPackage = ref<IEmojiPackageInfo | null>(null)
+    const formRef = ref<FormInstance>()
     const fileInput = ref<HTMLInputElement | null>(null)
     const uploading = ref(false)
     const previewUrl = ref('')
     const selectedFile = ref<File | null>(null)
-    const emojiList = ref<any[]>([])
+    const emojiList = ref<IEmojiInfo[]>([])
     const emojiLoading = ref(false)
     const emojiFileInput = ref<HTMLInputElement | null>(null)
-    const emojiFormRef = ref<any>(null)
+    const emojiFormRef = ref<FormInstance>()
     const emojiUploading = ref(false)
     const emojiPreviewUrl = ref('')
     const emojiSelectedFile = ref<File | null>(null)
 
     // 表情包状态映射
-    const packageStatusMap = {
+    const packageStatusMap: Record<number, string> = {
       [EmojiPackageStatus.DISABLED]: "禁用",
       [EmojiPackageStatus.ENABLED]: "启用",
       [EmojiPackageStatus.REVIEWING]: "审核中",
@@ -422,8 +424,7 @@ export default defineComponent({
       title: "",
       fileUrl: "",
       packageId: "",
-      emojiInfo: { width: 0, height: 0 },
-      authorId: ""
+      emojiInfo: { width: 0, height: 0 }
     })
 
     // 表情表单验证规则
@@ -433,14 +434,14 @@ export default defineComponent({
     }
 
     // 获取状态标签类型
-    const getStatusTagType = (status: number) => {
-      const statusMap: Record<number, string> = {
+    const getStatusTagType = (status: number): TagType => {
+      const statusMap: Record<number, TagType> = {
         [EmojiPackageStatus.DISABLED]: "danger",
         [EmojiPackageStatus.ENABLED]: "success",
         [EmojiPackageStatus.REVIEWING]: "warning",
         [EmojiPackageStatus.REJECTED]: "info"
       }
-      return statusMap[status] || ""
+      return statusMap[status] || "info"
     }
 
     // 获取表情包列表
@@ -481,7 +482,7 @@ export default defineComponent({
         title: "",
         userId: "",
         type: "",
-        status: null
+        status: undefined
       })
       fetchPackageList()
     }
@@ -587,7 +588,7 @@ export default defineComponent({
     }
 
     // 管理表情包内的表情
-    const handleManageEmojis = (row) => {
+    const handleManageEmojis = (row: IEmojiPackageInfo) => {
       currentPackage.value = row
       emojiDialogVisible.value = true
       fetchEmojiList(row.packageId)
@@ -595,9 +596,9 @@ export default defineComponent({
 
     // 添加表情到表情包
     const handleAddEmojiToPackage = () => {
+      if (!currentPackage.value) return
       emojiFormDialogVisible.value = true
       emojiForm.packageId = currentPackage.value.packageId
-      emojiForm.authorId = currentPackage.value.userId // 设置创建者ID为表情包的用户ID
     }
 
     // 新增表情包
@@ -615,7 +616,7 @@ export default defineComponent({
     }
 
     // 编辑表情包
-    const handleEdit = (row) => {
+    const handleEdit = (row: IEmojiPackageInfo) => {
       isEdit.value = true
       Object.assign(form, {
         packageId: row.packageId,
@@ -665,7 +666,7 @@ export default defineComponent({
       }
     }
 
-    const handleDelete = async (row: { packageId: string; title: string }) => {
+    const handleDelete = async (row: IEmojiPackageInfo) => {
       await ElMessageBox.confirm(`确定删除表情包「${row.title}」？`, "确认删除", { type: "warning" })
       const res = await deleteEmojiPackageApi(row.packageId)
       if (res.code === 0) {
@@ -680,7 +681,7 @@ export default defineComponent({
 
     // 提交表情表单
     const submitEmojiForm = async () => {
-      if (!emojiFormRef.value) return
+      if (!emojiFormRef.value || !currentPackage.value) return
       await emojiFormRef.value.validate()
       if (!emojiForm.fileUrl) {
         ElMessage.error("请选择表情文件")
@@ -691,15 +692,14 @@ export default defineComponent({
         packageId: emojiForm.packageId,
         fileUrl: emojiForm.fileUrl,
         title: emojiForm.title,
-        emojiInfo: emojiForm.emojiInfo,
-        authorId: emojiForm.authorId
+        emojiInfo: emojiForm.emojiInfo
       })
       emojiUploading.value = false
       if (res.code === 0) {
         ElMessage.success("添加成功")
         emojiFormDialogVisible.value = false
         fetchEmojiList(currentPackage.value.packageId)
-        Object.assign(emojiForm, { title: "", fileUrl: "", emojiInfo: { width: 0, height: 0 }, authorId: "" })
+        Object.assign(emojiForm, { title: "", fileUrl: "", emojiInfo: { width: 0, height: 0 } })
         emojiSelectedFile.value = null
         emojiPreviewUrl.value = ""
       } else {
@@ -707,15 +707,14 @@ export default defineComponent({
       }
     }
 
-    const handleDeleteEmoji = async (row: { emojiId: string; title: string }) => {
+    const handleDeleteEmoji = async (row: IEmojiInfo) => {
+      if (!currentPackage.value) return
+      const packageId = currentPackage.value.packageId
       await ElMessageBox.confirm(`确认移除表情「${row.title}」？`, "确认移除", { type: "warning" })
-      const res = await removeEmojiFromPackageApi({
-        packageId: currentPackage.value.packageId,
-        emojiId: row.emojiId
-      })
+      const res = await removeEmojiFromPackageApi({ packageId, emojiId: row.emojiId })
       if (res.code === 0) {
         ElMessage.success("移除成功")
-        fetchEmojiList(currentPackage.value.packageId)
+        fetchEmojiList(packageId)
       } else {
         ElMessage.error(res.msg || "移除失败")
       }

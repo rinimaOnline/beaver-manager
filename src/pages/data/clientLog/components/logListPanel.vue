@@ -150,8 +150,13 @@ export default defineComponent({
   },
   emits: ["update:viewMode", "update:wrapLine", "toggle-sort", "size-change", "page-change"],
   setup(_, { emit }) {
-    const onViewModeChange = (value: LogViewMode) => emit("update:viewMode", value)
-    const onWrapLineChange = (value: boolean) => emit("update:wrapLine", value)
+    // el-radio-group / el-switch 回调的载荷类型是宽松的联合类型，这里收敛回本组件的取值
+    const onViewModeChange = (value: string | number | boolean | undefined) => {
+      emit("update:viewMode", value === "table" ? "table" : "raw")
+    }
+    const onWrapLineChange = (value: string | number | boolean) => {
+      emit("update:wrapLine", Boolean(value))
+    }
     const onSizeChange = (size: number) => emit("size-change", size)
     const onPageChange = (page: number) => emit("page-change", page)
 

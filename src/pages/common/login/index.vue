@@ -38,8 +38,8 @@ export default defineComponent({
 
     // 表单数据
     const loginForm = reactive({
-      phone: "15383645663",
-      password: "123456"
+      phone: "",
+      password: ""
     })
 
     // 表单验证规则
@@ -144,10 +144,6 @@ export default defineComponent({
         </el-form-item>
       </el-form>
 
-      <div class="login-tips">
-        <p>默认手机号：15383645663</p>
-        <p>默认密码：123456</p>
-      </div>
     </div>
   </div>
 </template>
@@ -187,16 +183,4 @@ export default defineComponent({
   }
 }
 
-.login-tips {
-  margin-top: 20px;
-  padding: 15px;
-  background: #f5f5f5;
-  border-radius: 4px;
-  font-size: 12px;
-  color: #666;
-
-  p {
-    margin: 5px 0;
-  }
-}
 </style>

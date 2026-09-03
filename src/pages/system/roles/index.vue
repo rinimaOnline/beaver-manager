@@ -42,6 +42,7 @@
         <template #default="{ row }">
           <el-button type="primary" link @click="openEdit(row)">编辑</el-button>
           <el-button type="warning" link @click="openMenus(row)">分配菜单</el-button>
+          <el-button type="warning" link @click="openModules(row)">接口权限</el-button>
           <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
@@ -85,20 +86,56 @@
         <el-button type="primary" :loading="saving" @click="submitMenus">保存</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="moduleVisible" title="接口权限" width="560px">
+      <el-alert type="info" :closable="false" show-icon class="system-roles__hint">
+        <template #title>
+          这里控制该角色能调用哪些后台接口，和「分配菜单」不是一回事——菜单只管侧边栏能看到什么。
+          没有勾选的模块，对应接口会直接返回无权访问。
+        </template>
+      </el-alert>
+      <el-alert
+        v-if="moduleIsSuper"
+        type="warning"
+        :closable="false"
+        show-icon
+        class="system-roles__hint"
+        title="超级管理员角色豁免全部模块，无需也不能在此配置。"
+      />
+      <el-checkbox-group v-else v-model="checkedModules" class="system-roles__modules">
+        <el-checkbox v-for="item in moduleList" :key="item.module" :value="item.module">
+          {{ item.title }}
+        </el-checkbox>
+      </el-checkbox-group>
+      <template #footer>
+        <el-button @click="moduleVisible = false">取消</el-button>
+        <el-button
+          v-if="!moduleIsSuper"
+          type="primary"
+          :loading="saving"
+          @click="submitModules"
+        >
+          保存
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script lang="ts">
-import type { IAuthorityInfo, IGetMenuListItem } from "@/types/api/system"
+import type { IAdminModuleItem, IAuthorityInfo, IGetMenuListItem } from "@/types/api/system"
 import { ElMessage, ElMessageBox } from "element-plus"
 import {
   createAuthorityApi,
   deleteAuthorityApi,
   getAuthorityListApi,
   getAuthorityMenusApi,
+  getAuthorityModulesApi,
   getMenuListApi,
+  listAdminModulesApi,
   updateAuthorityApi,
-  updateAuthorityMenuApi
+  updateAuthorityMenuApi,
+  updateAuthorityModuleApi
 } from "@/api/system"
 
 interface IMenuTreeNode extends IGetMenuListItem {
@@ -114,6 +151,10 @@ export default defineComponent({
     const menuTree = ref<IMenuTreeNode[]>([])
     const formVisible = ref(false)
     const menuVisible = ref(false)
+    const moduleVisible = ref(false)
+    const moduleList = ref<IAdminModuleItem[]>([])
+    const checkedModules = ref<string[]>([])
+    const moduleIsSuper = ref(false)
     const isEdit = ref(false)
     const currentRoleId = ref(0)
     const menuTreeRef = ref()
@@ -208,6 +249,42 @@ export default defineComponent({
       }
     }
 
+    const openModules = async (row: IAuthorityInfo) => {
+      currentRoleId.value = row.id
+      if (moduleList.value.length === 0) {
+        const catalog = await listAdminModulesApi()
+        if (catalog.code !== 0) {
+          ElMessage.error(catalog.msg || "加载模块列表失败")
+          return
+        }
+        moduleList.value = catalog.result.list || []
+      }
+      const res = await getAuthorityModulesApi(row.id)
+      if (res.code !== 0) {
+        ElMessage.error(res.msg || "加载模块授权失败")
+        return
+      }
+      moduleIsSuper.value = res.result.isSuper
+      checkedModules.value = res.result.modules || []
+      moduleVisible.value = true
+    }
+
+    const submitModules = async () => {
+      saving.value = true
+      const res = await updateAuthorityModuleApi({
+        id: currentRoleId.value,
+        modules: checkedModules.value
+      })
+      saving.value = false
+      if (res.code !== 0) {
+        ElMessage.error(res.msg || "保存失败")
+        return
+      }
+      // 服务端授权缓存 30 秒，提示一下免得以为没保存成功
+      ElMessage.success("已保存，最多 30 秒后生效")
+      moduleVisible.value = false
+    }
+
     const openMenus = async (row: IAuthorityInfo) => {
       currentRoleId.value = row.id
       await fetchMenus()
@@ -256,7 +333,9 @@ export default defineComponent({
 
     return {
       loading, saving, roleList, menuTree, formVisible, menuVisible, isEdit, form, menuTreeRef,
-      openCreate, openEdit, submitForm, openMenus, submitMenus, handleDelete
+      moduleVisible, moduleList, checkedModules, moduleIsSuper,
+      openCreate, openEdit, submitForm, openMenus, submitMenus, handleDelete,
+      openModules, submitModules
     }
   }
 })
@@ -278,6 +357,16 @@ export default defineComponent({
       margin-left: 0;
       margin-right: 0;
     }
+  }
+
+  .system-roles__hint {
+    margin-bottom: 12px;
+  }
+
+  .system-roles__modules {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
 }
 </style>

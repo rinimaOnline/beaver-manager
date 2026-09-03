@@ -27,3 +27,44 @@ export interface IExecuteUserControlReq {
   reason?: string
   caseId?: number
 }
+
+export interface IContentReportInfo {
+  id: number
+  reporterUserId: string
+  reporterName: string
+  targetType: number
+  targetId: string
+  reasonType: number
+  content: string
+  status: number
+  caseId: number
+  createdAt: string
+}
+
+export interface IGetContentReportListReq {
+  page?: number
+  pageSize?: number
+  status?: number
+  targetType?: number
+  targetId?: string
+}
+
+export interface IGetContentReportListRes {
+  list: IContentReportInfo[]
+  total: number
+}
+
+export interface IEscalateContentReportReq {
+  reportId: number
+  priority?: number
+}
+
+export interface IEscalateContentReportRes {
+  caseId: number
+  caseNo: string
+}
+
+export interface IRejectContentReportReq {
+  reportId: number
+  handleRemark?: string
+}

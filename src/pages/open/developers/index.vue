@@ -189,6 +189,7 @@
 <script lang="ts">
 import type { FormInstance, FormRules } from "element-plus"
 import type { IDeveloperInfo } from "@/types/api/open"
+import type { TagType } from "@/types/common"
 import { Search } from "@element-plus/icons-vue"
 import { ElMessage } from "element-plus"
 import { applyDeveloperApi, auditDeveloperApi, getDeveloperListApi } from "@/api/open"
@@ -232,7 +233,10 @@ export default defineComponent({
     }
 
     const getStatusText = (status: number) => ({ 0: "待审核", 1: "已通过", 2: "已拒绝" }[status] || "未知")
-    const getStatusType = (status: number) => ({ 0: "warning", 1: "success", 2: "danger" }[status] || "info")
+    const getStatusType = (status: number): TagType => {
+      const map: Record<number, TagType> = { 0: "warning", 1: "success", 2: "danger" }
+      return map[status] || "info"
+    }
 
     const loadDeveloperList = async () => {
       loading.value = true

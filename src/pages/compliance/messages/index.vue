@@ -249,6 +249,8 @@ export default defineComponent({
 
     const handleBatchRestore = async () => {
       if (!selectedIds.value.length) return
+      // 恢复会让已删除的消息重新对用户可见，与批量删除同样需要确认
+      await ElMessageBox.confirm(`确认恢复选中的 ${selectedIds.value.length} 条消息？`, "批量恢复", { type: "warning" })
       const res = await batchRestoreChatMessagesApi({ ids: selectedIds.value })
       if (res.code === 0) {
         ElMessage.success("批量恢复成功")

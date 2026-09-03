@@ -30,9 +30,9 @@ import type { ImageSize } from '@/types/utils/upload'
 export const getMd5 = (file: File): Promise<string> => {
   const bmf = new BMF()
   return new Promise((resolve, reject) => {
-    bmf.md5(file, (err: Error, md5: string) => {
-      if (err) {
-        return reject(err)
+    bmf.md5(file, (err, md5) => {
+      if (err || !md5) {
+        return reject(new Error(err || '计算文件 MD5 失败'))
       }
       resolve(md5)
     })

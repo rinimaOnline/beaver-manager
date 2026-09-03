@@ -34,8 +34,12 @@ import type {
   IGetAdminUserListRes,
   IGetAuthorityListRes,
   IGetAuthorityMenusRes,
+  IGetAuthorityModulesRes,
   IGetMenuListReq,
   IGetMenuListRes,
+  IListAdminModulesRes,
+  IUpdateAuthorityModuleReq,
+  IUpdateAuthorityModuleRes,
   IUpdateAdminUserReq,
   IUpdateAdminUserRes,
   IUpdateAuthorityMenuReq,
@@ -124,6 +128,30 @@ export function getAuthorityMenusApi(authorityId: number) {
     method: "GET",
     url: `${config.baseAPI}/admin/system/v1/authority_menus`,
     params: { id: authorityId }
+  })
+}
+
+// 可授权的后台模块目录。模块决定接口能不能调，和菜单（决定页面能不能看）是两回事
+export function listAdminModulesApi() {
+  return ajax<IListAdminModulesRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/system/v1/list_modules`
+  })
+}
+
+export function getAuthorityModulesApi(authorityId: number) {
+  return ajax<IGetAuthorityModulesRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/system/v1/authority_modules`,
+    params: { id: authorityId }
+  })
+}
+
+export function updateAuthorityModuleApi(data: IUpdateAuthorityModuleReq) {
+  return ajax<IUpdateAuthorityModuleRes>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/system/v1/update_authority_module`,
+    data
   })
 }
 

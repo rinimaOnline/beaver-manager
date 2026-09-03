@@ -19,6 +19,10 @@
  * beaver-manager-header-v1
  */
 
+// el-tag / el-badge 等组件 type 属性的取值集合，Element Plus 只接受这几个字面量，
+// 返回 string 的映射函数会被判定为不兼容
+export type TagType = "primary" | "success" | "warning" | "info" | "danger"
+
 // 基础API响应结构
 export interface ApiResponse<T = any> {
   code: number

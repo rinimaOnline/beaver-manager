@@ -181,11 +181,11 @@ export default defineComponent({
     const total = ref(0)
     const formDialogVisible = ref(false)
     const isEdit = ref(false)
-    const formRef = ref(null)
-    const fileInput = ref(null)
+    const formRef = ref<FormInstance>()
+    const fileInput = ref<HTMLInputElement | null>(null)
     const uploading = ref(false)
     const previewUrl = ref('')
-    const selectedFile = ref(null)
+    const selectedFile = ref<File | null>(null)
 
     // 搜索表单
     const searchForm = reactive({
@@ -240,13 +240,13 @@ export default defineComponent({
     }
 
     // 分页处理
-    const handleSizeChange = (size) => {
+    const handleSizeChange = (size: number) => {
       searchForm.pageSize = size
       searchForm.page = 1
       fetchEmojiList()
     }
 
-    const handleCurrentChange = (page) => {
+    const handleCurrentChange = (page: number) => {
       searchForm.page = page
       fetchEmojiList()
     }
@@ -308,16 +308,16 @@ export default defineComponent({
     }
 
     // 编辑表情
-    const handleEdit = (row) => {
+    const handleEdit = (row: IEmojiInfo) => {
       isEdit.value = true
       Object.assign(form, {
         emojiId: row.emojiId,
         title: row.title,
-        fileUrl: row.fileUrl || "",
+        fileUrl: row.fileUrl,
         authorId: row.authorId
       })
       selectedFile.value = null
-      previewUrl.value = row.fileUrl || ''
+      previewUrl.value = row.fileUrl
       formDialogVisible.value = true
     }
 

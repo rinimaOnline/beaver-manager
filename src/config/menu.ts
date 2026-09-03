@@ -35,7 +35,8 @@ import {
   TrendCharts,
   Upload,
   User,
-  UserFilled
+  UserFilled,
+  Warning
 } from "@element-plus/icons-vue"
 
 export interface MenuItem {
@@ -63,6 +64,16 @@ export const menuConfig: MenuItem[] = [
     children: [
       { path: "/compliance/messages", title: "消息检索", icon: Message },
       { path: "/compliance/sessions", title: "会话审计", icon: ChatLineRound }
+    ]
+  },
+  {
+    path: "/safety",
+    title: "安全合规",
+    icon: Warning,
+    children: [
+      { path: "/safety/reports", title: "举报队列", icon: Warning },
+      { path: "/safety/appeals", title: "申诉", icon: Message },
+      { path: "/safety/wallet", title: "钱包", icon: Lock }
     ]
   },
   {

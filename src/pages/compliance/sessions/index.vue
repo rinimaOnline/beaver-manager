@@ -31,9 +31,9 @@
         <el-avatar :size="36">{{ selectedUser.nickName?.charAt(0) || 'U' }}</el-avatar>
         <div>
           <div class="user-name">
-            <el-link type="primary" @click="goUser(selectedUser.userId)">{{ selectedUser.nickName }}</el-link>
+            <el-link type="primary" @click="goUser(selectedUser.id)">{{ selectedUser.nickName }}</el-link>
           </div>
-          <div class="user-id">{{ selectedUser.userId }}</div>
+          <div class="user-id">{{ selectedUser.id }}</div>
         </div>
       </div>
     </div>
@@ -56,15 +56,15 @@
           <div v-if="userCandidates.length" class="user-candidates">
             <div
               v-for="u in userCandidates"
-              :key="u.userId"
+              :key="u.id"
               class="user-candidate"
-              :class="{ active: selectedUser?.userId === u.userId }"
+              :class="{ active: selectedUser?.id === u.id }"
               @click="selectUser(u)"
             >
               <el-avatar :size="32">{{ u.nickName?.charAt(0) || 'U' }}</el-avatar>
               <div class="user-candidate__info">
-                <div>{{ u.nickName || u.userId }}</div>
-                <div class="sub">{{ u.userId }}</div>
+                <div>{{ u.nickName || u.id }}</div>
+                <div class="sub">{{ u.id }}</div>
               </div>
             </div>
           </div>
@@ -355,7 +355,7 @@ export default defineComponent({
       if (!selectedUser.value) return
       sessionLoading.value = true
       const res = await getChatSessionListApi({
-        userId: selectedUser.value.userId,
+        userId: selectedUser.value.id,
         conversationType: sessionTypeFilter.value || undefined,
         page: 1,
         pageSize: 50

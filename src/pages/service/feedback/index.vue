@@ -142,6 +142,7 @@
 
 <script lang="ts">
 import type { IFeedbackInfo } from "@/types/api/feedback"
+import type { TagType } from "@/types/common"
 import type { FormInstance, FormRules } from "element-plus"
 import { ElMessage, ElMessageBox } from "element-plus"
 import { deleteFeedbackApi, getFeedbackDetailApi, getFeedbackListApi, handleFeedbackApi } from "@/api/feedback"
@@ -180,12 +181,12 @@ export default defineComponent({
       limit: 10,
       keywords: "",
       userId: "",
-      type: null as number | null,
-      status: null as number | null
+      type: undefined as number | undefined,
+      status: undefined as number | undefined
     })
 
     const processForm = reactive({
-      status: null as number | null,
+      status: undefined as number | undefined,
       handleResult: ""
     })
 
@@ -212,7 +213,7 @@ export default defineComponent({
     }
 
     const handleReset = () => {
-      Object.assign(searchForm, { page: 1, limit: 10, keywords: "", userId: "", type: null, status: null })
+      Object.assign(searchForm, { page: 1, limit: 10, keywords: "", userId: "", type: undefined, status: undefined })
       fetchFeedbackList()
     }
 
@@ -239,15 +240,16 @@ export default defineComponent({
 
     const handleProcess = (row: IFeedbackInfo) => {
       currentFeedback.value = row
-      Object.assign(processForm, { status: null, handleResult: "" })
+      Object.assign(processForm, { status: undefined, handleResult: "" })
       processDialogVisible.value = true
     }
 
     const submitProcess = async () => {
       if (!processFormRef.value || !currentFeedback.value) return
       await processFormRef.value.validate()
+      if (processForm.status === undefined) return
       const res = await handleFeedbackApi(currentFeedback.value.id, {
-        status: processForm.status!,
+        status: processForm.status,
         handleResult: processForm.handleResult
       })
       if (res.code === 0) {
@@ -270,25 +272,25 @@ export default defineComponent({
       }
     }
 
-    const getTypeTagType = (type: number) => {
-      const map: Record<number, string> = {
+    const getTypeTagType = (type: number): TagType => {
+      const map: Record<number, TagType> = {
         [FeedbackType.BUG_REPORT]: "danger",
         [FeedbackType.FEATURE_REQUEST]: "primary",
         [FeedbackType.GENERAL_FEEDBACK]: "info",
         [FeedbackType.COMPLAINT]: "warning"
       }
-      return map[type] || ""
+      return map[type] || "info"
     }
 
-    const getStatusTagType = (status: number) => {
-      const map: Record<number, string> = {
+    const getStatusTagType = (status: number): TagType => {
+      const map: Record<number, TagType> = {
         [FeedbackStatus.PENDING]: "warning",
         [FeedbackStatus.IN_PROGRESS]: "primary",
         [FeedbackStatus.RESOLVED]: "success",
         [FeedbackStatus.REJECTED]: "danger",
         [FeedbackStatus.CLOSED]: "info"
       }
-      return map[status] || ""
+      return map[status] || "info"
     }
 
     const goUser = (userId: string) => router.push(`/user/profile/${userId}`)

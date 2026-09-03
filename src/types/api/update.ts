@@ -19,9 +19,6 @@
  * beaver-manager-header-v1
  */
 
-import type { PageParams, PageResult } from '../common'
-import type { PlatformTypes, ArchTypes } from '@/utils/constants/platform'
-
 // App Management
 export interface IAddAppReq {
   name: string

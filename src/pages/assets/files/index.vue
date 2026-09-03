@@ -228,6 +228,7 @@
 
 <script lang="ts">
 import type { IFileInfo } from "@/types/api/file"
+import type { TagType } from "@/types/common"
 import { Document, Headset, VideoPlay } from "@element-plus/icons-vue"
 import { ElMessage, ElMessageBox } from "element-plus"
 import {
@@ -288,14 +289,14 @@ export default defineComponent({
       return map[type] || type || "未知"
     }
 
-    const getTypeTag = (type: string) => {
-      const map: Record<string, string> = {
+    const getTypeTag = (type: string): TagType => {
+      const map: Record<string, TagType> = {
         image: "success",
         video: "primary",
         audio: "warning",
         document: "info"
       }
-      return map[type] || ""
+      return map[type] || "info"
     }
 
     const formatSize = (bytes: number) => {

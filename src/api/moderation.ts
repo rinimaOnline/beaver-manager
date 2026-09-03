@@ -19,7 +19,15 @@
  * beaver-manager-header-v1
  */
 
-import type { IExecuteUserControlReq, IExecuteUserControlRes } from "@/types/api/moderation"
+import type {
+  IEscalateContentReportReq,
+  IEscalateContentReportRes,
+  IExecuteUserControlReq,
+  IExecuteUserControlRes,
+  IGetContentReportListReq,
+  IGetContentReportListRes,
+  IRejectContentReportReq
+} from "@/types/api/moderation"
 import config from "@/config/env"
 import { ajax } from "@/utils/request"
 
@@ -27,6 +35,30 @@ export function executeUserControlApi(data: IExecuteUserControlReq) {
   return ajax<IExecuteUserControlRes>({
     method: "POST",
     url: `${config.baseAPI}/admin/moderation/v1/execute_user_control`,
+    data
+  })
+}
+
+export function getContentReportListApi(params: IGetContentReportListReq) {
+  return ajax<IGetContentReportListRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/moderation/v1/list_reports`,
+    params
+  })
+}
+
+export function escalateContentReportApi(data: IEscalateContentReportReq) {
+  return ajax<IEscalateContentReportRes>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/moderation/v1/escalate_report`,
+    data
+  })
+}
+
+export function rejectContentReportApi(data: IRejectContentReportReq) {
+  return ajax<void>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/moderation/v1/reject_report`,
     data
   })
 }

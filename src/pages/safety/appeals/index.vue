@@ -96,9 +96,6 @@
             <el-option label="已拒绝" :value="4" />
           </el-select>
         </el-form-item>
-        <el-form-item label="处理人ID" prop="handlerId">
-          <el-input v-model.number="processForm.handlerId" type="number" />
-        </el-form-item>
         <el-form-item label="处理结果" prop="handleResult">
           <el-input v-model="processForm.handleResult" type="textarea" :rows="4" />
         </el-form-item>
@@ -113,6 +110,7 @@
 
 <script lang="ts">
 import type { FormInstance, FormRules } from "element-plus"
+import type { TagType } from "@/types/common"
 import type { IFeedbackInfo } from "@/types/api/feedback"
 import { ElMessage, ElMessageBox } from "element-plus"
 import { getFeedbackDetailApi, getFeedbackListApi, handleFeedbackApi } from "@/api/feedback"
@@ -131,10 +129,9 @@ export default defineComponent({
     const processFormRef = ref<FormInstance>()
     const searchForm = reactive({ userId: "", status: 1 as number | undefined })
     const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
-    const processForm = reactive({ status: null as number | null, handlerId: null as number | null, handleResult: "" })
+    const processForm = reactive({ status: undefined as number | undefined, handleResult: "" })
     const processRules: FormRules = {
       status: [{ required: true, message: "请选择状态", trigger: "change" }],
-      handlerId: [{ required: true, message: "请输入处理人ID", trigger: "blur" }],
       handleResult: [{ required: true, message: "请输入处理结果", trigger: "blur" }]
     }
 
@@ -147,9 +144,9 @@ export default defineComponent({
       }
       return map[status] || "未知"
     }
-    const statusTag = (status: number) => {
-      const map: Record<number, string> = { 1: "warning", 2: "primary", 3: "success", 4: "danger" }
-      return map[status] || ""
+    const statusTag = (status: number): TagType => {
+      const map: Record<number, TagType> = { 1: "warning", 2: "primary", 3: "success", 4: "danger" }
+      return map[status] || "info"
     }
 
     const fetchList = async () => {
@@ -186,14 +183,18 @@ export default defineComponent({
 
     const handleProcess = (row: IFeedbackInfo) => {
       currentAppeal.value = row
-      Object.assign(processForm, { status: null, handlerId: null, handleResult: "" })
+      Object.assign(processForm, { status: undefined, handleResult: "" })
       processVisible.value = true
     }
 
     const submitProcess = async () => {
       if (!processFormRef.value || !currentAppeal.value) return
       await processFormRef.value.validate()
-      const res = await handleFeedbackApi(currentAppeal.value.id, processForm)
+      if (processForm.status === undefined) return
+      const res = await handleFeedbackApi(currentAppeal.value.id, {
+        status: processForm.status,
+        handleResult: processForm.handleResult
+      })
       if (res.code === 0) {
         ElMessage.success("申诉已处理")
         processVisible.value = false

@@ -353,7 +353,6 @@
 <script lang="ts">
 import type { FormInstance } from "element-plus"
 import type { IUserInfo } from "@/types/api/user"
-import type { IApiResponse } from "@/types/auth"
 
 import { MD5 } from "crypto-js"
 import { ElMessage, ElMessageBox } from "element-plus"

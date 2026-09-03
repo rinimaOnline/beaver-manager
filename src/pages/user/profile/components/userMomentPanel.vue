@@ -71,7 +71,7 @@
           <el-table-column prop="id" label="ID" width="70" />
           <el-table-column prop="userId" label="用户" width="130">
             <template #default="{ row }">
-              <el-link type="primary" @click="emit('go-user', row.userId)">{{ row.userId }}</el-link>
+              <el-link type="primary" @click="$emit('go-user', row.userId)">{{ row.userId }}</el-link>
             </template>
           </el-table-column>
           <el-table-column prop="content" label="内容" min-width="200" show-overflow-tooltip />
@@ -103,6 +103,7 @@
 
 <script lang="ts">
 import type { MomentCommentInfo, MomentInfo } from "@/types/api/moment"
+import type { TagType } from "@/types/common"
 import { ElImageViewer, ElMessage, ElMessageBox } from "element-plus"
 import { deleteMomentApi, deleteMomentCommentApi, getMomentCommentListApi, getMomentDetailApi } from "@/api/moment"
 
@@ -137,7 +138,10 @@ export default defineComponent({
     const previewImageUrl = ref("")
 
     const visibilityText = (v: number) => ({ 0: "公开", 1: "仅好友", 2: "仅自己" }[v] || "未知")
-    const visibilityTag = (v: number) => ({ 0: "success", 1: "warning", 2: "info" }[v] || "")
+    const visibilityTag = (v: number): TagType => {
+      const map: Record<number, TagType> = { 0: "success", 1: "warning", 2: "info" }
+      return map[v] || "info"
+    }
 
     const fetchComments = async () => {
       if (!props.momentId) return
