@@ -68,3 +68,182 @@ export interface IRejectContentReportReq {
   reportId: number
   handleRemark?: string
 }
+
+export interface IModerationCaseInfo {
+  id: number
+  caseNo: string
+  source: number
+  sourceId: number
+  targetType: number
+  targetId: string
+  title: string
+  description: string
+  priority: number
+  status: number
+  handlerId: string
+  handleRemark: string
+  handleTime: string
+  createdAt: string
+}
+
+export interface IGetModerationCaseListReq {
+  page?: number
+  pageSize?: number
+  status?: number
+  targetType?: number
+  keyword?: string
+}
+
+export interface IGetModerationCaseListRes {
+  list: IModerationCaseInfo[]
+  total: number
+}
+
+export interface IGetModerationCaseDetailRes {
+  case: IModerationCaseInfo
+}
+
+export interface ICaseContextUser {
+  userId: string
+  nickName: string
+  email: string
+  status: number
+}
+
+export interface ICaseContextMessage {
+  messageId: string
+  conversationId: string
+  sendUserId: string
+  sendUserName: string
+  msgPreview: string
+  isDeleted: boolean
+  createTime: string
+}
+
+export interface ICaseContextMoment {
+  momentId: string
+  userId: string
+  content: string
+}
+
+export interface ICaseContextGroup {
+  groupId: string
+  title: string
+  status: number
+}
+
+export interface IGetModerationCaseContextRes {
+  case: IModerationCaseInfo
+  targetUser?: ICaseContextUser
+  targetMessage?: ICaseContextMessage
+  targetMoment?: ICaseContextMoment
+  targetGroup?: ICaseContextGroup
+  relatedReports: IContentReportInfo[]
+  recentMessages: ICaseContextMessage[]
+}
+
+export interface ICreateModerationCaseReq {
+  targetType: number
+  targetId: string
+  title: string
+  description?: string
+  priority?: number
+}
+
+export interface ICreateModerationCaseRes {
+  caseId: number
+  caseNo: string
+}
+
+export interface IModerationControlAction {
+  action: string
+  target?: string
+  reason?: string
+  extra?: string
+}
+
+export interface IHandleModerationCaseReq {
+  id: number
+  status: number
+  handleRemark?: string
+  actions?: IModerationControlAction[]
+}
+
+export interface IOperationLogInfo {
+  id: number
+  operatorId: string
+  action: string
+  targetType: string
+  targetId: string
+  caseId: number
+  detail: string
+  result: string
+  errorMessage: string
+  createdAt: string
+}
+
+export interface IGetOperationLogListReq {
+  page?: number
+  pageSize?: number
+  operatorId?: string
+  action?: string
+  actions?: string
+  targetType?: string
+  targetId?: string
+  caseId?: number
+}
+
+export interface IGetOperationLogListRes {
+  list: IOperationLogInfo[]
+  total: number
+}
+
+export interface ISensitiveWordInfo {
+  id: number
+  word: string
+  category: string
+  level: number
+  isActive: boolean
+  remark: string
+  createdAt: string
+}
+
+/**
+ * isActive 在服务端是非指针 bool：只有传 true 时才会附加 is_active = true 条件，
+ * 传 false 等于不筛选。所以这里只能表达「全部」和「仅启用」，没有「仅停用」。
+ */
+export interface IGetSensitiveWordListReq {
+  page?: number
+  pageSize?: number
+  keyword?: string
+  isActive?: boolean
+}
+
+export interface IGetSensitiveWordListRes {
+  list: ISensitiveWordInfo[]
+  total: number
+}
+
+export interface ICreateSensitiveWordReq {
+  word: string
+  category?: string
+  level?: number
+  remark?: string
+}
+
+export interface ICreateSensitiveWordRes {
+  id: number
+}
+
+export interface IUpdateSensitiveWordReq {
+  id: number
+  word?: string
+  category?: string
+  level?: number
+  isActive: boolean
+  remark?: string
+}
+
+export interface IDeleteSensitiveWordReq {
+  id: number
+}

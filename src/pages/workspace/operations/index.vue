@@ -147,6 +147,7 @@ import {
   Connection,
   Grid,
   Refresh,
+  Tickets,
   User,
   UserFilled,
   Warning
@@ -250,6 +251,14 @@ export default defineComponent({
         path: "/safety/reports",
         icon: Warning,
         bg: "linear-gradient(135deg, #f89898, #f56c6c)",
+        alert: true
+      },
+      {
+        title: "待审工单",
+        value: overview.value.pendingCaseCount,
+        path: "/safety/cases",
+        icon: Tickets,
+        bg: "linear-gradient(135deg, #f0a3a3, #e05c5c)",
         alert: true
       },
       {

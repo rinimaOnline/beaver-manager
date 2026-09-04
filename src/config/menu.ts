@@ -24,6 +24,7 @@ import {
   ChatLineRound,
   Connection,
   Document,
+  Filter,
   FolderOpened,
   Grid,
   House,
@@ -32,6 +33,7 @@ import {
   Platform,
   Service,
   Share,
+  Tickets,
   TrendCharts,
   Upload,
   User,
@@ -72,6 +74,9 @@ export const menuConfig: MenuItem[] = [
     icon: Warning,
     children: [
       { path: "/safety/reports", title: "举报队列", icon: Warning },
+      { path: "/safety/cases", title: "处置工单", icon: Tickets },
+      { path: "/safety/sensitive-words", title: "敏感词库", icon: Filter },
+      { path: "/safety/audit-logs", title: "操作审计", icon: Document },
       { path: "/safety/appeals", title: "申诉", icon: Message },
       { path: "/safety/wallet", title: "钱包", icon: Lock }
     ]

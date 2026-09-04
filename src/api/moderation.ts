@@ -20,13 +20,28 @@
  */
 
 import type {
+  ICreateModerationCaseReq,
+  ICreateModerationCaseRes,
+  ICreateSensitiveWordReq,
+  ICreateSensitiveWordRes,
+  IDeleteSensitiveWordReq,
   IEscalateContentReportReq,
   IEscalateContentReportRes,
   IExecuteUserControlReq,
   IExecuteUserControlRes,
   IGetContentReportListReq,
   IGetContentReportListRes,
-  IRejectContentReportReq
+  IGetModerationCaseContextRes,
+  IGetModerationCaseDetailRes,
+  IGetModerationCaseListReq,
+  IGetModerationCaseListRes,
+  IGetOperationLogListReq,
+  IGetOperationLogListRes,
+  IGetSensitiveWordListReq,
+  IGetSensitiveWordListRes,
+  IHandleModerationCaseReq,
+  IRejectContentReportReq,
+  IUpdateSensitiveWordReq
 } from "@/types/api/moderation"
 import config from "@/config/env"
 import { ajax } from "@/utils/request"
@@ -59,6 +74,86 @@ export function rejectContentReportApi(data: IRejectContentReportReq) {
   return ajax<void>({
     method: "POST",
     url: `${config.baseAPI}/admin/moderation/v1/reject_report`,
+    data
+  })
+}
+
+export function getModerationCaseListApi(params: IGetModerationCaseListReq) {
+  return ajax<IGetModerationCaseListRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/moderation/v1/list_cases`,
+    params
+  })
+}
+
+export function getModerationCaseDetailApi(id: number) {
+  return ajax<IGetModerationCaseDetailRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/moderation/v1/case_detail`,
+    params: { id }
+  })
+}
+
+export function getModerationCaseContextApi(id: number) {
+  return ajax<IGetModerationCaseContextRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/moderation/v1/case_context`,
+    params: { id }
+  })
+}
+
+export function createModerationCaseApi(data: ICreateModerationCaseReq) {
+  return ajax<ICreateModerationCaseRes>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/moderation/v1/create_case`,
+    data
+  })
+}
+
+export function handleModerationCaseApi(data: IHandleModerationCaseReq) {
+  return ajax<void>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/moderation/v1/handle_case`,
+    data
+  })
+}
+
+export function getOperationLogListApi(params: IGetOperationLogListReq) {
+  return ajax<IGetOperationLogListRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/moderation/v1/list_logs`,
+    params
+  })
+}
+
+export function getSensitiveWordListApi(params: IGetSensitiveWordListReq) {
+  return ajax<IGetSensitiveWordListRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/moderation/v1/list_sensitive_words`,
+    params
+  })
+}
+
+export function createSensitiveWordApi(data: ICreateSensitiveWordReq) {
+  return ajax<ICreateSensitiveWordRes>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/moderation/v1/create_sensitive_word`,
+    data
+  })
+}
+
+export function updateSensitiveWordApi(data: IUpdateSensitiveWordReq) {
+  return ajax<void>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/moderation/v1/update_sensitive_word`,
+    data
+  })
+}
+
+export function deleteSensitiveWordApi(data: IDeleteSensitiveWordReq) {
+  return ajax<void>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/moderation/v1/delete_sensitive_word`,
     data
   })
 }

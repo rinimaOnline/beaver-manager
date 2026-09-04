@@ -57,6 +57,7 @@
       <el-table-column label="操作" width="220" fixed="right">
         <template #default="{ row }">
           <el-button link type="primary" @click="goUser(row.reporterUserId)">用户360</el-button>
+          <el-button v-if="row.caseId" link type="warning" @click="goCase(row.caseId)">查看工单</el-button>
           <el-button v-if="row.status === 1" link type="primary" @click="escalate(row.id)">立案</el-button>
           <el-button v-if="row.status === 1" link type="danger" @click="reject(row.id)">驳回</el-button>
         </template>
@@ -134,7 +135,7 @@ export default defineComponent({
         ElMessage.error(res.msg || "立案失败")
         return
       }
-      ElMessage.success("已立案")
+      ElMessage.success(`已立案，工单 ${res.result.caseNo}，可在「处置工单」中处置`)
       load()
     }
 
@@ -154,9 +155,13 @@ export default defineComponent({
         router.push(`/user/profile/${userId}`)
     }
 
+    const goCase = (caseId: number) => {
+      router.push(`/safety/cases?id=${caseId}`)
+    }
+
     onMounted(load)
 
-    return { loading, list, total, searchForm, load, escalate, reject, goUser, targetTypeLabel, statusLabel, rowClassName }
+    return { loading, list, total, searchForm, load, escalate, reject, goUser, goCase, targetTypeLabel, statusLabel, rowClassName }
   }
 })
 </script>

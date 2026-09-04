@@ -86,6 +86,21 @@ const router = createRouter({
               component: () => import("@/pages/safety/reports/index.vue")
             },
             {
+              path: "cases",
+              name: "处置工单",
+              component: () => import("@/pages/safety/cases/index.vue")
+            },
+            {
+              path: "sensitive-words",
+              name: "敏感词库",
+              component: () => import("@/pages/safety/sensitiveWords/index.vue")
+            },
+            {
+              path: "audit-logs",
+              name: "操作审计",
+              component: () => import("@/pages/safety/auditLogs/index.vue")
+            },
+            {
               path: "wallet",
               name: "钱包",
               component: () => import("@/pages/safety/wallet/index.vue")
