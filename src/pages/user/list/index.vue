@@ -354,7 +354,6 @@
 import type { FormInstance } from "element-plus"
 import type { IUserInfo } from "@/types/api/user"
 
-import { MD5 } from "crypto-js"
 import { ElMessage, ElMessageBox } from "element-plus"
 import {
   batchDeleteUsersApi,
@@ -623,7 +622,7 @@ export default defineComponent({
         email: userForm.email,
         abstract: userForm.abstract,
         status: userForm.status,
-        ...(isEdit.value ? {} : { password: MD5(userForm.password).toString() })
+        ...(isEdit.value ? {} : { password: userForm.password })
       }
       const response = isEdit.value
         ? await updateUserApi(userForm.id, formData)
@@ -644,7 +643,7 @@ export default defineComponent({
       submitting.value = true
       const response = await resetUserPasswordApi({
         userId: passwordForm.userId,
-        newPassword: MD5(passwordForm.newPassword).toString()
+        newPassword: passwordForm.newPassword
       })
       submitting.value = false
       if (response.code === 0) {

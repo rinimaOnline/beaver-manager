@@ -22,13 +22,14 @@
 import type { IGetUserInfoRes, ILoginReq, ILoginRes } from "@/types/auth"
 import config from "@/config/env"
 import { ajax } from "@/utils/request"
+import { encryptSecret } from "@/utils/rsaPassword"
 
 // 用户登录
-export const loginApi = (data: ILoginReq) =>{
+export const loginApi = async (data: ILoginReq) => {
   return ajax<ILoginRes>({
     method: "POST",
     url: `${config.baseAPI}/admin/auth_public/v1/login`,
-    data
+    data: { ...data, password: await encryptSecret(data.password) }
   })
 }
 

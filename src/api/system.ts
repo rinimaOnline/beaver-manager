@@ -51,6 +51,7 @@ import type {
 } from "@/types/api/system"
 import config from "@/config/env"
 import { ajax } from "@/utils/request"
+import { encryptSecret } from "@/utils/rsaPassword"
 
 export function getMenuListApi(params: IGetMenuListReq) {
   return ajax<IGetMenuListRes>({
@@ -163,18 +164,21 @@ export function getAdminUserListApi(params: IGetAdminUserListReq) {
   })
 }
 
-export function createAdminUserApi(data: ICreateAdminUserReq) {
+export async function createAdminUserApi(data: ICreateAdminUserReq) {
   return ajax<ICreateAdminUserRes>({
     method: "POST",
     url: `${config.baseAPI}/admin/system/v1/create_admin`,
-    data
+    data: { ...data, password: await encryptSecret(data.password) }
   })
 }
 
-export function updateAdminUserApi(userId: string, data: IUpdateAdminUserReq) {
+export async function updateAdminUserApi(userId: string, data: IUpdateAdminUserReq) {
+  const payload: IUpdateAdminUserReq = { ...data }
+  if (payload.password)
+    payload.password = await encryptSecret(payload.password)
   return ajax<IUpdateAdminUserRes>({
     method: "POST",
     url: `${config.baseAPI}/admin/system/v1/update_admin`,
-    data: { ...data, userId }
+    data: { ...payload, userId }
   })
 }

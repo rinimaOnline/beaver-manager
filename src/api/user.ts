@@ -37,6 +37,7 @@ import type {
 } from "@/types/api/user"
 import config from "@/config/env"
 import { ajax } from "@/utils/request"
+import { encryptSecret } from "@/utils/rsaPassword"
 
 export function getUserListApi(params: IGetUserListReq) {
   return ajax<IGetUserListRes>({
@@ -54,11 +55,11 @@ export function getUserDetailApi(id: string) {
   })
 }
 
-export function createUserApi(data: ICreateUserReq) {
+export async function createUserApi(data: ICreateUserReq) {
   return ajax<ICreateUserRes>({
     method: "POST",
     url: `${config.baseAPI}/admin/user/v1/create`,
-    data
+    data: { ...data, password: await encryptSecret(data.password) }
   })
 }
 
@@ -86,11 +87,11 @@ export function batchDeleteUsersApi(data: IBatchDeleteUsersReq) {
   })
 }
 
-export function resetUserPasswordApi(data: IResetUserPasswordReq) {
+export async function resetUserPasswordApi(data: IResetUserPasswordReq) {
   return ajax<IResetUserPasswordRes>({
     method: "POST",
     url: `${config.baseAPI}/admin/user/v1/reset_password`,
-    data
+    data: { ...data, newPassword: await encryptSecret(data.newPassword) }
   })
 }
 

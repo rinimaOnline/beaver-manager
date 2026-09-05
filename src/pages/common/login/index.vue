@@ -22,7 +22,6 @@
 <script lang="ts">
 import type { FormRules } from "element-plus"
 import { Lock, User } from "@element-plus/icons-vue"
-import { MD5 } from "crypto-js"
 import { useUserStore } from "@/pinia/user/user"
 
 export default defineComponent({
@@ -68,7 +67,7 @@ export default defineComponent({
         // 使用 pinia store 登录
         const result = await userStore.login({
           phone: loginForm.phone,
-          password: MD5(loginForm.password).toString()
+          password: loginForm.password
         })
 
         if (result.success) {
