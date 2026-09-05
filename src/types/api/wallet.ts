@@ -35,6 +35,8 @@ export interface IAdminWalletOrderItem {
   orderType: number
   status: number
   amount: number
+  /** 手续费（分）。当前服务端订单项未下发该字段，展示时按缺省处理 */
+  fee?: number
   fromUser: string
   toUser: string
   channel: string

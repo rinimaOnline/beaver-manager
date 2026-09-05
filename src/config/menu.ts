@@ -22,22 +22,29 @@
 import type { Component } from "vue"
 import {
   ChatLineRound,
+  Coin,
   Connection,
+  CreditCard,
+  DataAnalysis,
   Document,
   Filter,
   FolderOpened,
   Grid,
   House,
+  List,
   Lock,
   Message,
+  Money,
   Platform,
   Service,
+  Setting,
   Share,
   Tickets,
   TrendCharts,
   Upload,
   User,
   UserFilled,
+  Wallet,
   Warning
 } from "@element-plus/icons-vue"
 
@@ -79,6 +86,20 @@ export const menuConfig: MenuItem[] = [
       { path: "/safety/audit-logs", title: "操作审计", icon: Document },
       { path: "/safety/appeals", title: "申诉", icon: Message },
       { path: "/safety/wallet", title: "钱包", icon: Lock }
+    ]
+  },
+  {
+    path: "/finance",
+    title: "财务中心",
+    icon: Money,
+    children: [
+      { path: "/finance/overview", title: "资金概览", icon: DataAnalysis },
+      { path: "/finance/payment-channels", title: "充值通道", icon: CreditCard },
+      { path: "/finance/payout-channels", title: "代付通道", icon: Wallet },
+      { path: "/finance/payment-orders", title: "支付订单", icon: Tickets },
+      { path: "/finance/payout-orders", title: "代付订单", icon: List },
+      { path: "/finance/flow", title: "钱包流水", icon: Coin },
+      { path: "/finance/config", title: "系统配置", icon: Setting }
     ]
   },
   {

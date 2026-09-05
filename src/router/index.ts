@@ -108,6 +108,47 @@ const router = createRouter({
           ]
         },
         {
+          path: "finance",
+          redirect: "/finance/overview",
+          children: [
+            {
+              path: "overview",
+              name: "资金概览",
+              component: () => import("@/pages/finance/overview.vue")
+            },
+            {
+              path: "payment-channels",
+              name: "充值通道",
+              component: () => import("@/pages/finance/payment-channels.vue")
+            },
+            {
+              path: "payout-channels",
+              name: "代付通道",
+              component: () => import("@/pages/finance/payout-channels.vue")
+            },
+            {
+              path: "payment-orders",
+              name: "支付订单",
+              component: () => import("@/pages/finance/payment-orders.vue")
+            },
+            {
+              path: "payout-orders",
+              name: "代付订单",
+              component: () => import("@/pages/finance/payout-orders.vue")
+            },
+            {
+              path: "flow",
+              name: "钱包流水",
+              component: () => import("@/pages/finance/flow.vue")
+            },
+            {
+              path: "config",
+              name: "财务系统配置",
+              component: () => import("@/pages/finance/config.vue")
+            }
+          ]
+        },
+        {
           path: "service",
           children: [
             {
