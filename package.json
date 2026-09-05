@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "vite serve --mode=dev",
+    "dev_test": "vite serve --mode=test",
     "serve_prod": "vite serve --mode=prod",
     "serve_test": "vite serve --mode=test",
     "build_prod": "vite build --mode=prod",
