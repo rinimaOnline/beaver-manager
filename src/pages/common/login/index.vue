@@ -101,7 +101,7 @@ export default defineComponent({
   <div class="login-container">
     <div class="login-card">
       <div class="login-header">
-        <h2>Beaver IM 后台管理系统</h2>
+        <h2>微聊后台管理系统</h2>
         <p>欢迎登录</p>
       </div>
 

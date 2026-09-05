@@ -109,7 +109,7 @@
     <el-dialog v-model="appDialogVisible" title="新建应用" width="480px" destroy-on-close append-to-body>
       <el-form ref="appFormRef" :model="appForm" :rules="appRules" label-width="80px">
         <el-form-item label="名称" prop="name">
-          <el-input v-model="appForm.name" placeholder="如：海狸IM" />
+          <el-input v-model="appForm.name" placeholder="如：微聊" />
         </el-form-item>
         <el-form-item label="描述">
           <el-input v-model="appForm.description" type="textarea" :rows="3" />

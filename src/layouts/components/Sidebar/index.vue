@@ -25,7 +25,7 @@
       <router-link to="/" class="logo-link">
         <div class="logo-content">
           <img src="@/assets/images/common/logo.png" alt="logo" class="logo-img" />
-          <span class="logo-text">海狸IM</span>
+          <span class="logo-text">微聊</span>
         </div>
       </router-link>
     </div>

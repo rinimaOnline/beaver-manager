@@ -22,7 +22,7 @@
 <template>
   <div class="navigation-bar">
     <div class="left-menu">
-      <span class="title">海狸IM 后台管理</span>
+      <span class="title">微聊后台管理</span>
     </div>
 
     <div class="right-menu">
