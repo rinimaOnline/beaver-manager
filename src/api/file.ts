@@ -205,15 +205,14 @@ const getFileStyle = async (file: File, type: UploadFileType): Promise<UploadSty
  * @description: 文件上传总入口
  */
 export const uploadFileApi = async (file: File): Promise<IFileUploadResult> => {
-  return await uploadToLocalApi(file)
+  return await uploadFileApiWithTarget(file, 'default')
 }
 
 /**
  * @description: 通用文件上传函数（通过后端API）
  */
-export const uploadFileApiWithTarget = async (file: File, target: 'local' | 'qiniu' = 'local'): Promise<IFileUploadResult> => {
-  // 根据目标选择URL
-  const baseEndpoint = target === 'qiniu' ? 'upload_qiniu' : 'upload_local'
+export const uploadFileApiWithTarget = async (file: File, target: 'default' | 'local' | 'qiniu' = 'default'): Promise<IFileUploadResult> => {
+  const baseEndpoint = target === 'qiniu' ? 'upload_qiniu' : target === 'local' ? 'upload_local' : 'upload'
   const uploadUrl = `${config.baseAPI}/admin/file/v1/${baseEndpoint}`
 
   // 获取文件信息

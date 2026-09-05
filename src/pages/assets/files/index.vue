@@ -236,7 +236,7 @@ import {
   deleteFileApi,
   getFileDetailApi,
   getFileListApi,
-  uploadToLocalApi
+  uploadFileApi
 } from "@/api/file"
 
 export default defineComponent({
@@ -389,7 +389,7 @@ export default defineComponent({
         return
       uploading.value = true
       try {
-        const res = await uploadToLocalApi(file.raw)
+        const res = await uploadFileApi(file.raw)
         if (res) {
           ElMessage.success(`上传成功：${res.originalName}`)
           fetchFileList()
