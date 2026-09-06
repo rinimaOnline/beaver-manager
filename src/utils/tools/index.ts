@@ -21,6 +21,7 @@
 
 import BMF from 'browser-md5-file'
 import type { ImageSize } from '@/types/utils/upload'
+import config from '@/config/env'
 
 /**
  * @description: 获取文件的md5
@@ -188,4 +189,33 @@ export const getFileInfo = async (file: File): Promise<FileInfo> => {
     default:
       return { type: fileType }
   }
+}
+
+const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'heic']
+const VIDEO_EXTS = ['mp4', 'mov', 'm4v', 'webm', 'avi', 'mkv', '3gp']
+const AUDIO_EXTS = ['mp3', 'aac', 'wav', 'm4a', 'ogg', 'amr', 'flac']
+
+/**
+ * @description: 按文件名扩展名判断类型（服务端多数接口只回文件 key，没有 MIME）
+ * @param {string} fileName 文件 key 或文件名
+ * @return {'audio' | 'image' | 'video' | 'other'}
+ */
+export const getFileTypeByName = (fileName: string): 'audio' | 'image' | 'video' | 'other' => {
+  const ext = (fileName || '').split(/[?#]/)[0].split('.').pop()?.toLowerCase() || ''
+  if (IMAGE_EXTS.includes(ext)) return 'image'
+  if (VIDEO_EXTS.includes(ext)) return 'video'
+  if (AUDIO_EXTS.includes(ext)) return 'audio'
+  return 'other'
+}
+
+/**
+ * @description: 把服务端返回的文件 key 拼成可访问的预览 URL（file_api `/api/file/preview/:fileKey`，网关放行无需鉴权）。
+ *               已是 http(s) 完整地址的原样返回。
+ * @param {string} fileName 文件 key
+ * @return {string}
+ */
+export const getFilePreviewUrl = (fileName: string): string => {
+  if (!fileName) return ''
+  if (/^https?:\/\//i.test(fileName)) return fileName
+  return `${config.apiApi}/api/file/preview/${fileName}`
 }

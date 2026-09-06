@@ -31,24 +31,19 @@
 
       <el-descriptions :column="2" border size="small" class="user-moment-panel__desc">
         <el-descriptions-item label="动态ID">{{ detail.momentId }}</el-descriptions-item>
-        <el-descriptions-item label="可见性">
-          <el-tag :type="visibilityTag(detail.visibility)" size="small">{{ visibilityText(detail.visibility) }}</el-tag>
-        </el-descriptions-item>
         <el-descriptions-item label="状态">
           <el-tag :type="detail.isDeleted ? 'danger' : 'success'" size="small">{{ detail.isDeleted ? "已删" : "正常" }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="互动">{{ detail.commentCount }} 评论 · {{ detail.likeCount }} 点赞</el-descriptions-item>
         <el-descriptions-item label="内容" :span="2">{{ detail.content || "-" }}</el-descriptions-item>
-        <el-descriptions-item label="位置" :span="2">{{ detail.location || "未设置" }}</el-descriptions-item>
         <el-descriptions-item label="发布时间">{{ detail.createdAt }}</el-descriptions-item>
         <el-descriptions-item label="更新时间">{{ detail.updatedAt }}</el-descriptions-item>
       </el-descriptions>
 
-      <div v-if="detail.files?.length" class="user-moment-panel__files">
-        <div v-for="(file, idx) in detail.files" :key="idx" class="user-moment-panel__file">
-          <img v-if="file.type?.includes('image')" :src="file.url" class="user-moment-panel__preview" @click="previewImage(file.url)">
-          <video v-else-if="file.type?.includes('video')" :src="file.url" class="user-moment-panel__preview" controls />
-          <a v-else :href="file.url" target="_blank">{{ file.url }}</a>
+      <div v-if="mediaFiles.length" class="user-moment-panel__files">
+        <div v-for="file in mediaFiles" :key="file.fileName" class="user-moment-panel__file">
+          <img v-if="file.type === 'image'" :src="file.url" class="user-moment-panel__preview" @click="previewImage(file.url)">
+          <video v-else-if="file.type === 'video'" :src="file.url" class="user-moment-panel__preview" controls />
+          <a v-else :href="file.url" target="_blank">{{ file.fileName }}</a>
         </div>
       </div>
 
@@ -104,9 +99,9 @@
 
 <script lang="ts">
 import type { MomentCommentInfo, MomentInfo } from "@/types/api/moment"
-import type { TagType } from "@/types/common"
 import { ElImageViewer, ElMessage, ElMessageBox } from "element-plus"
 import { deleteMomentApi, deleteMomentCommentApi, getMomentCommentListApi, getMomentDetailApi } from "@/api/moment"
+import { getFilePreviewUrl, getFileTypeByName } from "@/utils/tools"
 
 const emptyDetail = (): MomentInfo => ({
   momentId: "",
@@ -114,10 +109,6 @@ const emptyDetail = (): MomentInfo => ({
   content: "",
   files: [],
   isDeleted: false,
-  visibility: 0,
-  location: "",
-  commentCount: 0,
-  likeCount: 0,
   createdAt: "",
   updatedAt: ""
 })
@@ -138,11 +129,16 @@ export default defineComponent({
     const showImageViewer = ref(false)
     const previewImageUrl = ref("")
 
-    const visibilityText = (v: number) => ({ 0: "公开", 1: "仅好友", 2: "仅自己" }[v] || "未知")
-    const visibilityTag = (v: number): TagType => {
-      const map: Record<number, TagType> = { 0: "success", 1: "warning", 2: "info" }
-      return map[v] || "info"
-    }
+    // 服务端只回文件 key：URL 在管理端拼，类型按扩展名判断
+    const mediaFiles = computed(() =>
+      (detail.files || [])
+        .filter(f => f.fileName)
+        .map(f => ({
+          fileName: f.fileName,
+          url: getFilePreviewUrl(f.fileName),
+          type: getFileTypeByName(f.fileName)
+        }))
+    )
 
     const fetchComments = async () => {
       if (!props.momentId) return
@@ -238,8 +234,7 @@ export default defineComponent({
       commentPagination,
       showImageViewer,
       previewImageUrl,
-      visibilityText,
-      visibilityTag,
+      mediaFiles,
       handleDeleteMoment,
       handleDeleteComment,
       batchDeleteComments,

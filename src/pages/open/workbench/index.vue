@@ -37,7 +37,7 @@
       </el-form-item>
       <el-form-item label="状态">
         <el-select v-model="searchForm.status" placeholder="全部" clearable style="width: 120px">
-          <el-option label="下架" :value="0" />
+          <el-option label="下架" :value="WORKBENCH_STATUS_FILTER_OFFLINE" />
           <el-option label="上架" :value="1" />
         </el-select>
       </el-form-item>
@@ -214,6 +214,7 @@
 <script lang="ts">
 import type { FormInstance, FormRules } from "element-plus"
 import type { IWorkbenchAppItem } from "@/types/api/workbench"
+import { WORKBENCH_STATUS_FILTER_OFFLINE } from "@/types/api/workbench"
 import { ElMessage, ElMessageBox } from "element-plus"
 import { Close, UploadFilled } from "@element-plus/icons-vue"
 import {
@@ -531,6 +532,7 @@ export default defineComponent({
     onMounted(fetchList)
 
     return {
+      WORKBENCH_STATUS_FILTER_OFFLINE,
       loading,
       saving,
       uploading,

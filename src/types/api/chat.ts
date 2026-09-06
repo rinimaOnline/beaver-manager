@@ -68,7 +68,7 @@ export interface IChatMessageDetail {
   conversationId: string
   sendUserId: string
   sendUserName: string
-  sendUserAvatar: string
+  sendUserFileName: string // 发送者头像文件 key（服务端字段名为 sendUserFileName）
   msgType: number
   msgPreview: string
   msgContent: string

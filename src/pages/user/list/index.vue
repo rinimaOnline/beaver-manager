@@ -276,7 +276,8 @@
           />
         </el-form-item>
 
-        <el-form-item label="状态" prop="status">
+        <!-- 新建接口（CreateUserReq）没有 status 字段，只在编辑时显示/提交 -->
+        <el-form-item v-if="isEdit" label="状态" prop="status">
           <el-radio-group v-model="userForm.status">
             <el-radio :label="1">
               正常
@@ -620,13 +621,11 @@ export default defineComponent({
       const formData = {
         nickName: userForm.nickName,
         email: userForm.email,
-        abstract: userForm.abstract,
-        status: userForm.status,
-        ...(isEdit.value ? {} : { password: userForm.password })
+        abstract: userForm.abstract
       }
       const response = isEdit.value
-        ? await updateUserApi(userForm.id, formData)
-        : await createUserApi({ ...formData, password: formData.password || "" })
+        ? await updateUserApi(userForm.id, { ...formData, status: userForm.status })
+        : await createUserApi({ ...formData, password: userForm.password })
       submitting.value = false
       if (response.code === 0) {
         ElMessage.success(isEdit.value ? "更新成功" : "创建成功")

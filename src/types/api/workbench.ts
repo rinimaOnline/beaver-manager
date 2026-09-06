@@ -45,10 +45,17 @@ export interface IWorkbenchAppItem {
   updatedAt: string
 }
 
+/**
+ * 列表筛选"只要下架"的哨兵值。
+ * 服务端 status=0 与"未传"无法区分，筛选下架（status=0）时传 -1，服务端翻译为 WHERE status = 0。
+ * 仅用于筛选参数，不影响列表行里 status 的显示（仍是 0 下架 / 1 上架）。
+ */
+export const WORKBENCH_STATUS_FILTER_OFFLINE = -1
+
 export interface IGetWorkbenchAppListReq {
   page?: number
   pageSize?: number
-  status?: number
+  status?: number // 1 上架；WORKBENCH_STATUS_FILTER_OFFLINE(-1) 只要下架；不传不过滤
   category?: number
   keywords?: string
 }

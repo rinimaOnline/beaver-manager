@@ -105,21 +105,6 @@ export async function getQiniuUploadTokenApi() {
   }
 }
 
-// 保存文件信息到数据库
-export function saveFileApi(data: {
-  fileName: string
-  size: number
-  path: string
-  md5: string
-  type: string
-}) {
-  return ajax<{ fileId: string }>({
-    method: "POST",
-    url: `${config.baseAPI}/admin/file/v1/save`,
-    data
-  })
-}
-
 // =================== 文件上传相关类型 ===================
 
 // 上传文件类型

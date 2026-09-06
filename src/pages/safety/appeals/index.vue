@@ -23,7 +23,7 @@
   <div class="safety-appeals">
     <div class="safety-appeals__header">
       <h2 class="safety-appeals__title">申诉管理</h2>
-      <p class="safety-appeals__hint">用户投诉类申诉，支持本页受理、解封联动与结案</p>
+      <p class="safety-appeals__hint">列出用户反馈中「其他问题」类（type=4）的记录作为申诉受理，支持本页受理、解封联动与结案；用户端暂无独立申诉入口</p>
     </div>
 
     <el-form :inline="true" class="safety-appeals__form">
@@ -154,7 +154,8 @@ export default defineComponent({
       const res = await getFeedbackListApi({
         page: pagination.page,
         limit: pagination.pageSize,
-        type: FeedbackType.COMPLAINT,
+        // 用户端没有独立的"申诉"类型，这里按「其他问题」类反馈受理
+        type: FeedbackType.OTHER,
         userId: searchForm.userId || undefined,
         status: searchForm.status
       })

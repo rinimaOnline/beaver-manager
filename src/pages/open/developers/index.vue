@@ -227,9 +227,10 @@ export default defineComponent({
       email: [{ required: true, message: "请输入邮箱", trigger: "blur" }]
     }
 
+    // 服务端 createdAt/auditTime 为毫秒时间戳（open_rpc 用 UnixMilli），不要再 ×1000
     const formatTime = (timestamp: number) => {
       if (!timestamp) return "-"
-      return new Date(timestamp * 1000).toLocaleString("zh-CN")
+      return new Date(timestamp).toLocaleString("zh-CN")
     }
 
     const getStatusText = (status: number) => ({ 0: "待审核", 1: "已通过", 2: "已拒绝" }[status] || "未知")

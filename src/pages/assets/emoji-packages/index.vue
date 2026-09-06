@@ -60,10 +60,10 @@
             style="width: 120px"
           >
             <el-option
-              v-for="(label, value) in packageStatusMap"
-              :key="value"
-              :label="label"
-              :value="Number(value)"
+              v-for="item in packageStatusFilterOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
             />
           </el-select>
         </el-form-item>
@@ -348,7 +348,7 @@ import {
   addEmojiToPackageApi,
   removeEmojiFromPackageApi
 } from "@/api/emoji"
-import { EmojiPackageStatus } from "@/types/api/emoji"
+import { EMOJI_PACKAGE_STATUS_FILTER_DISABLED, EmojiPackageStatus } from "@/types/api/emoji"
 import { uploadFile } from "@/api/upload"
 
 export default defineComponent({
@@ -383,6 +383,15 @@ export default defineComponent({
       [EmojiPackageStatus.REVIEWING]: "审核中",
       [EmojiPackageStatus.REJECTED]: "已拒绝"
     }
+
+    // 筛选下拉专用：服务端 status=0 与"未传"无法区分，「禁用」用哨兵 -1 传参，其余状态原值透传
+    const packageStatusFilterOptions = Object.entries(packageStatusMap).map(([value, label]) => {
+      const status = Number(value)
+      return {
+        label,
+        value: status === EmojiPackageStatus.DISABLED ? EMOJI_PACKAGE_STATUS_FILTER_DISABLED : status
+      }
+    })
 
     // 搜索表单
     const searchForm = reactive({
@@ -740,6 +749,7 @@ export default defineComponent({
       isEdit,
       currentPackage,
       packageStatusMap,
+      packageStatusFilterOptions,
       fileInput,
       uploading,
       previewUrl,

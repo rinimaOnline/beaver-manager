@@ -27,7 +27,7 @@ export interface IFeedbackInfo {
   type: number
   status: number
   fileNames: string[]
-  handlerId: number
+  handlerId: string // 处理人（管理员 UUID），未处理时为空串
   handleTime: string
   handleResult: string
   createdAt: string
@@ -76,20 +76,18 @@ export interface IDeleteFeedbackReq {
 // 删除反馈响应
 export interface IDeleteFeedbackRes {}
 
-// 反馈类型枚举
+// 反馈类型枚举（与用户端提交时的 type 一致：1 功能异常 / 2 功能建议 / 3 使用体验 / 4 其他问题）
 export enum FeedbackType {
-  BUG_REPORT = 1, // 错误报告
-  FEATURE_REQUEST = 2, // 功能请求
-  GENERAL_FEEDBACK = 3, // 一般反馈
-  COMPLAINT = 4, // 投诉建议
-  OTHER = 5 // 其他
+  BUG = 1, // 功能异常
+  FEATURE = 2, // 功能建议
+  EXPERIENCE = 3, // 使用体验
+  OTHER = 4 // 其他问题
 }
 
-// 反馈状态枚举
+// 反馈状态枚举（服务端只接受 1–4）
 export enum FeedbackStatus {
   PENDING = 1, // 待处理
   IN_PROGRESS = 2, // 处理中
   RESOLVED = 3, // 已解决
-  REJECTED = 4, // 已拒绝
-  CLOSED = 5 // 已关闭
+  REJECTED = 4 // 已拒绝
 }

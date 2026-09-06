@@ -28,7 +28,6 @@
           <el-option label="消息" :value="2" />
           <el-option label="动态" :value="3" />
           <el-option label="群组" :value="4" />
-          <el-option label="圈子" :value="5" />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -100,7 +99,8 @@ export default defineComponent({
       targetType: undefined as number | undefined
     })
 
-    const targetTypeLabel = (t: number) => ({ 1: "用户", 2: "消息", 3: "动态", 4: "群组", 5: "圈子" }[t] || "其他")
+    // 服务端 ContentReportTargetType 只有 1–4
+    const targetTypeLabel = (t: number) => ({ 1: "用户", 2: "消息", 3: "动态", 4: "群组" }[t] || "其他")
     const statusLabel = (s: number) => ({ 1: "待处理", 2: "已立案", 3: "已驳回", 4: "已完结" }[s] || "未知")
 
     const load = async () => {

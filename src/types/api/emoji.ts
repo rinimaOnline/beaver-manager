@@ -113,7 +113,7 @@ export interface IGetEmojiPackageListReq {
   pageSize?: number
   userId?: string // 管理员可以按用户筛选
   type?: string
-  status?: number
+  status?: number // >0 精确匹配；EMOJI_PACKAGE_STATUS_FILTER_DISABLED(-1) 只要禁用；不传不过滤
   title?: string
   startTime?: string
   endTime?: string
@@ -229,5 +229,12 @@ export enum EmojiPackageStatus {
   REVIEWING = 2, // 审核中
   REJECTED = 3 // 已拒绝
 }
+
+/**
+ * 列表筛选"只要禁用"的哨兵值。
+ * 服务端 status=0 与"未传"无法区分，筛选禁用（status=0）时传 -1，服务端翻译为 WHERE status = 0。
+ * 仅用于筛选参数，不影响列表行里 status 的显示（仍是 0 禁用 / 1 启用 / 2 审核中 / 3 已拒绝）。
+ */
+export const EMOJI_PACKAGE_STATUS_FILTER_DISABLED = -1
 
 

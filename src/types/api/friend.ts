@@ -38,10 +38,10 @@ export interface IFriendDetailInfo {
   id: string
   sendUserId: string
   sendUserName: string
-  sendUserAvatar: string
+  sendUserFileName: string // 发起方头像文件 key
   revUserId: string
   revUserName: string
-  revUserAvatar: string
+  revUserFileName: string // 接收方头像文件 key
   sendUserNotice: string
   revUserNotice: string
   isDeleted: boolean
@@ -68,10 +68,10 @@ export interface IFriendVerifyDetailInfo {
   id: string
   sendUserId: string
   sendUserName: string
-  sendUserAvatar: string
+  sendUserFileName: string // 发起方头像文件 key
   revUserId: string
   revUserName: string
-  revUserAvatar: string
+  revUserFileName: string // 接收方头像文件 key
   sendStatus: number
   revStatus: number
   message: string

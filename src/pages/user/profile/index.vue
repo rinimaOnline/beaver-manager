@@ -130,7 +130,7 @@
                   <span class="user-profile__relation-time">{{ formatTime(m.createdAt) }}</span>
                 </div>
                 <div class="user-profile__relation-title">{{ m.content || m.momentId }}</div>
-                <div class="user-profile__relation-meta">{{ m.commentCount }} 评论 · {{ m.likeCount }} 点赞</div>
+                <div class="user-profile__relation-meta">{{ m.files?.length || 0 }} 个附件</div>
               </div>
               <el-empty v-if="!sidebarLoading && !momentList.length" description="该用户暂无动态" :image-size="64" />
             </template>

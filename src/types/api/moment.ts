@@ -25,17 +25,19 @@ export interface FileInfo {
   type: string
 }
 
-// 动态信息
+// 动态附件（服务端只回文件 key，可访问 URL 由管理端用 getFilePreviewUrl 拼）
+export interface MomentFileInfo {
+  fileName: string
+}
+
+// 动态信息（与 backend_admin moment.api 的 GetMomentListItem / GetMomentDetailRes 一致，
+// 服务端不返回 visibility / location / likeCount / commentCount）
 export interface MomentInfo {
   momentId: string
   userId: string
   content: string
-  files: FileInfo[]
+  files: MomentFileInfo[]
   isDeleted: boolean
-  visibility: number
-  location: string
-  commentCount: number
-  likeCount: number
   createdAt: string
   updatedAt: string
 }

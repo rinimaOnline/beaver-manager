@@ -128,7 +128,7 @@
           </el-table-column>
           <el-table-column prop="errorMessage" label="错误" min-width="140" show-overflow-tooltip />
           <el-table-column label="时间" width="170">
-            <template #default="{ row }">{{ formatTime(row.createdAt) }}</template>
+            <template #default="{ row }">{{ formatLogTime(row.createdAt) }}</template>
           </el-table-column>
         </el-table>
 
@@ -295,7 +295,14 @@ export default defineComponent({
       }
     }
 
+    // 应用 createdAt 为毫秒（open_rpc UnixMilli）
     const formatTime = (ts: number) => {
+      if (!ts) return "-"
+      return new Date(ts).toLocaleString()
+    }
+
+    // Webhook 投递日志 createdAt 为秒（open_rpc ListWebhookLogs 用 Unix()），需 ×1000
+    const formatLogTime = (ts: number) => {
       if (!ts) return "-"
       return new Date(ts * 1000).toLocaleString()
     }
@@ -322,7 +329,7 @@ export default defineComponent({
       appPagination, logPagination, logFilter,
       OPEN_APP_STATUS, OPEN_APP_STATUS_FILTER, OPEN_AUDIT_STATUS, OPEN_WEBHOOK_LOG_STATUS,
       handleSearch, handleLogSearch, onAppPageChange, onLogPageChange,
-      openDetail, viewWebhookLogs, toggleStatus, formatTime, goApps, goUser
+      openDetail, viewWebhookLogs, toggleStatus, formatTime, formatLogTime, goApps, goUser
     }
   }
 })

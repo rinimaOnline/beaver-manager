@@ -125,7 +125,6 @@
             <el-option label="处理中" :value="2" />
             <el-option label="已解决" :value="3" />
             <el-option label="已拒绝" :value="4" />
-            <el-option label="已关闭" :value="5" />
           </el-select>
         </el-form-item>
         <el-form-item label="处理结果" prop="handleResult">
@@ -161,19 +160,17 @@ export default defineComponent({
     const processFormRef = ref<FormInstance>()
 
     const feedbackTypeMap: Record<number, string> = {
-      [FeedbackType.BUG_REPORT]: "错误报告",
-      [FeedbackType.FEATURE_REQUEST]: "功能请求",
-      [FeedbackType.GENERAL_FEEDBACK]: "一般反馈",
-      [FeedbackType.COMPLAINT]: "投诉建议",
-      [FeedbackType.OTHER]: "其他"
+      [FeedbackType.BUG]: "功能异常",
+      [FeedbackType.FEATURE]: "功能建议",
+      [FeedbackType.EXPERIENCE]: "使用体验",
+      [FeedbackType.OTHER]: "其他问题"
     }
 
     const feedbackStatusMap: Record<number, string> = {
       [FeedbackStatus.PENDING]: "待处理",
       [FeedbackStatus.IN_PROGRESS]: "处理中",
       [FeedbackStatus.RESOLVED]: "已解决",
-      [FeedbackStatus.REJECTED]: "已拒绝",
-      [FeedbackStatus.CLOSED]: "已关闭"
+      [FeedbackStatus.REJECTED]: "已拒绝"
     }
 
     const searchForm = reactive({
@@ -274,10 +271,10 @@ export default defineComponent({
 
     const getTypeTagType = (type: number): TagType => {
       const map: Record<number, TagType> = {
-        [FeedbackType.BUG_REPORT]: "danger",
-        [FeedbackType.FEATURE_REQUEST]: "primary",
-        [FeedbackType.GENERAL_FEEDBACK]: "info",
-        [FeedbackType.COMPLAINT]: "warning"
+        [FeedbackType.BUG]: "danger",
+        [FeedbackType.FEATURE]: "primary",
+        [FeedbackType.EXPERIENCE]: "warning",
+        [FeedbackType.OTHER]: "info"
       }
       return map[type] || "info"
     }
@@ -287,8 +284,7 @@ export default defineComponent({
         [FeedbackStatus.PENDING]: "warning",
         [FeedbackStatus.IN_PROGRESS]: "primary",
         [FeedbackStatus.RESOLVED]: "success",
-        [FeedbackStatus.REJECTED]: "danger",
-        [FeedbackStatus.CLOSED]: "info"
+        [FeedbackStatus.REJECTED]: "danger"
       }
       return map[status] || "info"
     }
