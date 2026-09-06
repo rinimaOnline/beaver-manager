@@ -42,8 +42,8 @@ export interface MomentInfo {
 
 // 动态评论信息
 export interface MomentCommentInfo {
-  id: number
-  momentId: number
+  commentId: string
+  momentId: string
   userId: string
   content: string
   createdAt: string
@@ -79,7 +79,7 @@ export interface GetMomentListRes {
 
 // 获取动态详情请求
 export interface GetMomentDetailReq {
-  id: number
+  momentId: string
 }
 
 // 获取动态详情响应
@@ -87,7 +87,7 @@ export interface GetMomentDetailRes extends MomentInfo {}
 
 // 删除动态请求
 export interface DeleteMomentReq {
-  id: number
+  momentId: string
 }
 
 // 删除动态响应
@@ -97,7 +97,7 @@ export interface DeleteMomentRes {}
 export interface GetMomentCommentListReq {
   page?: number
   limit?: number
-  momentId: number
+  momentId: string
 }
 
 // 获取动态评论列表响应
@@ -108,7 +108,7 @@ export interface GetMomentCommentListRes {
 
 // 删除动态评论请求
 export interface DeleteMomentCommentReq {
-  id: number
+  commentId: string
 }
 
 // 删除动态评论响应

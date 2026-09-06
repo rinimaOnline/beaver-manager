@@ -62,13 +62,14 @@
         <el-table
           v-loading="commentLoading"
           :data="commentList"
+          row-key="commentId"
           border
           stripe
           size="small"
           @selection-change="onCommentSelection"
         >
           <el-table-column type="selection" width="40" />
-          <el-table-column prop="id" label="ID" width="70" />
+          <el-table-column prop="commentId" label="ID" min-width="160" show-overflow-tooltip />
           <el-table-column prop="userId" label="用户" width="130">
             <template #default="{ row }">
               <el-link type="primary" @click="$emit('go-user', row.userId)">{{ row.userId }}</el-link>
@@ -78,7 +79,7 @@
           <el-table-column prop="createdAt" label="时间" width="160" />
           <el-table-column label="操作" width="80" fixed="right">
             <template #default="{ row }">
-              <el-button link type="danger" @click="handleDeleteComment(row.id)">删除</el-button>
+              <el-button link type="danger" @click="handleDeleteComment(row.commentId)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -132,7 +133,7 @@ export default defineComponent({
     const commentLoading = ref(false)
     const detail = reactive<MomentInfo>(emptyDetail())
     const commentList = ref<MomentCommentInfo[]>([])
-    const selectedCommentIds = ref<number[]>([])
+    const selectedCommentIds = ref<string[]>([])
     const commentPagination = reactive({ page: 1, pageSize: 10, total: 0 })
     const showImageViewer = ref(false)
     const previewImageUrl = ref("")
@@ -149,7 +150,7 @@ export default defineComponent({
       const res = await getMomentCommentListApi({
         page: commentPagination.page,
         limit: commentPagination.pageSize,
-        momentId: Number.parseInt(props.momentId, 10)
+        momentId: props.momentId
       })
       commentLoading.value = false
       if (res.code === 0) {
@@ -188,7 +189,7 @@ export default defineComponent({
       }
     }
 
-    const handleDeleteComment = async (id: number) => {
+    const handleDeleteComment = async (id: string) => {
       await ElMessageBox.confirm("确认删除这条评论？", "删除评论", { type: "warning" })
       const res = await deleteMomentCommentApi(id)
       if (res.code === 0) {
@@ -213,7 +214,7 @@ export default defineComponent({
     }
 
     const onCommentSelection = (rows: MomentCommentInfo[]) => {
-      selectedCommentIds.value = rows.map(r => r.id)
+      selectedCommentIds.value = rows.map(r => r.commentId).filter(Boolean)
     }
 
     const onCommentPageChange = (page: number) => {

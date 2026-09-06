@@ -63,10 +63,10 @@ export function getMomentCommentListApi(params: GetMomentCommentListReq) {
   })
 }
 
-export function deleteMomentCommentApi(id: number) {
+export function deleteMomentCommentApi(commentId: string) {
   return ajax<DeleteMomentCommentRes>({
     method: "POST",
     url: `${config.baseAPI}/admin/moment/v1/delete_comment`,
-    data: { commentId: String(id) }
+    data: { commentId }
   })
 }
