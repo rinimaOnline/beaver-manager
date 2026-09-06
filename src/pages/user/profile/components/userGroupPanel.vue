@@ -237,11 +237,12 @@ export default defineComponent({
       return candidates[0] || null
     }
 
+    // 成员相关接口收的是群 UUID，不是数据库自增 id，所以不依赖 groupDbId。
     const loadFullMembers = async () => {
-      if (!groupDbId.value) return
+      if (!props.groupId) return
       membersLoading.value = true
       const res = await getGroupMemberListApi({
-        groupId: String(groupDbId.value),
+        groupId: props.groupId,
         page: 1,
         limit: 500
       })
@@ -249,17 +250,15 @@ export default defineComponent({
       if (res.code === 0) fullMembers.value = res.result.list || []
     }
 
+    // groupDbId 只有「编辑群资料」和「解散群」要用（那两个接口收自增 id），
+    // 拿不到也不该拖累成员列表，所以两件事分开做。
     const resolveGroupDbId = async () => {
       groupDbId.value = null
-      fullMembers.value = []
       if (!props.groupId) return
       const res = await getGroupListApi({ page: 1, limit: 20, keywords: props.groupId })
       if (res.code === 0) {
-        const matched = (res.result.list || []).find(g => g.uuid === props.groupId)
-        if (matched) {
-          groupDbId.value = matched.id
-          await loadFullMembers()
-        }
+        const matched = (res.result.list || []).find(g => g.groupId === props.groupId)
+        if (matched) groupDbId.value = matched.id
       }
     }
 
@@ -272,11 +271,12 @@ export default defineComponent({
       if (res.code === 0) {
         data.value = res.result
         resolvedConversationId.value = await resolveGroupConversationId(props.groupId)
-        await resolveGroupDbId()
+        await Promise.all([resolveGroupDbId(), loadFullMembers()])
       } else {
         ElMessage.error(res.msg || "加载群信息失败")
         data.value = emptyData()
         resolvedConversationId.value = null
+        fullMembers.value = []
       }
     }
 
@@ -286,9 +286,9 @@ export default defineComponent({
     }
 
     const handleRemoveMember = async (row: IMemberRow) => {
-      if (!groupDbId.value) return
+      if (!props.groupId) return
       await ElMessageBox.confirm(`确认移除成员「${row.nickName || row.userId}」？`, "移除成员", { type: "warning" })
-      const res = await removeGroupMemberApi({ groupId: String(groupDbId.value), memberIds: [row.userId] })
+      const res = await removeGroupMemberApi({ groupId: props.groupId, memberIds: [row.userId] })
       if (res.code === 0) {
         ElMessage.success("已移除")
         selectedMember.value = null
@@ -302,7 +302,9 @@ export default defineComponent({
     const handleMute = async (row: IMemberRow) => {
       if (!row.memberDbId) return
       await ElMessageBox.confirm(`确认禁言成员「${row.nickName || row.userId}」24小时？`, "禁言成员", { type: "warning" })
-      const res = await muteGroupMemberApi(row.memberDbId, { prohibitionTime: 86400 })
+      // 服务端 prohibitionTime 的单位是「分钟」（见 backend_admin/api/group.api），
+      // 之前按秒传 86400，实际是禁言 60 天。
+      const res = await muteGroupMemberApi(row.memberDbId, { prohibitionTime: 24 * 60 })
       if (res.code === 0) ElMessage.success("已禁言")
       else ElMessage.error(res.msg || "禁言失败")
     }

@@ -22,7 +22,9 @@
 // 群组信息
 export interface GroupInfo {
   id: number
-  uuid: string
+  // 服务端 GetGroupListItem / GetGroupDetailRes 返回的字段名是 groupId（群 UUID），
+  // 不是 uuid。`id` 才是数据库自增行号，两者不能混用：成员相关接口收的是 groupId。
+  groupId: string
   type: number
   title: string
   abstract: string

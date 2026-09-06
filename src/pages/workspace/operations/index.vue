@@ -154,6 +154,7 @@ import {
 } from "@element-plus/icons-vue"
 import { ElMessage } from "element-plus"
 import { getDashboardInboxApi, getDashboardOverviewApi, getDashboardTrendsApi } from "@/api/overview"
+import { useUserStore } from "@/pinia/user/user"
 
 interface IStatItem {
   title: string
@@ -178,7 +179,10 @@ export default defineComponent({
   setup() {
     const router = useRouter()
     const route = useRoute()
-    const username = localStorage.getItem("username") || "管理员"
+    // 全项目没有任何地方写过 localStorage 的 "username"，原来这行等价于写死
+    // 「管理员」。导航栏用的是 userStore.displayName，这里跟它保持一致。
+    const userStore = useUserStore()
+    const username = computed(() => userStore.displayName)
     const loading = ref(false)
     const activeTab = ref("overview")
     const todayText = new Date().toLocaleDateString("zh-CN", {

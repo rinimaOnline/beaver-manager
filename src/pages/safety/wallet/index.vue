@@ -20,8 +20,8 @@
 
     <el-descriptions v-if="account" :column="3" border>
       <el-descriptions-item label="账户">{{ account.accountId }}</el-descriptions-item>
-      <el-descriptions-item label="余额（分）">{{ account.balance }}</el-descriptions-item>
-      <el-descriptions-item label="冻结（分）">{{ account.frozen }}</el-descriptions-item>
+      <el-descriptions-item label="余额（元）">{{ fenToYuan(account.balance) }}</el-descriptions-item>
+      <el-descriptions-item label="冻结（元）">{{ fenToYuan(account.frozen) }}</el-descriptions-item>
       <el-descriptions-item label="状态">{{ account.status === 2 ? "冻结" : "正常" }}</el-descriptions-item>
       <el-descriptions-item label="支付密码">{{ account.pwdSet ? "已设置" : "未设置" }}</el-descriptions-item>
     </el-descriptions>
@@ -37,12 +37,18 @@
     <h3>流水</h3>
     <el-table :data="ledgers" border stripe>
       <el-table-column prop="createdAt" label="时间" width="170" />
-      <el-table-column prop="amount" label="金额(分)" width="120" />
+      <!-- 金额一律按「元」展示：本页下方的待审列表用的就是 fenToYuan，
+           这里再留一列「分」，运营在两张表之间扫一眼就会看错 100 倍。 -->
+      <el-table-column prop="amount" label="金额（元）" width="120">
+        <template #default="{ row }">{{ fenToYuan(row.amount) }}</template>
+      </el-table-column>
       <el-table-column prop="direction" label="方向" width="80">
         <template #default="{ row }">{{ row.direction === 1 ? "入" : "出" }}</template>
       </el-table-column>
       <el-table-column prop="remark" label="备注" />
-      <el-table-column prop="balanceAfter" label="余额后" width="120" />
+      <el-table-column prop="balanceAfter" label="余额后（元）" width="120">
+        <template #default="{ row }">{{ fenToYuan(row.balanceAfter) }}</template>
+      </el-table-column>
     </el-table>
 
     <h3>待审订单</h3>
