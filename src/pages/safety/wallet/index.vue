@@ -57,6 +57,12 @@
         <el-radio-button :value="3">提现</el-radio-button>
         <el-radio-button :value="2">充值</el-radio-button>
       </el-radio-group>
+      <!-- 打款中 = 审核已通过、代付单已建、资金仍冻结、等通道回调。
+           回调丢了不会自动超时处理，要由人在这里按通道后台的实际结果收口。 -->
+      <el-radio-group v-if="orderTypeFilter === 3" v-model="withdrawStatusFilter" @change="reloadOrders">
+        <el-radio-button :value="1">待审核</el-radio-button>
+        <el-radio-button :value="5">打款中</el-radio-button>
+      </el-radio-group>
       <el-button :loading="ordersLoading" @click="reloadOrders">刷新</el-button>
     </div>
     <el-table v-loading="ordersLoading" :data="orders" border stripe>
@@ -81,10 +87,19 @@
         </template>
       </el-table-column>
       <el-table-column prop="channel" label="渠道" width="120" />
-      <el-table-column label="操作" width="160" fixed="right">
+      <el-table-column v-if="isPayingView" label="审核通过时间" width="170">
+        <template #default="{ row }">{{ formatTime(row.reviewedAt) }}</template>
+      </el-table-column>
+      <el-table-column label="操作" width="200" fixed="right">
         <template #default="{ row }">
-          <el-button v-if="canReview(row)" link type="primary" @click="review(row, true)">通过</el-button>
-          <el-button v-if="canReview(row)" link type="danger" @click="review(row, false)">驳回</el-button>
+          <template v-if="canReview(row)">
+            <el-button link type="primary" @click="review(row, true)">通过</el-button>
+            <el-button link type="danger" @click="review(row, false)">驳回</el-button>
+          </template>
+          <template v-else-if="isPayingWithdraw(row)">
+            <el-button link type="primary" @click="review(row, true)">确认已到账</el-button>
+            <el-button link type="danger" @click="review(row, false)">打款失败退回</el-button>
+          </template>
         </template>
       </el-table-column>
     </el-table>
@@ -113,7 +128,7 @@ import {
   reviewAdminRechargeApi,
   reviewAdminWithdrawApi
 } from "@/api/wallet"
-import { defineComponent, onMounted, ref } from "vue"
+import { computed, defineComponent, onMounted, ref } from "vue"
 
 function yuanToFen(raw: string): number {
   const s = raw.trim()
@@ -146,6 +161,9 @@ export default defineComponent({
     const ordersTotal = ref(0)
     // 提现是唯一走人工审核的环节，默认停在提现 tab
     const orderTypeFilter = ref(3)
+    // 提现子筛选：1 待审核 / 5 打款中（代付已发起、等回调）
+    const withdrawStatusFilter = ref(1)
+    const isPayingView = computed(() => orderTypeFilter.value === 3 && withdrawStatusFilter.value === 5)
     const creditYuan = ref("")
     const creditRemark = ref("")
 
@@ -179,7 +197,7 @@ export default defineComponent({
       try {
         const res = await getAdminWalletOrdersApi({
           type: orderTypeFilter.value,
-          status: 1,
+          status: orderTypeFilter.value === 3 ? withdrawStatusFilter.value : 1,
           page: ordersPage.value,
           limit: ordersLimit.value
         })
@@ -201,6 +219,10 @@ export default defineComponent({
 
     const canReview = (row: IAdminWalletOrderItem) =>
       row.status === 1 && (row.orderType === 2 || row.orderType === 3)
+
+    /** 提现「打款中」（FundStatusPaying=5）：服务端 reviewWithdraw 对它的语义是人工收口 */
+    const isPayingWithdraw = (row: IAdminWalletOrderItem) =>
+      row.status === 5 && row.orderType === 3
 
     const credit = async () => {
       if (!userId.value) {
@@ -248,6 +270,45 @@ export default defineComponent({
     const review = async (row: IAdminWalletOrderItem, pass: boolean) => {
       const isWithdraw = row.orderType === 3
       let remark = ""
+
+      if (isPayingWithdraw(row)) {
+        // 打款中的单子：通过 = 已在通道后台核实到账，按成功扣减冻结；
+        // 驳回 = 通道确认失败，解冻退回用户。两个动作都不可逆，先让人确认。
+        if (pass) {
+          await ElMessageBox.confirm(
+            `确认这笔代付已实际到账？\n金额：${fenToYuan(row.amount)} 元\n用户：${row.fromUser}\n`
+            + `收款卡：${row.cardBankName || "未知银行"} 尾号 ${row.cardLast4 || "----"}\n\n`
+            + `确认后将从冻结中扣减并把提现标为成功，请先在代付通道后台核对。`,
+            "人工确认到账",
+            { type: "warning", confirmButtonText: "已核实，确认到账", showClose: false }
+          )
+          const { value } = await ElMessageBox.prompt("备注（可选，建议填通道流水号）", "备注", {
+            inputValue: "",
+            confirmButtonText: "提交"
+          })
+          remark = value || ""
+        } else {
+          const { value } = await ElMessageBox.prompt(
+            "失败原因（必填，会展示给用户）。确认后冻结资金退回用户余额。",
+            "打款失败退回",
+            {
+              inputValidator: (input: string) => (input && input.trim() ? true : "请填写失败原因"),
+              inputErrorMessage: "请填写失败原因"
+            }
+          )
+          remark = value.trim()
+        }
+        const res = await reviewAdminWithdrawApi({ orderId: row.orderId, pass, remark })
+        if (res.code !== 0) {
+          ElMessage.error(res.msg || "操作失败")
+          return
+        }
+        ElMessage.success(pass ? "已确认到账" : "已退回用户")
+        loadOrders()
+        if (userId.value)
+          loadAccount()
+        return
+      }
 
       if (pass) {
         // 提现通过意味着真的要打款出去，先让审核人确认收款账户再放行
@@ -298,11 +359,14 @@ export default defineComponent({
       ordersLimit,
       ordersTotal,
       orderTypeFilter,
+      withdrawStatusFilter,
+      isPayingView,
       creditYuan,
       creditRemark,
       fenToYuan,
       formatTime,
       canReview,
+      isPayingWithdraw,
       loadAccount,
       loadOrders,
       reloadOrders,
