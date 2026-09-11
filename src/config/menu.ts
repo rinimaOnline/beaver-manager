@@ -30,6 +30,7 @@ import {
   Filter,
   FolderOpened,
   Grid,
+  Guide,
   House,
   List,
   Lock,
@@ -65,6 +66,15 @@ export const menuConfig: MenuItem[] = [
     path: "/user/list",
     title: "用户管理",
     icon: User
+  },
+  {
+    path: "/onboarding",
+    title: "注册配置",
+    icon: Guide,
+    children: [
+      { path: "/onboarding/friends", title: "默认好友", icon: User },
+      { path: "/onboarding/groups", title: "默认群组", icon: ChatLineRound }
+    ]
   },
   {
     path: "/compliance",

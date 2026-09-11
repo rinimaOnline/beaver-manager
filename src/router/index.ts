@@ -58,6 +58,22 @@ const router = createRouter({
           ]
         },
         {
+          path: "onboarding",
+          redirect: "/onboarding/friends",
+          children: [
+            {
+              path: "friends",
+              name: "默认好友",
+              component: () => import("@/pages/onboarding/friends/index.vue")
+            },
+            {
+              path: "groups",
+              name: "默认群组",
+              component: () => import("@/pages/onboarding/groups/index.vue")
+            }
+          ]
+        },
+        {
           path: "compliance",
           children: [
             {
