@@ -37,6 +37,8 @@ import {
   Message,
   Money,
   Platform,
+  Postcard,
+  Present,
   Service,
   Setting,
   Share,
@@ -63,9 +65,13 @@ export const menuConfig: MenuItem[] = [
     icon: House
   },
   {
-    path: "/user/list",
+    path: "/user",
     title: "用户管理",
-    icon: User
+    icon: User,
+    children: [
+      { path: "/user/list", title: "用户列表", icon: User },
+      { path: "/user/identity", title: "实名审核", icon: Postcard }
+    ]
   },
   {
     path: "/onboarding",
@@ -73,7 +79,8 @@ export const menuConfig: MenuItem[] = [
     icon: Guide,
     children: [
       { path: "/onboarding/friends", title: "默认好友", icon: User },
-      { path: "/onboarding/groups", title: "默认群组", icon: ChatLineRound }
+      { path: "/onboarding/groups", title: "默认群组", icon: ChatLineRound },
+      { path: "/onboarding/autochat", title: "群自动发言", icon: Message }
     ]
   },
   {
@@ -109,7 +116,8 @@ export const menuConfig: MenuItem[] = [
       { path: "/finance/payment-orders", title: "支付订单", icon: Tickets },
       { path: "/finance/payout-orders", title: "代付订单", icon: List },
       { path: "/finance/flow", title: "钱包流水", icon: Coin },
-      { path: "/finance/config", title: "系统配置", icon: Setting }
+      { path: "/finance/config", title: "系统配置", icon: Setting },
+      { path: "/finance/reward", title: "签到邀请奖励", icon: Present }
     ]
   },
   {

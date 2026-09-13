@@ -122,6 +122,57 @@ export interface IBatchUpdateUserStatusReq {
 // 批量更新用户状态响应
 export interface IBatchUpdateUserStatusRes {}
 
+// 实名认证记录（人工审核台）
+export interface IIdentityInfo {
+  userId: string
+  nickName: string
+  avatar: string
+  realName: string
+  idNumber: string
+  portraitUrl: string
+  emblemUrl: string
+  faceUrl: string
+  faceFrames: string[]
+  status: number
+  rejectReason: string
+  reviewerId: string
+  reviewedAt: string
+  submitTime: string
+  updateTime: string
+}
+
+// 实名认证列表请求参数
+export interface IGetIdentityListReq {
+  page?: number
+  pageSize?: number
+  status?: number
+  keyword?: string
+}
+
+// 实名认证列表响应
+export interface IGetIdentityListRes {
+  list: IIdentityInfo[]
+  total: number
+}
+
+// 审核实名认证请求参数
+export interface IReviewIdentityReq {
+  userId: string
+  status: number
+  rejectReason?: string
+}
+
+// 审核实名认证响应
+export interface IReviewIdentityRes {}
+
+// 实名认证状态枚举
+export enum IdentityStatus {
+  NONE = 0, // 未提交
+  PENDING = 1, // 待人工审核
+  APPROVED = 2, // 审核通过
+  REJECTED = 3 // 审核驳回
+}
+
 // 用户状态枚举
 export enum UserStatus {
   NORMAL = 1, // 正常

@@ -27,9 +27,13 @@ import type {
   ICreateUserReq,
   ICreateUserRes,
   IDeleteUserRes,
+  IGetIdentityListReq,
+  IGetIdentityListRes,
   IGetUserDetailRes,
   IGetUserListReq,
   IGetUserListRes,
+  IReviewIdentityReq,
+  IReviewIdentityRes,
   IResetUserPasswordReq,
   IResetUserPasswordRes,
   IUpdateUserReq,
@@ -99,6 +103,24 @@ export function batchUpdateUserStatusApi(data: IBatchUpdateUserStatusReq) {
   return ajax<IBatchUpdateUserStatusRes>({
     method: "POST",
     url: `${config.baseAPI}/admin/user/v1/batch_update_status`,
+    data
+  })
+}
+
+/** 实名认证列表：人工审核台的数据源 */
+export function getIdentityListApi(params: IGetIdentityListReq) {
+  return ajax<IGetIdentityListRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/user/v1/identity/list`,
+    params
+  })
+}
+
+/** 审核实名认证：逐条人工判定通过或驳回 */
+export function reviewIdentityApi(data: IReviewIdentityReq) {
+  return ajax<IReviewIdentityRes>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/user/v1/identity/review`,
     data
   })
 }

@@ -36,6 +36,8 @@ export interface GroupInfo {
   currentMembers: number
   status: number
   muteAll: boolean
+  /** 展示用人数文案，非空时客户端用它顶替真实人数展示（官方群「100万+」） */
+  displayMemberText: string
   dissolveTime: string
   category: string
   createdAt: string
@@ -71,6 +73,8 @@ export interface UpdateGroupReq {
   status?: number
   muteAll?: boolean
   category?: string
+  /** 展示用人数文案。不传表示不改，传空串表示清掉、恢复真实人数 */
+  displayMemberText?: string
 }
 export interface UpdateGroupRes {}
 

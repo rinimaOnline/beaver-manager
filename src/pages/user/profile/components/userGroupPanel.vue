@@ -134,6 +134,17 @@
         <el-form-item label="全员禁言">
           <el-switch v-model="editForm.muteAll" />
         </el-form-item>
+        <el-form-item label="展示人数">
+          <el-input
+            v-model="editForm.displayMemberText"
+            maxlength="32"
+            show-word-limit
+            placeholder="留空按真实人数展示；填了就顶替，如「100万+」"
+          />
+          <div class="user-group-panel__hint">
+            只改客户端展示的那行字，成员列表和入群人数上限仍然按真实人数算。
+          </div>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="editVisible = false">取消</el-button>
@@ -156,7 +167,7 @@ import { buildGroupConversationCandidates } from "@/utils/conversation"
 const emptyData = (): IGetGroupOperationsProfileRes => ({
   profile: {
     groupId: "", title: "", avatar: "", creatorId: "", notice: "",
-    status: 1, muteAll: false, createdAt: ""
+    status: 1, muteAll: false, displayMemberText: "", createdAt: ""
   },
   memberTotal: 0, messageTotal: 0, reportTotal: 0,
   members: [], messages: [], reports: []
@@ -189,7 +200,7 @@ export default defineComponent({
     const reportsDrawerVisible = ref(false)
     const editVisible = ref(false)
     const editSaving = ref(false)
-    const editForm = reactive({ title: "", notice: "", muteAll: false })
+    const editForm = reactive({ title: "", notice: "", muteAll: false, displayMemberText: "" })
 
     const profile = computed(() => data.value.profile?.groupId ? data.value.profile : null)
 
@@ -314,6 +325,7 @@ export default defineComponent({
       editForm.title = profile.value.title || ""
       editForm.notice = profile.value.notice || ""
       editForm.muteAll = profile.value.muteAll || false
+      editForm.displayMemberText = profile.value.displayMemberText || ""
       editVisible.value = true
     }
 
@@ -323,7 +335,8 @@ export default defineComponent({
       const res = await updateGroupApi(groupDbId.value, {
         title: editForm.title,
         notice: editForm.notice,
-        muteAll: editForm.muteAll
+        muteAll: editForm.muteAll,
+        displayMemberText: editForm.displayMemberText.trim()
       })
       editSaving.value = false
       if (res.code === 0) {
@@ -472,6 +485,13 @@ export default defineComponent({
 
   .user-group-panel__members-search {
     margin: 8px 10px 0;
+  }
+
+  .user-group-panel__hint {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--el-text-color-secondary);
   }
 
   .user-group-panel__member-list {

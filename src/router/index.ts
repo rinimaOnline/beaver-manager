@@ -43,11 +43,17 @@ const router = createRouter({
         },
         {
           path: "user",
+          redirect: "/user/list",
           children: [
             {
               path: "list",
               name: "用户管理",
               component: () => import("@/pages/user/list/index.vue")
+            },
+            {
+              path: "identity",
+              name: "实名审核",
+              component: () => import("@/pages/user/identity/index.vue")
             },
             {
               path: "profile/:userId",
@@ -70,6 +76,11 @@ const router = createRouter({
               path: "groups",
               name: "默认群组",
               component: () => import("@/pages/onboarding/groups/index.vue")
+            },
+            {
+              path: "autochat",
+              name: "群自动发言",
+              component: () => import("@/pages/onboarding/autochat/index.vue")
             }
           ]
         },
@@ -161,6 +172,11 @@ const router = createRouter({
               path: "config",
               name: "财务系统配置",
               component: () => import("@/pages/finance/config.vue")
+            },
+            {
+              path: "reward",
+              name: "签到邀请奖励",
+              component: () => import("@/pages/finance/reward.vue")
             }
           ]
         },

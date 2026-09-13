@@ -110,6 +110,8 @@ export interface IGroupOpsProfileInfo {
   notice: string
   status: number
   muteAll: boolean
+  /** 展示用人数文案，空表示按真实人数展示 */
+  displayMemberText: string
   createdAt: string
 }
 
