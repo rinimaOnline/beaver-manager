@@ -491,20 +491,12 @@ export default defineComponent({
         { validator: eitherContact, trigger: "blur" },
         { pattern: /^1[3-9]\d{9}$/, message: "手机号格式不正确", trigger: "blur" }
       ],
-      // 与服务端 ValidateWeliaoID 同一套口径，先在本地挡一道，省一次网络往返；
-      // 真正的唯一性判定在服务端（撞号最终由唯一索引兜底）
+      // 后台改微聊号不受产品层限制：6-20 位 / 字母开头 / wl_ 前缀 / 官方保留词
+      // 这几条只拦用户自己在客户端改号（服务端 ValidateUserWeliaoID），运营是被信任的
+      // ——官方号本来就该叫 weliao_kefu，也可能要占一个 wl_ 开头的号。
+      // 这里只留跟库对齐的长度上限，唯一性仍由服务端 + 唯一索引兜底。
       weliaoId: [
-        { pattern: /^[a-z][\w-]{5,19}$/i, message: "6-20 位，字母开头，可含数字、下划线、减号", trigger: "blur" },
-        {
-          validator: (_rule: any, value: any, callback: any) => {
-            if (value && String(value).toLowerCase().startsWith("wl_")) {
-              callback(new Error("微聊号不能以 wl_ 开头"))
-              return
-            }
-            callback()
-          },
-          trigger: "blur"
-        }
+        { max: 32, message: "微聊号不能超过 32 个字符", trigger: "blur" }
       ],
       password: [
         { required: true, message: "请输入密码", trigger: "blur" },
