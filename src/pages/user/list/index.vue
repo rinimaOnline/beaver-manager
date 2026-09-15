@@ -47,7 +47,7 @@
           <el-form-item label="关键词">
             <el-input
               v-model="searchForm.keyword"
-              placeholder="昵称/邮箱/手机号"
+              placeholder="昵称/微聊号/邮箱/手机号"
               clearable
               style="width: 200px"
               @keyup.enter="handleSearch"
@@ -83,6 +83,17 @@
               <el-option label="普通用户" :value="1" />
               <el-option label="推送机器人" :value="2" />
               <el-option label="智能机器人" :value="3" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="官方">
+            <el-select
+              v-model="searchForm.isOfficial"
+              placeholder="是否官方"
+              clearable
+              style="width: 120px"
+            >
+              <el-option label="官方" :value="true" />
+              <el-option label="非官方" :value="false" />
             </el-select>
           </el-form-item>
           <el-form-item label="来源">
@@ -150,7 +161,24 @@
           style="width: 100%"
         >
           <el-table-column type="selection" width="50" />
-          <el-table-column prop="nickName" label="昵称" width="120" show-overflow-tooltip />
+          <el-table-column prop="nickName" label="昵称" width="160" show-overflow-tooltip>
+            <template #default="{ row }">
+              <span>{{ row.nickName }}</span>
+              <el-tag v-if="row.isOfficial" type="primary" size="small" effect="light" class="official-tag">
+                官方
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="weliaoId" label="微聊号" width="170" show-overflow-tooltip>
+            <template #default="{ row }">
+              {{ row.weliaoId || "—" }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="phone" label="手机号" width="130" show-overflow-tooltip>
+            <template #default="{ row }">
+              {{ row.phone || "—" }}
+            </template>
+          </el-table-column>
           <el-table-column prop="avatar" label="头像" width="80" align="center">
             <template #default="{ row }">
               <el-avatar 
@@ -245,11 +273,25 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="邮箱" prop="email">
-              <el-input v-model="userForm.email" placeholder="请输入邮箱">
+              <el-input v-model="userForm.email" placeholder="与手机号二选一">
                 <template #prefix>
                   <el-icon><Message /></el-icon>
                 </template>
               </el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="手机号" prop="phone">
+              <el-input v-model="userForm.phone" maxlength="11" placeholder="与邮箱二选一" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <!-- 新增时不填微聊号：建号时服务端自动发一个 wl_ 系统号，建完再改 -->
+            <el-form-item v-if="isEdit" label="微聊号" prop="weliaoId">
+              <el-input v-model="userForm.weliaoId" maxlength="20" placeholder="6-20 位，字母开头" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -274,6 +316,13 @@
             placeholder="请输入个性签名"
             :rows="3"
           />
+        </el-form-item>
+
+        <el-form-item label="官方账号" prop="isOfficial">
+          <el-switch v-model="userForm.isOfficial" />
+          <span class="form-hint">
+            开启后客户端会在这个号的昵称后面挂「官方」徽标。只是身份标识，不影响任何权限。
+          </span>
         </el-form-item>
 
         <!-- 新建接口（CreateUserReq）没有 status 字段，只在编辑时显示/提交 -->
@@ -380,7 +429,8 @@ export default defineComponent({
       email: "",
       status: undefined as number | undefined,
       source: undefined as number | undefined,
-      userType: undefined as number | undefined
+      userType: undefined as number | undefined,
+      isOfficial: undefined as boolean | undefined
     })
 
     // 分页数据
@@ -398,11 +448,14 @@ export default defineComponent({
     // 用户表单
     const userForm = reactive({
       id: "",
+      weliaoId: "",
       nickName: "",
       email: "",
+      phone: "",
       password: "",
       abstract: "",
-      status: 1
+      status: 1,
+      isOfficial: false
     })
 
     // 密码表单
@@ -417,13 +470,41 @@ export default defineComponent({
     const passwordFormRef = ref<FormInstance | null>(null)
 
     // 表单验证规则
+    // 邮箱/手机号二选一：两个都空才报错，所以校验挂在两边、互相看对方
+    const eitherContact = (_rule: any, _value: any, callback: any) => {
+      if (!userForm.email && !userForm.phone) {
+        callback(new Error("邮箱和手机号至少填一个"))
+        return
+      }
+      callback()
+    }
+
     const userFormRules = {
       nickName: [
         { required: true, message: "请输入昵称", trigger: "blur" }
       ],
       email: [
-        { required: true, message: "请输入邮箱", trigger: "blur" },
+        { validator: eitherContact, trigger: "blur" },
         { type: "email" as const, message: "邮箱格式不正确", trigger: "blur" }
+      ],
+      phone: [
+        { validator: eitherContact, trigger: "blur" },
+        { pattern: /^1[3-9]\d{9}$/, message: "手机号格式不正确", trigger: "blur" }
+      ],
+      // 与服务端 ValidateWeliaoID 同一套口径，先在本地挡一道，省一次网络往返；
+      // 真正的唯一性判定在服务端（撞号最终由唯一索引兜底）
+      weliaoId: [
+        { pattern: /^[a-z][\w-]{5,19}$/i, message: "6-20 位，字母开头，可含数字、下划线、减号", trigger: "blur" },
+        {
+          validator: (_rule: any, value: any, callback: any) => {
+            if (value && String(value).toLowerCase().startsWith("wl_")) {
+              callback(new Error("微聊号不能以 wl_ 开头"))
+              return
+            }
+            callback()
+          },
+          trigger: "blur"
+        }
       ],
       password: [
         { required: true, message: "请输入密码", trigger: "blur" },
@@ -461,7 +542,8 @@ export default defineComponent({
         email: searchForm.email || undefined,
         status: searchForm.status,
         source: searchForm.source,
-        userType: searchForm.userType
+        userType: searchForm.userType,
+        isOfficial: searchForm.isOfficial
       })
       loading.value = false
       if (response.code === 0) {
@@ -529,7 +611,8 @@ export default defineComponent({
         email: "",
         status: undefined,
         source: undefined,
-        userType: undefined
+        userType: undefined,
+        isOfficial: undefined
       })
       handleSearch()
     }
@@ -558,10 +641,13 @@ export default defineComponent({
       isEdit.value = true
       Object.assign(userForm, {
         id: row.id,
+        weliaoId: row.weliaoId,
         nickName: row.nickName,
         email: row.email,
+        phone: row.phone,
         abstract: row.abstract,
         status: row.status,
+        isOfficial: row.isOfficial,
         password: ""
       })
       showCreateDialog.value = true
@@ -621,10 +707,17 @@ export default defineComponent({
       const formData = {
         nickName: userForm.nickName,
         email: userForm.email,
-        abstract: userForm.abstract
+        phone: userForm.phone,
+        abstract: userForm.abstract,
+        isOfficial: userForm.isOfficial
       }
       const response = isEdit.value
-        ? await updateUserApi(userForm.id, { ...formData, status: userForm.status })
+        ? await updateUserApi(userForm.id, {
+            ...formData,
+            // 没改就不传：传了服务端要跑一遍唯一性校验，没必要
+            ...(userForm.weliaoId ? { weliaoId: userForm.weliaoId } : {}),
+            status: userForm.status
+          })
         : await createUserApi({ ...formData, password: userForm.password })
       submitting.value = false
       if (response.code === 0) {
@@ -656,11 +749,14 @@ export default defineComponent({
     const resetUserForm = () => {
       Object.assign(userForm, {
         id: "",
+        weliaoId: "",
         nickName: "",
         email: "",
+        phone: "",
         password: "",
         abstract: "",
-        status: 1
+        status: 1,
+        isOfficial: false
       })
       isEdit.value = false
     }
@@ -848,5 +944,15 @@ export default defineComponent({
   .el-button {
     margin-left: 10px;
   }
+}
+
+.official-tag {
+  margin-left: 6px;
+}
+
+.form-hint {
+  margin-left: 12px;
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
 }
 </style>

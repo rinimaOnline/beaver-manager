@@ -53,6 +53,7 @@ export interface DeleteCircleRes {}
 export interface CircleMemberInfo {
   circleId: string
   userId: string
+  weliaoId: string // 微聊号
   nickName: string
   role: number
 }

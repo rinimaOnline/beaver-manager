@@ -46,7 +46,7 @@
             <span>成员</span>
             <el-tag size="small" type="info">{{ members.length }}</el-tag>
           </div>
-          <el-input v-model="memberKeyword" placeholder="搜索成员" clearable size="small" class="user-circle-panel__members-search" />
+          <el-input v-model="memberKeyword" placeholder="搜索昵称 / 微聊号" clearable size="small" class="user-circle-panel__members-search" />
           <div v-loading="membersLoading" class="user-circle-panel__member-list">
             <div
               v-for="row in filteredMembers"
@@ -57,7 +57,7 @@
             >
               <el-avatar :size="32">{{ row.nickName?.charAt(0) || "?" }}</el-avatar>
               <div class="user-circle-panel__member-info">
-                <div class="user-circle-panel__member-name">{{ row.nickName || row.userId }}</div>
+                <div class="user-circle-panel__member-name">{{ row.nickName || row.weliaoId || row.userId }}</div>
                 <el-tag size="small" :type="row.role === 1 ? 'warning' : 'info'">{{ roleLabel(row.role) }}</el-tag>
               </div>
             </div>
@@ -205,6 +205,7 @@ export default defineComponent({
       if (!kw) return members.value
       return members.value.filter(m =>
         (m.nickName || "").toLowerCase().includes(kw) ||
+        (m.weliaoId || "").toLowerCase().includes(kw) ||
         m.userId.toLowerCase().includes(kw)
       )
     })

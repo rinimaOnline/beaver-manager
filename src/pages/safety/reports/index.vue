@@ -44,6 +44,9 @@
     >
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="reporterName" label="举报人" width="140" />
+      <el-table-column prop="reporterWeliaoId" label="举报人微聊号" width="170" show-overflow-tooltip>
+        <template #default="{ row }">{{ row.reporterWeliaoId || "—" }}</template>
+      </el-table-column>
       <el-table-column prop="reporterUserId" label="举报人ID" width="140" />
       <el-table-column label="对象" min-width="160">
         <template #default="{ row }">{{ targetTypeLabel(row.targetType) }} · {{ row.targetId }}</template>

@@ -35,7 +35,7 @@
         <el-form-item label="关键词">
           <el-input
             v-model="searchForm.keyword"
-            placeholder="用户ID / 昵称 / 邮箱"
+            placeholder="微聊号 / 用户ID / 昵称 / 邮箱"
             clearable
             style="width: 240px"
             @keyup.enter="handleSearch"
@@ -49,6 +49,11 @@
 
       <el-table v-loading="loading" :data="userList" border stripe>
         <el-table-column prop="userId" label="用户ID" width="120" show-overflow-tooltip />
+        <el-table-column prop="weliaoId" label="微聊号" width="170" show-overflow-tooltip>
+          <template #default="{ row }">
+            {{ row.weliaoId || "—" }}
+          </template>
+        </el-table-column>
         <el-table-column label="用户" width="180">
           <template #default="{ row }">
             <div class="system-online__user-cell">

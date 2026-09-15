@@ -28,7 +28,7 @@
 
     <el-form :inline="true" class="user-identity__form">
       <el-form-item label="关键词">
-        <el-input v-model="searchForm.keyword" placeholder="用户ID/姓名/证件号" clearable style="width: 200px" />
+        <el-input v-model="searchForm.keyword" placeholder="微聊号/用户ID/姓名/证件号" clearable style="width: 200px" />
       </el-form-item>
       <el-form-item label="状态">
         <el-select v-model="searchForm.status" style="width: 130px">
@@ -51,7 +51,7 @@
             <el-avatar :src="row.avatar || ''" :size="28">{{ (row.nickName || row.userId).charAt(0) }}</el-avatar>
             <div class="user-identity__user-text">
               <el-link type="primary" @click="goUser(row.userId)">{{ row.nickName || row.userId }}</el-link>
-              <span class="user-identity__user-id">{{ row.userId }}</span>
+              <span class="user-identity__user-id">微聊号 {{ row.weliaoId || "—" }}</span>
             </div>
           </div>
         </template>
@@ -101,6 +101,7 @@
     <el-dialog v-model="detailVisible" title="实名资料" width="720px">
       <template v-if="current">
         <el-descriptions :column="2" border>
+          <el-descriptions-item label="微聊号">{{ current.weliaoId || '-' }}</el-descriptions-item>
           <el-descriptions-item label="用户ID">{{ current.userId }}</el-descriptions-item>
           <el-descriptions-item label="昵称">{{ current.nickName || '-' }}</el-descriptions-item>
           <el-descriptions-item label="姓名">{{ current.realName }}</el-descriptions-item>

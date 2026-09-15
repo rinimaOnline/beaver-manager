@@ -23,13 +23,19 @@
   <div class="autochat-page">
     <div class="autochat-page__header">
       <div>
-        <h2 class="autochat-page__title">群自动发言</h2>
+        <h2 class="autochat-page__title">
+          群自动发言
+          <el-tag v-if="scopedGroupId" size="small" type="info">仅看 {{ scopedGroupId }}</el-tag>
+        </h2>
         <p class="autochat-page__subtitle">
           任务会用自动建的虚拟账号，按配置的节奏把文案一条条发进群里。虚拟号是正常的用户账号，
           在群成员列表里和真人一样显示；它们不参与消息推送，不会额外占用推送资源。
         </p>
       </div>
-      <el-button type="primary" @click="openCreate">新建任务</el-button>
+      <div class="autochat-page__actions">
+        <el-button v-if="scopedGroupId" @click="$router.push('/group/autochat')">查看全部任务</el-button>
+        <el-button type="primary" @click="openCreate">新建任务</el-button>
+      </div>
     </div>
 
     <el-alert
@@ -147,12 +153,30 @@
           <span class="autochat-page__hint">启用时不够会自动补建；调小不会注销已建的号</span>
         </el-form-item>
         <el-form-item label="虚拟号头像">
-          <el-input
-            v-model="form.botAvatars"
-            type="textarea"
-            :rows="3"
-            placeholder="一行一个头像 URL，建号时轮流取用。留空则全部用系统默认头像"
-          />
+          <div class="autochat-page__avatars">
+            <div v-if="selectedAvatars.length" class="autochat-page__avatar-grid">
+              <div v-for="url in selectedAvatars" :key="url" class="autochat-page__avatar-chip">
+                <img :src="url" class="autochat-page__avatar-img">
+                <el-icon class="autochat-page__avatar-remove" @click="removeAvatar(url)"><Close /></el-icon>
+              </div>
+            </div>
+            <div v-else class="autochat-page__hint">
+              没选头像也能用：虚拟号会显示昵称首字的彩色头像，和普通用户一样。
+            </div>
+            <div class="autochat-page__avatar-ops">
+              <el-button size="small" @click="pickerVisible = true">从头像库选</el-button>
+              <el-button size="small" link @click="rawAvatarVisible = !rawAvatarVisible">
+                {{ rawAvatarVisible ? "收起手填" : "手填 URL" }}
+              </el-button>
+            </div>
+            <el-input
+              v-if="rawAvatarVisible"
+              v-model="form.botAvatars"
+              type="textarea"
+              :rows="3"
+              placeholder="一行一个头像 URL，建号时轮流取用"
+            />
+          </div>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="form.remark" maxlength="120" show-word-limit />
@@ -161,6 +185,33 @@
       <template #footer>
         <el-button @click="taskVisible = false">取消</el-button>
         <el-button type="primary" :loading="saving" @click="submitTask">保存</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="pickerVisible" title="选择虚拟号头像" width="640px" destroy-on-close>
+      <p class="autochat-page__subtitle">
+        点选即可多选，建号时按顺序轮流取用。这些图都存在本项目的文件服务上，不依赖外部站点。
+      </p>
+      <el-tabs v-if="avatarLibrary.length">
+        <el-tab-pane v-for="cat in avatarLibrary" :key="cat.key" :label="cat.title">
+          <div class="autochat-page__library">
+            <div
+              v-for="item in cat.items"
+              :key="item.url"
+              class="autochat-page__library-item"
+              :class="{ 'is-active': selectedAvatars.includes(item.url) }"
+              :title="item.name"
+              @click="toggleAvatar(item.url)"
+            >
+              <img :src="item.url" class="autochat-page__avatar-img">
+            </div>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
+      <el-empty v-else description="头像库还没配图，可先用手填 URL" />
+      <template #footer>
+        <span class="autochat-page__hint">已选 {{ selectedAvatars.length }} 个</span>
+        <el-button type="primary" @click="pickerVisible = false">完成</el-button>
       </template>
     </el-dialog>
 
@@ -189,7 +240,7 @@
               <el-avatar :src="row.avatar" :size="32">{{ (row.nickName || row.userId).slice(0, 1) }}</el-avatar>
               <div>
                 <div class="autochat-page__name">{{ row.nickName || "未命名" }}</div>
-                <div class="autochat-page__id">{{ row.userId }}</div>
+                <div class="autochat-page__id">微聊号 {{ row.weliaoId || "—" }}</div>
               </div>
             </div>
           </template>
@@ -222,6 +273,8 @@ import {
   saveAutoChatTaskApi
 } from "@/api/groupautochat"
 import { getGroupListApi } from "@/api/group"
+import { avatarLibrary } from "@/config/avatarLibrary"
+import { Close } from "@element-plus/icons-vue"
 import { computed, defineComponent, onMounted, reactive, ref } from "vue"
 
 /** 新建任务时的默认节奏：一到五分钟一条，白天发，五个号轮着来。 */
@@ -242,7 +295,9 @@ const defaultForm = {
 
 export default defineComponent({
   name: "GroupAutoChat",
+  components: { Close },
   setup() {
+    const route = useRoute()
     const loading = ref(false)
     const saving = ref(false)
     const togglingId = ref(0)
@@ -258,6 +313,31 @@ export default defineComponent({
     const scriptTaskId = ref(0)
     const scriptText = ref("")
 
+    const pickerVisible = ref(false)
+    // 手填入口默认收起：绝大多数情况从头像库点选就够了
+    const rawAvatarVisible = ref(false)
+
+    // botAvatars 在服务端就是一行一个 URL，这里只是把它当数组用，存回去仍是纯文本
+    const selectedAvatars = computed(() =>
+      form.botAvatars.split("\n").map(v => v.trim()).filter(Boolean)
+    )
+
+    const writeAvatars = (list: string[]) => {
+      form.botAvatars = list.join("\n")
+    }
+
+    const toggleAvatar = (url: string) => {
+      const list = [...selectedAvatars.value]
+      const idx = list.indexOf(url)
+      if (idx >= 0) list.splice(idx, 1)
+      else list.push(url)
+      writeAvatars(list)
+    }
+
+    const removeAvatar = (url: string) => {
+      writeAvatars(selectedAvatars.value.filter(v => v !== url))
+    }
+
     const botVisible = ref(false)
     const botLoading = ref(false)
     const bots = ref<IAutoChatBot[]>([])
@@ -266,9 +346,15 @@ export default defineComponent({
       () => scriptText.value.split("\n").filter(line => line.trim()).length
     )
 
+    // 从群列表点「自动发言」过来时带着 groupId，只列这个群的任务；
+    // 直接从菜单进来则列全部。
+    const scopedGroupId = computed(() => (route.query.groupId as string) || "")
+
     const load = async () => {
       loading.value = true
-      const res = await getAutoChatTasksApi()
+      const res = await getAutoChatTasksApi(
+        scopedGroupId.value ? { groupId: scopedGroupId.value } : undefined
+      )
       loading.value = false
       if (res.code !== 0) {
         ElMessage.error(res.msg || "加载失败")
@@ -297,6 +383,8 @@ export default defineComponent({
       Object.assign(form, defaultForm)
       groupOptions.value = []
       searchGroups("")
+      // 从群列表进来的，默认就选中那个群，省得再搜一遍
+      if (scopedGroupId.value) form.groupId = scopedGroupId.value
       taskVisible.value = true
     }
 
@@ -452,6 +540,13 @@ export default defineComponent({
     onMounted(load)
 
     return {
+      avatarLibrary,
+      pickerVisible,
+      rawAvatarVisible,
+      selectedAvatars,
+      toggleAvatar,
+      removeAvatar,
+      scopedGroupId,
       loading,
       saving,
       togglingId,
@@ -485,6 +580,12 @@ export default defineComponent({
 <style scoped lang="less">
 .autochat-page {
   padding: 20px;
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
 
   &__header {
     display: flex;
@@ -535,6 +636,72 @@ export default defineComponent({
     margin-left: 10px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
+  }
+
+  &__avatars {
+    width: 100%;
+  }
+
+  &__avatar-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  &__avatar-chip {
+    position: relative;
+    width: 44px;
+    height: 44px;
+  }
+
+  &__avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    object-fit: cover;
+    display: block;
+  }
+
+  &__avatar-remove {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--el-color-danger);
+    color: #fff;
+    border-radius: 50%;
+    padding: 2px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  &__avatar-ops {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  &__library {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 10px;
+  }
+
+  &__library-item {
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 2px;
+    transition: border-color 0.15s;
+
+    &:hover {
+      border-color: var(--el-border-color);
+    }
+
+    &.is-active {
+      border-color: var(--el-color-primary);
+    }
   }
 }
 </style>

@@ -20,6 +20,8 @@
  */
 
 import type {
+  CreateGroupReq,
+  CreateGroupRes,
   DeleteGroupRes,
   GetGroupDetailRes,
   GetGroupListReq,
@@ -51,6 +53,14 @@ export function getGroupDetailApi(id: number) {
     method: "GET",
     url: `${config.baseAPI}/admin/group/v1/detail`,
     params: { id }
+  })
+}
+
+export function createGroupApi(data: CreateGroupReq) {
+  return ajax<CreateGroupRes>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/group/v1/create`,
+    data
   })
 }
 

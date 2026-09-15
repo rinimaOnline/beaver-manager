@@ -38,6 +38,10 @@ export interface GroupInfo {
   muteAll: boolean
   /** 展示用人数文案，非空时客户端用它顶替真实人数展示（官方群「100万+」） */
   displayMemberText: string
+  /** 官方群标识，客户端在群名后挂「官方」徽标；只有后台能改 */
+  isOfficial: boolean
+  /** 真实在册成员数（status=1），和 displayMemberText 无关 */
+  memberCount: number
   dissolveTime: string
   category: string
   createdAt: string
@@ -51,6 +55,8 @@ export interface GetGroupListReq {
   status?: number
   type?: number
   keywords?: string
+  /** 官方群筛选，不传表示全部 */
+  isOfficial?: boolean
 }
 export interface GetGroupListRes {
   list: GroupInfo[]
@@ -75,8 +81,31 @@ export interface UpdateGroupReq {
   category?: string
   /** 展示用人数文案。不传表示不改，传空串表示清掉、恢复真实人数 */
   displayMemberText?: string
+  /** 官方群标识。不传表示不改 */
+  isOfficial?: boolean
 }
 export interface UpdateGroupRes {}
+
+// 后台建群
+//
+// 群主必须是已存在的用户（官方群一般挂在官方客服号下）。memberIds 是可选的初始成员，
+// 建完不会给成员推 WS，真人被这样拉进来要等下一轮同步才看得到群——这里只适合放
+// 官方号、运营虚拟号，普通用户让他们自己走邀请链接进。
+export interface CreateGroupReq {
+  /** 群主用户ID */
+  creatorId: string
+  title: string
+  /** 群头像，空表示用默认头像 */
+  fileName?: string
+  notice?: string
+  /** 初始成员（不含群主） */
+  memberIds?: string[]
+  isOfficial?: boolean
+  displayMemberText?: string
+}
+export interface CreateGroupRes {
+  groupId: string
+}
 
 // 删除群组
 export interface DeleteGroupReq { id: number }
@@ -87,6 +116,7 @@ export interface GroupMemberInfo {
   id: number
   groupId: string
   userId: string
+  weliaoId: string // 微聊号
   memberNickname: string
   role: number
   prohibitionTime: number

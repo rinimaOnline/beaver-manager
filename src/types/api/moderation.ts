@@ -31,6 +31,7 @@ export interface IExecuteUserControlReq {
 export interface IContentReportInfo {
   id: number
   reporterUserId: string
+  reporterWeliaoId: string // 举报人微聊号
   reporterName: string
   targetType: number
   targetId: string
@@ -105,6 +106,7 @@ export interface IGetModerationCaseDetailRes {
 
 export interface ICaseContextUser {
   userId: string
+  weliaoId: string // 微聊号
   nickName: string
   email: string
   status: number

@@ -48,7 +48,7 @@
             <span>群成员</span>
             <el-tag size="small" type="info">{{ memberRows.length }}</el-tag>
           </div>
-          <el-input v-model="memberKeyword" placeholder="搜索成员" clearable size="small" class="user-group-panel__members-search" />
+          <el-input v-model="memberKeyword" placeholder="搜索昵称 / 微聊号" clearable size="small" class="user-group-panel__members-search" />
           <div v-loading="membersLoading" class="user-group-panel__member-list">
             <div
               v-for="row in filteredMembers"
@@ -77,6 +77,7 @@
               <div class="user-group-panel__member-detail-title">成员详情</div>
               <el-descriptions :column="1" border size="small">
                 <el-descriptions-item label="昵称">{{ selectedMember.nickName }}</el-descriptions-item>
+                <el-descriptions-item label="微聊号">{{ selectedMember.weliaoId || "—" }}</el-descriptions-item>
                 <el-descriptions-item label="用户ID">{{ selectedMember.userId }}</el-descriptions-item>
                 <el-descriptions-item label="角色">{{ roleLabel(selectedMember.role) }}</el-descriptions-item>
                 <el-descriptions-item label="加入时间">{{ selectedMember.joinTime }}</el-descriptions-item>
@@ -175,6 +176,7 @@ const emptyData = (): IGetGroupOperationsProfileRes => ({
 
 interface IMemberRow {
   userId: string
+  weliaoId: string
   nickName: string
   role: number
   joinTime: string
@@ -214,6 +216,7 @@ export default defineComponent({
       const source = fullMembers.value.length
         ? fullMembers.value.map(m => ({
             userId: m.userId,
+            weliaoId: m.weliaoId || "",
             // 群成员列表接口把用户昵称放在 memberNickname，入群时间放在 createdAt
             nickName: m.memberNickname || m.userId,
             role: m.role,
@@ -222,6 +225,7 @@ export default defineComponent({
           }))
         : (data.value.members || []).map(m => ({
             userId: m.userId,
+            weliaoId: m.weliaoId || "",
             nickName: m.nickName,
             role: m.role,
             joinTime: m.joinTime,
@@ -234,7 +238,9 @@ export default defineComponent({
       const kw = memberKeyword.value.trim().toLowerCase()
       if (!kw) return memberRows.value
       return memberRows.value.filter(m =>
-        m.nickName.toLowerCase().includes(kw) || m.userId.toLowerCase().includes(kw)
+        m.nickName.toLowerCase().includes(kw) ||
+        m.weliaoId.toLowerCase().includes(kw) ||
+        m.userId.toLowerCase().includes(kw)
       )
     })
 

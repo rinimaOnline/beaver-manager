@@ -74,13 +74,21 @@ export const menuConfig: MenuItem[] = [
     ]
   },
   {
+    path: "/group",
+    title: "群管理",
+    icon: UserFilled,
+    children: [
+      { path: "/group/list", title: "群列表", icon: List },
+      { path: "/group/autochat", title: "自动发言", icon: Message }
+    ]
+  },
+  {
     path: "/onboarding",
     title: "注册配置",
     icon: Guide,
     children: [
       { path: "/onboarding/friends", title: "默认好友", icon: User },
-      { path: "/onboarding/groups", title: "默认群组", icon: ChatLineRound },
-      { path: "/onboarding/autochat", title: "群自动发言", icon: Message }
+      { path: "/onboarding/groups", title: "默认群组", icon: ChatLineRound }
     ]
   },
   {

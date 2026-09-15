@@ -38,7 +38,7 @@
             <el-avatar :src="row.avatar" :size="36">{{ (row.nickName || row.userId).slice(0, 1) }}</el-avatar>
             <div>
               <div class="onboarding-page__name">{{ row.nickName || "未设置昵称" }}</div>
-              <div class="onboarding-page__id">{{ row.userId }}</div>
+              <div class="onboarding-page__id">微聊号 {{ row.weliaoId || "—" }}</div>
             </div>
           </div>
         </template>
@@ -78,7 +78,7 @@
         <el-form-item>
           <el-input
             v-model="userKeyword"
-            placeholder="昵称 / 邮箱 / 手机号 / 用户 ID"
+            placeholder="昵称 / 微聊号 / 邮箱 / 手机号"
             clearable
             style="width: 280px"
             @keyup.enter="searchUsers"
@@ -103,7 +103,7 @@
               <el-avatar :src="row.avatar" :size="32">{{ (row.nickName || row.id).slice(0, 1) }}</el-avatar>
               <div>
                 <div class="onboarding-page__name">{{ row.nickName || "未设置昵称" }}</div>
-                <div class="onboarding-page__id">{{ row.id }}</div>
+                <div class="onboarding-page__id">微聊号 {{ row.weliaoId || "—" }}</div>
               </div>
             </div>
           </template>

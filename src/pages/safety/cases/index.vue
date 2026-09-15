@@ -150,6 +150,7 @@
                   {{ context.targetUser.userId }}
                 </el-button>
               </el-descriptions-item>
+              <el-descriptions-item label="微聊号">{{ context.targetUser.weliaoId || "—" }}</el-descriptions-item>
               <el-descriptions-item label="昵称">{{ context.targetUser.nickName || "—" }}</el-descriptions-item>
               <el-descriptions-item label="邮箱">{{ context.targetUser.email || "—" }}</el-descriptions-item>
               <el-descriptions-item label="状态">

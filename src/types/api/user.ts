@@ -22,13 +22,17 @@
 // 用户基础信息
 export interface IUserInfo {
   id: string
+  weliaoId: string // 微聊号（用户对外展示的账号）
   nickName: string
   email: string
+  phone: string
   abstract: string
   avatar: string
   status: number
   source: number
   userType: number
+  /** 官方标识，客户端在昵称后挂「官方」徽标；只有后台能改 */
+  isOfficial: boolean
   lastLoginIp: string
   createTime: string
   updateTime: string
@@ -43,6 +47,8 @@ export interface IGetUserListReq {
   status?: number
   source?: number
   userType?: number
+  /** 官方标识筛选，不传表示全部 */
+  isOfficial?: boolean
 }
 
 // 获取用户列表响应
@@ -63,11 +69,16 @@ export interface IGetUserDetailRes extends IUserInfo {}
 export interface ICreateUserReq {
   nickName: string
   password: string
-  email: string
+  /** 与手机号二选一 */
+  email?: string
+  /** 与邮箱二选一 */
+  phone?: string
   avatar?: string
   abstract?: string
   status?: number
   source?: number
+  /** 官方标识，只有后台建号能给 */
+  isOfficial?: boolean
 }
 
 // 创建用户响应
@@ -78,11 +89,17 @@ export interface ICreateUserRes {
 // 更新用户请求参数
 export interface IUpdateUserReq {
   id: string
+  /** 微聊号，唯一性由服务端校验 */
+  weliaoId?: string
   nickName?: string
   email?: string
+  /** 手机号，唯一性由服务端校验 */
+  phone?: string
   avatar?: string
   abstract?: string
   status?: number
+  /** 官方标识，不传表示不改 */
+  isOfficial?: boolean
 }
 
 // 更新用户响应
@@ -125,6 +142,7 @@ export interface IBatchUpdateUserStatusRes {}
 // 实名认证记录（人工审核台）
 export interface IIdentityInfo {
   userId: string
+  weliaoId: string // 微聊号
   nickName: string
   avatar: string
   realName: string

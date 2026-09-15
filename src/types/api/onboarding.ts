@@ -22,6 +22,7 @@
 export interface IOnboardingFriendItem {
   id: number
   userId: string
+  weliaoId: string // 微聊号
   nickName: string
   avatar: string
   email: string

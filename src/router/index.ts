@@ -64,6 +64,28 @@ const router = createRouter({
           ]
         },
         {
+          path: "group",
+          redirect: "/group/list",
+          children: [
+            {
+              path: "list",
+              name: "群列表",
+              component: () => import("@/pages/group/list/index.vue")
+            },
+            {
+              path: "autochat",
+              name: "群自动发言",
+              component: () => import("@/pages/group/autochat/index.vue")
+            },
+            {
+              path: "detail/:id",
+              name: "群详情",
+              component: () => import("@/pages/group/detail/index.vue"),
+              meta: { activeMenu: "/group/list" }
+            }
+          ]
+        },
+        {
           path: "onboarding",
           redirect: "/onboarding/friends",
           children: [
@@ -76,11 +98,6 @@ const router = createRouter({
               path: "groups",
               name: "默认群组",
               component: () => import("@/pages/onboarding/groups/index.vue")
-            },
-            {
-              path: "autochat",
-              name: "群自动发言",
-              component: () => import("@/pages/onboarding/autochat/index.vue")
             }
           ]
         },

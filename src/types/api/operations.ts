@@ -21,6 +21,7 @@
 
 export interface IUserOpsProfileInfo {
   userId: string
+  weliaoId: string // 微聊号
   nickName: string
   email: string
   avatar: string
@@ -117,6 +118,7 @@ export interface IGroupOpsProfileInfo {
 
 export interface IGroupOpsMemberItem {
   userId: string
+  weliaoId: string // 微聊号
   nickName: string
   role: number
   status: number

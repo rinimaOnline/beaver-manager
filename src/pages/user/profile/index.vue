@@ -26,7 +26,7 @@
         <el-avatar :size="48" class="user-profile__avatar">{{ profile.nickName?.charAt(0) || "U" }}</el-avatar>
         <div class="user-profile__header-info">
           <h2 class="user-profile__title">{{ profile.nickName || profile.userId }}</h2>
-          <p class="user-profile__meta">{{ profile.userId }} · {{ profile.email || "无邮箱" }}</p>
+          <p class="user-profile__meta">微聊号 {{ profile.weliaoId || "—" }} · ID {{ profile.userId }} · {{ profile.email || "无邮箱" }}</p>
           <div class="user-profile__tags">
             <el-tag :type="profile.status === 2 ? 'danger' : 'success'" size="small">
               {{ profile.status === 2 ? "禁用" : "正常" }}
@@ -256,7 +256,7 @@ interface IRelationItem {
 }
 
 const emptyData = (): IGetUserOperationsProfileRes => ({
-  profile: { userId: "", nickName: "", email: "", avatar: "", abstract: "", status: 1, source: 1, createTime: "" },
+  profile: { userId: "", weliaoId: "", nickName: "", email: "", avatar: "", abstract: "", status: 1, source: 1, createTime: "" },
   friendTotal: 0, groupTotal: 0, sessionTotal: 0, momentTotal: 0, circleTotal: 0, reportTotal: 0, blockTotal: 0,
   friends: [], groups: [], circles: [], sessions: [], moments: [], reports: [], blocks: []
 })

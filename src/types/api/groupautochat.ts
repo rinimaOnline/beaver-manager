@@ -111,6 +111,7 @@ export interface IAutoChatBot {
   id: number
   taskId: number
   userId: string
+  weliaoId: string // 微聊号
   nickName: string
   avatar: string
   status: number

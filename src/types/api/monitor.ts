@@ -32,6 +32,7 @@ export interface IOnlineUserSlotItem {
 
 export interface IOnlineUserItem {
   userId: string
+  weliaoId: string // 微聊号
   nickName: string
   email: string
   avatar: string
