@@ -290,20 +290,27 @@ export default defineComponent({
 
     const load = async () => {
       loading.value = true
-      const res = await getInviteConfigListApi({
-        keyword: keyword.value.trim() || undefined,
-        status: status.value,
-        source: source.value,
-        page: page.value,
-        pageSize
-      })
-      loading.value = false
-      if (res.code !== 0) {
-        ElMessage.error(res.msg || "加载失败")
-        return
+      try {
+        const res = await getInviteConfigListApi({
+          keyword: keyword.value.trim() || undefined,
+          status: status.value,
+          source: source.value,
+          page: page.value,
+          pageSize
+        })
+        if (res.code !== 0) {
+          ElMessage.error(res.msg || "加载失败")
+          return
+        }
+        list.value = res.result?.list || []
+        total.value = res.result?.total || 0
       }
-      list.value = res.result?.list || []
-      total.value = res.result?.total || 0
+      catch (e: any) {
+        ElMessage.error(e?.message || "加载失败")
+      }
+      finally {
+        loading.value = false
+      }
     }
 
     const search = () => {

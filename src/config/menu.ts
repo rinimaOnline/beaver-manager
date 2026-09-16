@@ -91,8 +91,8 @@ export const menuConfig: MenuItem[] = [
       { path: "/onboarding/invite-code", title: "邀请码配置", icon: Tickets },
       { path: "/onboarding/invite-data", title: "邀请数据", icon: DataAnalysis },
       { path: "/onboarding/invite-setting", title: "注册设置", icon: Setting },
-      { path: "/onboarding/friends", title: "无码默认好友", icon: User },
-      { path: "/onboarding/groups", title: "无码默认群组", icon: ChatLineRound }
+      { path: "/onboarding/friends", title: "默认好友", icon: User },
+      { path: "/onboarding/groups", title: "默认群组", icon: ChatLineRound }
     ]
   },
   {

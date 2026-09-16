@@ -106,17 +106,24 @@ export default defineComponent({
         return
       }
       loading.value = true
-      const res = await getInviteUserLineageApi(id)
-      loading.value = false
-      if (res.code !== 0) {
-        ElMessage.error(res.msg || "查询失败")
-        return
+      try {
+        const res = await getInviteUserLineageApi(id)
+        if (res.code !== 0) {
+          ElMessage.error(res.msg || "查询失败")
+          return
+        }
+        result.userId = res.result?.userId || ""
+        result.nickName = res.result?.nickName || ""
+        result.inviterId = res.result?.inviterId || ""
+        result.lineage = res.result?.lineage || []
+        queried.value = true
       }
-      result.userId = res.result?.userId || ""
-      result.nickName = res.result?.nickName || ""
-      result.inviterId = res.result?.inviterId || ""
-      result.lineage = res.result?.lineage || []
-      queried.value = true
+      catch (e: any) {
+        ElMessage.error(e?.message || "查询失败")
+      }
+      finally {
+        loading.value = false
+      }
     }
 
     return {

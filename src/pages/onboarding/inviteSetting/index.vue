@@ -60,13 +60,20 @@ export default defineComponent({
 
     const load = async () => {
       loading.value = true
-      const res = await getInviteSettingApi()
-      loading.value = false
-      if (res.code !== 0) {
-        ElMessage.error(res.msg || "获取设置失败")
-        return
+      try {
+        const res = await getInviteSettingApi()
+        if (res.code !== 0) {
+          ElMessage.error(res.msg || "获取设置失败")
+          return
+        }
+        allowEmptyInviteCode.value = !!res.result?.allowEmptyInviteCode
       }
-      allowEmptyInviteCode.value = !!res.result?.allowEmptyInviteCode
+      catch (e: any) {
+        ElMessage.error(e?.message || "获取设置失败")
+      }
+      finally {
+        loading.value = false
+      }
     }
 
     const save = async () => {
