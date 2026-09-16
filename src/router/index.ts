@@ -87,33 +87,22 @@ const router = createRouter({
         },
         {
           path: "onboarding",
-          redirect: "/onboarding/invite-code",
+          redirect: "/onboarding/friends",
           children: [
             {
               path: "friends",
-              name: "无码默认好友",
+              name: "默认好友",
               component: () => import("@/pages/onboarding/friends/index.vue")
             },
             {
               path: "groups",
-              name: "无码默认群组",
+              name: "默认群组",
               component: () => import("@/pages/onboarding/groups/index.vue")
             },
             {
-              path: "invite-code",
-              name: "邀请码配置",
-              component: () => import("@/pages/onboarding/inviteCode/index.vue")
-            },
-            {
-              path: "invite-code/detail",
-              name: "邀请码详情",
-              component: () => import("@/pages/onboarding/inviteCode/detail.vue"),
-              meta: { activeMenu: "/onboarding/invite-code" }
-            },
-            {
-              path: "invite-data",
-              name: "邀请数据",
-              component: () => import("@/pages/onboarding/inviteData/index.vue")
+              path: "invite-tree",
+              name: "邀请树",
+              component: () => import("@/pages/onboarding/inviteTree/index.vue")
             },
             {
               path: "invite-setting",

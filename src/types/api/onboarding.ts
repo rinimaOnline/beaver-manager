@@ -28,6 +28,7 @@ export interface IOnboardingFriendItem {
   email: string
   phone: string
   userType: number
+  codes: string[] // 绑定邀请码，空数组=对无邀请码注册的用户生效
   sort: number
   status: number
   remark: string
@@ -46,6 +47,7 @@ export interface IOnboardingGroupItem {
   avatar: string
   status: number
   groupStatus: number
+  codes: string[] // 绑定邀请码，空数组=对无邀请码注册的用户生效
   sort: number
   remark: string
   createdAt: string
@@ -58,19 +60,69 @@ export interface IOnboardingGroupListRes {
 
 export interface IOnboardingAddFriendsReq {
   userIds: string[]
+  codes: string[] // 空数组=无邀请码
   sort?: number
   remark?: string
 }
 
 export interface IOnboardingAddGroupsReq {
   groupIds: string[]
+  codes: string[] // 空数组=无邀请码
   sort?: number
   remark?: string
 }
 
 export interface IOnboardingUpdateItemReq {
   id: number
+  codes?: string[]
   sort?: number
   status?: number
   remark?: string
+}
+
+// ---------- 注册设置 ----------
+
+export interface IOnboardingSettingItem {
+  keyName: string
+  value: string
+  remark: string
+  isDefault: boolean
+}
+
+export interface IOnboardingSettingGetRes {
+  allowEmptyInviteCode: boolean
+  list: IOnboardingSettingItem[]
+}
+
+export interface IOnboardingSettingSaveReq {
+  allowEmptyInviteCode: boolean
+}
+
+// ---------- 邀请树 ----------
+
+export interface IInviteTreeNode {
+  userId: string
+  weliaoId: string // 微聊号
+  nickName: string
+  avatar: string
+  inviteCode: string
+  inviterId: string
+  level: number // 距离根节点的层级，直接下级=1
+  childCount: number
+}
+
+export interface IInviteTreeReq {
+  userId?: string
+  code?: string
+  depth?: number
+}
+
+export interface IInviteTreeRes {
+  rootUserId: string
+  rootNickName: string
+  rootCode: string
+  inviterId: string
+  inviterName: string
+  nodes: IInviteTreeNode[]
+  total: number
 }

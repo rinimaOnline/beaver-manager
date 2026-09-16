@@ -20,10 +20,14 @@
  */
 
 import type {
+  IInviteTreeReq,
+  IInviteTreeRes,
   IOnboardingAddFriendsReq,
   IOnboardingAddGroupsReq,
   IOnboardingFriendListRes,
   IOnboardingGroupListRes,
+  IOnboardingSettingGetRes,
+  IOnboardingSettingSaveReq,
   IOnboardingUpdateItemReq
 } from "@/types/api/onboarding"
 import config from "@/config/env"
@@ -88,5 +92,32 @@ export function deleteOnboardingGroupApi(id: number) {
     method: "POST",
     url: `${config.baseAPI}/admin/onboarding/v1/group/delete`,
     data: { id }
+  })
+}
+
+// ---------- 注册设置 ----------
+
+export function getOnboardingSettingApi() {
+  return ajax<IOnboardingSettingGetRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/onboarding/v1/setting/get`
+  })
+}
+
+export function saveOnboardingSettingApi(data: IOnboardingSettingSaveReq) {
+  return ajax<Record<string, never>>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/onboarding/v1/setting/save`,
+    data
+  })
+}
+
+// ---------- 邀请树 ----------
+
+export function getInviteTreeApi(params: IInviteTreeReq) {
+  return ajax<IInviteTreeRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/onboarding/v1/invite-tree`,
+    params
   })
 }

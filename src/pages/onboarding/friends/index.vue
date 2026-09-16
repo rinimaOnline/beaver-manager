@@ -46,6 +46,14 @@
       <el-table-column label="账号" min-width="180" show-overflow-tooltip>
         <template #default="{ row }">{{ row.phone || row.email || "—" }}</template>
       </el-table-column>
+      <el-table-column label="邀请码" min-width="180">
+        <template #default="{ row }">
+          <template v-if="row.codes && row.codes.length">
+            <el-tag v-for="code in row.codes" :key="code" size="small" class="onboarding-page__code">{{ code }}</el-tag>
+          </template>
+          <el-tag v-else size="small" type="info">无邀请码</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="sort" label="排序" width="90" align="center" />
       <el-table-column label="状态" width="100" align="center">
         <template #default="{ row }">
@@ -128,6 +136,22 @@
         :total="userTotal"
         @current-change="onUserPage"
       />
+      <div class="onboarding-page__codes">
+        <div class="onboarding-page__codes-label">绑定邀请码</div>
+        <el-select
+          v-model="addCodes"
+          multiple
+          filterable
+          allow-create
+          default-first-option
+          :reserve-keyword="false"
+          placeholder="输入邀请码后回车，可添加多个；留空表示无邀请码"
+          style="width: 100%"
+        />
+        <div class="onboarding-page__tip">
+          留空 = 对注册时没填邀请码的用户生效；填了则只对用这些邀请码注册的人生效
+        </div>
+      </div>
       <template #footer>
         <el-button @click="pickerVisible = false">取消</el-button>
         <el-button type="primary" :loading="saving" :disabled="!selectedUserIds.length" @click="submitAdd">
@@ -136,8 +160,23 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="editVisible" title="编辑默认好友" width="420px">
-      <el-form label-width="80px">
+    <el-dialog v-model="editVisible" title="编辑默认好友" width="460px">
+      <el-form label-width="90px">
+        <el-form-item label="绑定邀请码">
+          <el-select
+            v-model="editForm.codes"
+            multiple
+            filterable
+            allow-create
+            default-first-option
+            :reserve-keyword="false"
+            placeholder="输入邀请码后回车，可添加多个；留空表示无邀请码"
+            style="width: 100%"
+          />
+          <div class="onboarding-page__tip">
+            留空 = 对注册时没填邀请码的用户生效；填了则只对用这些邀请码注册的人生效
+          </div>
+        </el-form-item>
         <el-form-item label="排序">
           <el-input-number v-model="editForm.sort" :min="0" :max="9999" />
         </el-form-item>
@@ -182,42 +221,58 @@ export default defineComponent({
     const userPageSize = 10
     const userTotal = ref(0)
     const selectedUserIds = ref<string[]>([])
-    const editForm = reactive({ id: 0, sort: 0, remark: "" })
+    const addCodes = ref<string[]>([])
+    const editForm = reactive({ id: 0, codes: [] as string[], sort: 0, remark: "" })
 
     const addedUserIds = computed(() => new Set(list.value.map(item => item.userId)))
 
     const load = async () => {
       loading.value = true
-      const res = await getOnboardingFriendsApi()
-      loading.value = false
-      if (res.code !== 0) {
-        ElMessage.error(res.msg || "加载失败")
-        return
+      try {
+        const res = await getOnboardingFriendsApi()
+        if (res.code !== 0) {
+          ElMessage.error(res.msg || "加载失败")
+          return
+        }
+        list.value = res.result?.list || []
       }
-      list.value = res.result?.list || []
+      catch (e: any) {
+        ElMessage.error(e?.message || "加载失败")
+      }
+      finally {
+        loading.value = false
+      }
     }
 
     const loadUsers = async () => {
       userLoading.value = true
-      const res = await getUserListApi({
-        page: userPage.value,
-        pageSize: userPageSize,
-        keyword: userKeyword.value.trim() || undefined,
-        status: 1
-      })
-      userLoading.value = false
-      if (res.code !== 0) {
-        ElMessage.error(res.msg || "搜索用户失败")
-        return
+      try {
+        const res = await getUserListApi({
+          page: userPage.value,
+          pageSize: userPageSize,
+          keyword: userKeyword.value.trim() || undefined,
+          status: 1
+        })
+        if (res.code !== 0) {
+          ElMessage.error(res.msg || "搜索用户失败")
+          return
+        }
+        userList.value = res.result?.list || []
+        userTotal.value = res.result?.total || 0
       }
-      userList.value = res.result?.list || []
-      userTotal.value = res.result?.total || 0
+      catch (e: any) {
+        ElMessage.error(e?.message || "搜索用户失败")
+      }
+      finally {
+        userLoading.value = false
+      }
     }
 
     const openPicker = () => {
       userKeyword.value = ""
       userPage.value = 1
       selectedUserIds.value = []
+      addCodes.value = []
       pickerVisible.value = true
       loadUsers()
     }
@@ -242,7 +297,7 @@ export default defineComponent({
         return
       }
       saving.value = true
-      const res = await addOnboardingFriendsApi({ userIds: selectedUserIds.value })
+      const res = await addOnboardingFriendsApi({ userIds: selectedUserIds.value, codes: addCodes.value })
       saving.value = false
       if (res.code !== 0) {
         ElMessage.error(res.msg || "添加失败")
@@ -255,6 +310,7 @@ export default defineComponent({
 
     const openEdit = (row: IOnboardingFriendItem) => {
       editForm.id = row.id
+      editForm.codes = [...(row.codes || [])]
       editForm.sort = row.sort
       editForm.remark = row.remark || ""
       editVisible.value = true
@@ -264,6 +320,7 @@ export default defineComponent({
       saving.value = true
       const res = await updateOnboardingFriendApi({
         id: editForm.id,
+        codes: editForm.codes,
         sort: editForm.sort,
         remark: editForm.remark
       })
@@ -319,6 +376,7 @@ export default defineComponent({
       userPageSize,
       userTotal,
       selectedUserIds,
+      addCodes,
       editForm,
       addedUserIds,
       openPicker,
@@ -377,6 +435,28 @@ export default defineComponent({
   &__pager {
     margin-top: 12px;
     justify-content: flex-end;
+  }
+
+  &__code {
+    margin: 2px 4px 2px 0;
+  }
+
+  &__codes {
+    margin-top: 16px;
+  }
+
+  &__codes-label {
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  &__tip {
+    width: 100%;
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--el-text-color-secondary);
   }
 }
 </style>

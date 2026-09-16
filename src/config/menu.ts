@@ -85,14 +85,13 @@ export const menuConfig: MenuItem[] = [
   },
   {
     path: "/onboarding",
-    title: "注册配置",
+    title: "邀请管理",
     icon: Guide,
     children: [
-      { path: "/onboarding/invite-code", title: "邀请码配置", icon: Tickets },
-      { path: "/onboarding/invite-data", title: "邀请数据", icon: DataAnalysis },
-      { path: "/onboarding/invite-setting", title: "注册设置", icon: Setting },
       { path: "/onboarding/friends", title: "默认好友", icon: User },
-      { path: "/onboarding/groups", title: "默认群组", icon: ChatLineRound }
+      { path: "/onboarding/groups", title: "默认群组", icon: ChatLineRound },
+      { path: "/onboarding/invite-tree", title: "邀请树", icon: Share },
+      { path: "/onboarding/invite-setting", title: "注册设置", icon: Setting }
     ]
   },
   {
