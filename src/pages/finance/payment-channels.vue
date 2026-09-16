@@ -150,15 +150,74 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item v-if="form.signType === 'rsa'" label="平台公钥">
+        <template v-if="form.signType === 'rsa'">
+          <el-form-item label="平台公钥">
+            <el-input
+              v-model="form.publicKey"
+              type="textarea"
+              :rows="4"
+              placeholder="三方平台的 RSA 公钥（PEM 或 base64），用于校验回调签名"
+            />
+            <div class="finance-channels__tip">RSA 通道不填公钥则所有回调验签失败、无法入账。</div>
+          </el-form-item>
+          <el-form-item label="商户私钥">
+            <el-input
+              v-model="form.privateKey"
+              type="textarea"
+              :rows="4"
+              :placeholder="isEdit ? '留空保留原私钥' : '商户 RSA 私钥（PKCS#1 / PKCS#8 均可），用于下单签名'"
+            />
+            <div v-if="isEdit" class="finance-channels__tip">
+              当前{{ editingHasPrivateKey ? "已配置私钥" : "未配置私钥" }}，出于安全不回显；留空保留原私钥。
+            </div>
+          </el-form-item>
+        </template>
+        <el-divider content-position="left">下单请求</el-divider>
+        <el-form-item label="请求模板">
           <el-input
-            v-model="form.publicKey"
+            v-model="form.reqTemplate"
+            type="textarea"
+            :rows="6"
+            placeholder='留空=不向三方下单，用「下单地址」拼订单号作为静态收银台地址'
+          />
+          <div class="finance-channels__tip">
+            一层扁平的 JSON，值里用 <code>${变量名}</code> 引用本单数据；<code>sign</code> 由系统按签名方式自动补上，不要写进模板。<br>
+            可用变量：<code>{{ paymentVars }}</code>
+          </div>
+        </el-form-item>
+        <el-form-item label="响应映射">
+          <el-input
+            v-model="form.respMap"
             type="textarea"
             :rows="4"
-            placeholder="三方平台的 RSA 公钥（PEM 或 base64），用于校验回调签名"
+            placeholder='{"okField":"code","okValue":"0","payUrl":"data.payurl","tradeNo":"data.trade_no","errMsg":"msg"}'
           />
-          <div class="finance-channels__tip">RSA 通道不填公钥则所有回调验签失败、无法入账。</div>
+          <div class="finance-channels__tip">
+            值是点号路径。<code>okField</code> 留空则「取到 payUrl 或 tradeNo 就算下单成功」；<code>okValue</code>
+            留空则按通用成功词（success/0/ok/true）判定。
+          </div>
         </el-form-item>
+        <el-row :gutter="12">
+          <el-col :span="8">
+            <el-form-item label="请求格式">
+              <el-select v-model="form.contentType" style="width: 100%">
+                <el-option label="表单 form" value="form" />
+                <el-option label="JSON" value="json" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="超时（秒）">
+              <el-input-number v-model="form.timeoutSec" :min="1" :max="60" :step="1" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item v-if="form.signType === 'md5'" label="签名大写">
+              <el-switch v-model="form.signUpper" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-divider />
         <el-row :gutter="12">
           <el-col :span="12">
             <el-form-item label="最小金额（元）">
@@ -200,7 +259,7 @@
 </template>
 
 <script lang="ts">
-import type { ChannelStatus, IPaymentChannel, SignType } from "@/types/api/finance"
+import type { ChannelStatus, GatewayContentType, IPaymentChannel, SignType } from "@/types/api/finance"
 import { ElMessage, ElMessageBox } from "element-plus"
 import { deletePaymentChannelApi, getPaymentChannelsApi, savePaymentChannelApi } from "@/api/finance"
 import { bpsToPercent, fenToYuan, fenToYuanNumber, percentToBps, yuanToFen } from "@/utils/money"
@@ -220,6 +279,12 @@ interface ChannelForm {
   orderPrefix: string
   signType: SignType
   publicKey: string
+  privateKey: string
+  reqTemplate: string
+  respMap: string
+  contentType: GatewayContentType
+  timeoutSec: number
+  signUpper: boolean
   /** 表单内以百分比编辑，提交时换成 bps */
   feeRatePercent: number
   /** 表单内以元编辑，提交时换成分 */
@@ -229,6 +294,24 @@ interface ChannelForm {
   sort: number
   status: ChannelStatus
   remark: string
+}
+
+/**
+ * 返回第一个不是「合法 JSON 对象」的字段名；全部合法（或留空）返回空串。
+ * 只挡语法，字段语义仍以服务端 validateGatewayConfig 为准。
+ */
+function firstInvalidJson(fields: [string, string][]): string {
+  for (const [label, raw] of fields) {
+    const text = raw.trim()
+    if (!text) continue
+    try {
+      const parsed = JSON.parse(text)
+      if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return label
+    } catch {
+      return label
+    }
+  }
+  return ""
 }
 
 const emptyForm = (): ChannelForm => ({
@@ -245,6 +328,12 @@ const emptyForm = (): ChannelForm => ({
   orderPrefix: "",
   signType: "md5",
   publicKey: "",
+  privateKey: "",
+  reqTemplate: "",
+  respMap: "",
+  contentType: "form",
+  timeoutSec: 10,
+  signUpper: false,
   feeRatePercent: 0,
   minYuan: 0,
   maxYuan: 0,
@@ -264,7 +353,15 @@ export default defineComponent({
     const formVisible = ref(false)
     const isEdit = ref(false)
     const editingHasApiKey = ref(false)
+    const editingHasPrivateKey = ref(false)
     const form = reactive<ChannelForm>(emptyForm())
+
+    // 模板里能用的变量，直接列在表单下方，省得运营去翻文档
+    const paymentVars = [
+      "orderId", "orderNo", "amount", "amountYuan", "fee", "feeYuan",
+      "merchantId", "productId", "notifyUrl", "returnUrl", "subject", "userId",
+      "channelCode", "currency", "timestamp", "timestampMs", "datetime", "datetimeIso", "date", "nonce"
+    ].map(v => `\${${v}}`).join(" ")
 
     const limitText = (row: IPaymentChannel) => {
       const min = fenToYuan(row.minAmount)
@@ -289,6 +386,7 @@ export default defineComponent({
     const openCreate = () => {
       isEdit.value = false
       editingHasApiKey.value = false
+      editingHasPrivateKey.value = false
       Object.assign(form, emptyForm())
       formVisible.value = true
     }
@@ -296,6 +394,7 @@ export default defineComponent({
     const openEdit = (row: IPaymentChannel) => {
       isEdit.value = true
       editingHasApiKey.value = row.hasApiKey
+      editingHasPrivateKey.value = row.hasPrivateKey
       Object.assign(form, emptyForm(), {
         id: row.id,
         code: row.code,
@@ -310,6 +409,12 @@ export default defineComponent({
         orderPrefix: row.orderPrefix,
         signType: row.signType || "md5",
         publicKey: row.publicKey || "",
+        privateKey: "",
+        reqTemplate: row.reqTemplate || "",
+        respMap: row.respMap || "",
+        contentType: row.contentType || "form",
+        timeoutSec: row.timeoutSec || 10,
+        signUpper: !!row.signUpper,
         feeRatePercent: bpsToPercent(row.feeRateBps),
         minYuan: fenToYuanNumber(row.minAmount),
         maxYuan: fenToYuanNumber(row.maxAmount),
@@ -336,6 +441,12 @@ export default defineComponent({
         ElMessage.warning("最大金额不能小于最小金额")
         return
       }
+      // 本地先挡一道 JSON 语法错，省一次来回；服务端保存时还会再校验一遍
+      const badJson = firstInvalidJson([["请求模板", form.reqTemplate], ["响应映射", form.respMap]])
+      if (badJson) {
+        ElMessage.warning(`${badJson} 不是合法的 JSON 对象`)
+        return
+      }
       saving.value = true
       try {
         const res = await savePaymentChannelApi({
@@ -353,6 +464,12 @@ export default defineComponent({
           orderPrefix: form.orderPrefix.trim(),
           signType: form.signType,
           publicKey: form.signType === "rsa" ? form.publicKey.trim() : "",
+          privateKey: form.signType === "rsa" ? form.privateKey.trim() || undefined : undefined,
+          reqTemplate: form.reqTemplate.trim(),
+          respMap: form.respMap.trim(),
+          contentType: form.contentType,
+          timeoutSec: form.timeoutSec,
+          signUpper: form.signUpper,
           feeRateBps: percentToBps(form.feeRatePercent),
           minAmount: yuanToFen(form.minYuan),
           maxAmount: yuanToFen(form.maxYuan),
@@ -391,6 +508,11 @@ export default defineComponent({
           orderPrefix: row.orderPrefix,
           signType: row.signType,
           publicKey: row.publicKey,
+          reqTemplate: row.reqTemplate,
+          respMap: row.respMap,
+          contentType: row.contentType,
+          timeoutSec: row.timeoutSec,
+          signUpper: row.signUpper,
           feeRateBps: row.feeRateBps,
           minAmount: row.minAmount,
           maxAmount: row.maxAmount,
@@ -435,6 +557,8 @@ export default defineComponent({
       formVisible,
       isEdit,
       editingHasApiKey,
+      editingHasPrivateKey,
+      paymentVars,
       form,
       fenToYuan,
       bpsToPercent,

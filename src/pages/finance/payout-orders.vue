@@ -24,7 +24,10 @@
     <div class="finance-orders__header">
       <div>
         <h2 class="finance-orders__title">代付订单</h2>
-        <p class="finance-orders__subtitle">提现审核通过后发往代付通道的打款单，金额单位为元</p>
+        <p class="finance-orders__subtitle">
+          提现审核通过后发往代付通道的打款单，金额单位为元。
+          「待处理」= 提交时没拿到通道回复，资金仍冻结、结果未知，可重试或到提现审核页人工收口。
+        </p>
       </div>
     </div>
 
@@ -43,6 +46,13 @@
           <el-option label="失败" :value="2" />
         </el-select>
       </el-form-item>
+      <el-form-item label="类型">
+        <el-select v-model="query.isTest" style="width: 130px" @change="search">
+          <el-option label="全部" :value="-1" />
+          <el-option label="真实打款" :value="0" />
+          <el-option label="测试打款" :value="1" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="关键词">
         <el-input
           v-model="query.keyword"
@@ -58,7 +68,12 @@
     </el-form>
 
     <el-table v-loading="loading" :data="list" border stripe>
-      <el-table-column prop="orderNo" label="付款单号" min-width="190" show-overflow-tooltip />
+      <el-table-column label="付款单号" min-width="210" show-overflow-tooltip>
+        <template #default="{ row }">
+          <el-tag v-if="row.isTest" type="warning" size="small" effect="plain">测试</el-tag>
+          {{ row.orderNo }}
+        </template>
+      </el-table-column>
       <el-table-column prop="withdrawOrderId" label="提现单号" min-width="190" show-overflow-tooltip />
       <el-table-column prop="userId" label="用户" width="150" show-overflow-tooltip />
       <el-table-column prop="channelCode" label="通道" width="130" show-overflow-tooltip />
@@ -100,6 +115,20 @@
       <el-table-column label="创建时间" width="170">
         <template #default="{ row }">{{ formatTime(row.createdAt) }}</template>
       </el-table-column>
+      <el-table-column label="操作" width="90" fixed="right">
+        <template #default="{ row }">
+          <el-button
+            v-if="canRetry(row)"
+            link
+            type="primary"
+            :loading="retryingNo === row.orderNo"
+            @click="retry(row)"
+          >
+            重试
+          </el-button>
+          <span v-else>—</span>
+        </template>
+      </el-table-column>
     </el-table>
 
     <el-pagination
@@ -120,8 +149,8 @@
 <script lang="ts">
 import type { IPayoutChannel, IPayoutOrder } from "@/types/api/finance"
 import type { TagType } from "@/types/common"
-import { ElMessage } from "element-plus"
-import { getPayoutChannelsApi, getPayoutOrdersApi } from "@/api/finance"
+import { ElMessage, ElMessageBox } from "element-plus"
+import { getPayoutChannelsApi, getPayoutOrdersApi, retryPayoutApi } from "@/api/finance"
 import { fenToYuan, formatTime } from "@/utils/money"
 import { defineComponent, onMounted, reactive, ref } from "vue"
 
@@ -136,10 +165,12 @@ export default defineComponent({
     const list = ref<IPayoutOrder[]>([])
     const channels = ref<IPayoutChannel[]>([])
     const total = ref(0)
+    const retryingNo = ref("")
     const query = reactive({
       channelCode: "",
       status: -1,
       keyword: "",
+      isTest: -1,
       page: 1,
       limit: 20
     })
@@ -154,6 +185,7 @@ export default defineComponent({
           channelCode: query.channelCode || undefined,
           status: query.status,
           keyword: query.keyword.trim() || undefined,
+          isTest: query.isTest,
           page: query.page,
           limit: query.limit
         })
@@ -165,6 +197,34 @@ export default defineComponent({
         total.value = res.result?.total || 0
       } finally {
         loading.value = false
+      }
+    }
+
+    // 只有资金还冻着、单子没终结的才可重试；测试单卡号没落库，重试不了，得重新发一笔
+    const canRetry = (row: IPayoutOrder) => !row.isTest && (row.status === 0 || row.status === 3)
+
+    const retry = async (row: IPayoutOrder) => {
+      await ElMessageBox.confirm(
+        `确认重新向通道提交付款单「${row.orderNo}」？\n\n沿用原单号重发，通道按商户单号去重，不会变成两笔打款。`,
+        "重试代付",
+        { type: "warning" }
+      )
+      retryingNo.value = row.orderNo
+      try {
+        const res = await retryPayoutApi({ orderNo: row.orderNo })
+        if (res.code !== 0) {
+          ElMessage.error(res.msg || "重试失败")
+          return
+        }
+        // ok=false 表示单子还在、但通道这次仍没受理，属于"提交过了但没成"，不是接口错
+        const r = res.result
+        if (r?.ok)
+          ElMessage.success(r.message || "已重新提交通道")
+        else
+          ElMessage.warning(r?.message || "通道未受理，详见通道报文")
+        load()
+      } finally {
+        retryingNo.value = ""
       }
     }
 
@@ -195,6 +255,9 @@ export default defineComponent({
       formatTime,
       statusLabel,
       statusTagType,
+      retryingNo,
+      canRetry,
+      retry,
       load,
       search
     }

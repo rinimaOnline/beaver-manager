@@ -124,6 +124,7 @@ export const menuConfig: MenuItem[] = [
       { path: "/finance/payout-channels", title: "代付通道", icon: Wallet },
       { path: "/finance/payment-orders", title: "支付订单", icon: Tickets },
       { path: "/finance/payout-orders", title: "代付订单", icon: List },
+      { path: "/finance/gateway-logs", title: "通道报文", icon: Document },
       { path: "/finance/flow", title: "钱包流水", icon: Coin },
       { path: "/finance/config", title: "系统配置", icon: Setting },
       { path: "/finance/reward", title: "签到邀请奖励", icon: Present }

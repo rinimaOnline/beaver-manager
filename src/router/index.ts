@@ -181,6 +181,11 @@ const router = createRouter({
               component: () => import("@/pages/finance/payout-orders.vue")
             },
             {
+              path: "gateway-logs",
+              name: "通道报文",
+              component: () => import("@/pages/finance/gateway-logs.vue")
+            },
+            {
               path: "flow",
               name: "钱包流水",
               component: () => import("@/pages/finance/flow.vue")

@@ -21,12 +21,17 @@
 
 import type {
   IFinanceOverview,
+  IGatewayLogDetail,
+  IGatewayLogItem,
+  IGatewayLogQuery,
   IPaymentChannel,
   IPaymentChannelSaveReq,
+  IPayoutActionRes,
   IPayoutChannel,
   IPayoutChannelSaveReq,
   IPayoutOrder,
   IPayoutOrderQuery,
+  ITestPayoutReq,
   IWalletConfigItem
 } from "@/types/api/finance"
 import config from "@/config/env"
@@ -96,6 +101,45 @@ export function getPayoutOrdersApi(params: IPayoutOrderQuery) {
     method: "GET",
     url: `${config.baseAPI}/admin/wallet/v1/payout/orders`,
     params
+  })
+}
+
+/**
+ * 重试代付。复用原单号重发，通道按商户单号去重，不会变成两笔打款。
+ * 只有「待处理 / 打款中」且提现资金仍冻结的单能重试。
+ */
+export function retryPayoutApi(data: { orderNo: string }) {
+  return ajax<IPayoutActionRes>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/wallet/v1/payout/orders/retry`,
+    data
+  })
+}
+
+/** 测试打款：真出账，用来验通道配置。金额受 test_payout_max_fen 限制 */
+export function testPayoutApi(data: ITestPayoutReq) {
+  return ajax<IPayoutActionRes>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/wallet/v1/payout/test`,
+    data
+  })
+}
+
+/** 通道报文日志：出向下单/打款请求与入向回调的全量报文 */
+export function getGatewayLogsApi(params: IGatewayLogQuery) {
+  return ajax<{ total: number, list: IGatewayLogItem[] }>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/wallet/v1/gateway/logs`,
+    params
+  })
+}
+
+/** 单条报文详情（含 request / response 正文，落库时已脱敏） */
+export function getGatewayLogApi(logId: string) {
+  return ajax<IGatewayLogDetail>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/wallet/v1/gateway/log`,
+    params: { logId }
   })
 }
 

@@ -70,9 +70,10 @@
       <el-table-column label="创建时间" width="170">
         <template #default="{ row }">{{ formatTime(row.createdAt) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="130" fixed="right">
+      <el-table-column label="操作" width="190" fixed="right">
         <template #default="{ row }">
           <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
+          <el-button link type="warning" :disabled="!row.reqTemplate" @click="openTest(row)">测试打款</el-button>
           <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
@@ -181,6 +182,53 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <el-divider content-position="left">打款请求</el-divider>
+        <el-form-item label="请求模板">
+          <el-input
+            v-model="form.reqTemplate"
+            type="textarea"
+            :rows="6"
+            placeholder="留空=不向三方发打款请求，代付单直接进「打款中」等回调（运营在通道后台手工打款）"
+          />
+          <div class="finance-channels__tip">
+            一层扁平的 JSON，值里用 <code>${变量名}</code> 引用本单数据；<code>sign</code> 由系统按签名方式自动补上，不要写进模板。<br>
+            <strong>amount 是申请金额，realAmount 才是扣完手续费的实际到账，别搞混。</strong><br>
+            可用变量：<code>{{ payoutVars }}</code>
+          </div>
+        </el-form-item>
+        <el-form-item label="响应映射">
+          <el-input
+            v-model="form.respMap"
+            type="textarea"
+            :rows="4"
+            placeholder='{"okField":"code","okValue":"0","tradeNo":"data.order_id","errMsg":"msg"}'
+          />
+          <div class="finance-channels__tip">
+            值是点号路径。受理只代表「已提交」，最终成功与否以代付回调为准。<br>
+            通道明确拒单才会立即解冻退回；请求超时/没回复一律按「结果未知」保持冻结，等回调或人工在提现审核里收口。
+          </div>
+        </el-form-item>
+        <el-row :gutter="12">
+          <el-col :span="8">
+            <el-form-item label="请求格式">
+              <el-select v-model="form.contentType" style="width: 100%">
+                <el-option label="表单 form" value="form" />
+                <el-option label="JSON" value="json" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="超时（秒）">
+              <el-input-number v-model="form.timeoutSec" :min="1" :max="60" :step="1" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item v-if="form.signType === 'md5'" label="签名大写">
+              <el-switch v-model="form.signUpper" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-divider />
         <el-row :gutter="12">
           <el-col :span="12">
             <el-form-item label="排序">
@@ -202,13 +250,45 @@
         <el-button type="primary" :loading="saving" @click="submitForm">保存</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="testVisible" title="测试打款" width="520px" destroy-on-close>
+      <el-alert type="warning" :closable="false" show-icon class="finance-channels__alert">
+        <template #title>这是真出账，不是模拟</template>
+        三方没有「假装打款」的接口，通道配置对不对只有打通了才知道。钱会真的打到下面这张卡，
+        请用自己的卡、填小额。单笔上限见系统配置 <code>test_payout_max_fen</code>。
+      </el-alert>
+      <el-form label-width="110px">
+        <el-form-item label="通道">
+          <el-input :model-value="`${testForm.channelName}（${testForm.channelCode}）`" disabled />
+        </el-form-item>
+        <el-form-item label="金额（元）" required>
+          <el-input-number v-model="testForm.amountYuan" :min="0.01" :precision="2" :step="1" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="收款人姓名" required>
+          <el-input v-model="testForm.accountName" placeholder="与银行卡开户名一致" />
+        </el-form-item>
+        <el-form-item label="开户银行">
+          <el-input v-model="testForm.bankName" placeholder="如 招商银行（可选，部分通道需要）" />
+        </el-form-item>
+        <el-form-item label="银行卡号" required>
+          <el-input v-model="testForm.cardNo" placeholder="收款卡号，服务端不落库" />
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input v-model="testForm.remark" placeholder="如「验千库通道」，会写进付款单备注" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="testVisible = false">取消</el-button>
+        <el-button type="warning" :loading="testing" @click="submitTest">确认打款</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script lang="ts">
-import type { ChannelStatus, IPayoutChannel, SignType } from "@/types/api/finance"
+import type { ChannelStatus, GatewayContentType, IPayoutChannel, SignType } from "@/types/api/finance"
 import { ElMessage, ElMessageBox } from "element-plus"
-import { deletePayoutChannelApi, getPayoutChannelsApi, savePayoutChannelApi } from "@/api/finance"
+import { deletePayoutChannelApi, getPayoutChannelsApi, savePayoutChannelApi, testPayoutApi } from "@/api/finance"
 import { bpsToPercent, fenToYuan, fenToYuanNumber, formatTime, percentToBps, yuanToFen } from "@/utils/money"
 import { defineComponent, onMounted, reactive, ref } from "vue"
 
@@ -225,12 +305,35 @@ interface ChannelForm {
   notifyUrl: string
   orderPrefix: string
   signType: SignType
+  reqTemplate: string
+  respMap: string
+  contentType: GatewayContentType
+  timeoutSec: number
+  signUpper: boolean
   feeRatePercent: number
   minYuan: number
   maxYuan: number
   sort: number
   status: ChannelStatus
   remark: string
+}
+
+/**
+ * 返回第一个不是「合法 JSON 对象」的字段名；全部合法（或留空）返回空串。
+ * 只挡语法，字段语义仍以服务端 validateGatewayConfig 为准。
+ */
+function firstInvalidJson(fields: [string, string][]): string {
+  for (const [label, raw] of fields) {
+    const text = raw.trim()
+    if (!text) continue
+    try {
+      const parsed = JSON.parse(text)
+      if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return label
+    } catch {
+      return label
+    }
+  }
+  return ""
 }
 
 const emptyForm = (): ChannelForm => ({
@@ -246,6 +349,11 @@ const emptyForm = (): ChannelForm => ({
   notifyUrl: "",
   orderPrefix: "",
   signType: "md5",
+  reqTemplate: "",
+  respMap: "",
+  contentType: "form",
+  timeoutSec: 10,
+  signUpper: false,
   feeRatePercent: 0,
   minYuan: 0,
   maxYuan: 0,
@@ -265,6 +373,25 @@ export default defineComponent({
     const isEdit = ref(false)
     const editingKeys = reactive({ hasApiKey: false, hasPrivateKey: false, hasPublicKey: false })
     const form = reactive<ChannelForm>(emptyForm())
+    const testVisible = ref(false)
+    const testing = ref(false)
+    const testForm = reactive({
+      channelCode: "",
+      channelName: "",
+      amountYuan: 1,
+      accountName: "",
+      bankName: "",
+      cardNo: "",
+      remark: ""
+    })
+
+    // 模板里能用的变量，直接列在表单下方，省得运营去翻文档
+    const payoutVars = [
+      "orderNo", "withdrawOrderId", "amount", "amountYuan", "realAmount", "realAmountYuan", "fee", "feeYuan",
+      "accountName", "bankName", "bankCode", "bankCardNo", "cardLast4",
+      "merchantId", "notifyUrl", "userId", "channelCode", "currency",
+      "timestamp", "timestampMs", "datetime", "datetimeIso", "date", "nonce"
+    ].map(v => `\${${v}}`).join(" ")
 
     const limitText = (row: IPayoutChannel) => {
       const min = fenToYuan(row.minAmount)
@@ -313,6 +440,11 @@ export default defineComponent({
         notifyUrl: row.notifyUrl,
         orderPrefix: row.orderPrefix,
         signType: row.signType || "md5",
+        reqTemplate: row.reqTemplate || "",
+        respMap: row.respMap || "",
+        contentType: row.contentType || "form",
+        timeoutSec: row.timeoutSec || 10,
+        signUpper: !!row.signUpper,
         feeRatePercent: bpsToPercent(row.feeRateBps),
         minYuan: fenToYuanNumber(row.minAmount),
         maxYuan: fenToYuanNumber(row.maxAmount),
@@ -338,6 +470,12 @@ export default defineComponent({
         ElMessage.warning("最大金额不能小于最小金额")
         return
       }
+      // 本地先挡一道 JSON 语法错，省一次来回；服务端保存时还会再校验一遍
+      const badJson = firstInvalidJson([["请求模板", form.reqTemplate], ["响应映射", form.respMap]])
+      if (badJson) {
+        ElMessage.warning(`${badJson} 不是合法的 JSON 对象`)
+        return
+      }
       saving.value = true
       try {
         const res = await savePayoutChannelApi({
@@ -354,6 +492,11 @@ export default defineComponent({
           notifyUrl: form.notifyUrl.trim(),
           orderPrefix: form.orderPrefix.trim(),
           signType: form.signType,
+          reqTemplate: form.reqTemplate.trim(),
+          respMap: form.respMap.trim(),
+          contentType: form.contentType,
+          timeoutSec: form.timeoutSec,
+          signUpper: form.signUpper,
           feeRateBps: percentToBps(form.feeRatePercent),
           minAmount: yuanToFen(form.minYuan),
           maxAmount: yuanToFen(form.maxYuan),
@@ -388,6 +531,11 @@ export default defineComponent({
           notifyUrl: row.notifyUrl,
           orderPrefix: row.orderPrefix,
           signType: row.signType,
+          reqTemplate: row.reqTemplate,
+          respMap: row.respMap,
+          contentType: row.contentType,
+          timeoutSec: row.timeoutSec,
+          signUpper: row.signUpper,
           feeRateBps: row.feeRateBps,
           minAmount: row.minAmount,
           maxAmount: row.maxAmount,
@@ -403,6 +551,66 @@ export default defineComponent({
         ElMessage.success(status === 1 ? "已启用" : "已停用")
       } finally {
         togglingId.value = 0
+      }
+    }
+
+    const openTest = (row: IPayoutChannel) => {
+      Object.assign(testForm, {
+        channelCode: row.code,
+        channelName: row.name,
+        amountYuan: 1,
+        accountName: "",
+        bankName: "",
+        cardNo: "",
+        remark: ""
+      })
+      testVisible.value = true
+    }
+
+    const submitTest = async () => {
+      const accountName = testForm.accountName.trim()
+      const cardNo = testForm.cardNo.replace(/[\s-]/g, "")
+      if (!accountName) {
+        ElMessage.warning("请填写收款人姓名")
+        return
+      }
+      if (!/^\d{16,19}$/.test(cardNo)) {
+        ElMessage.warning("银行卡号应为 16~19 位数字")
+        return
+      }
+      const amount = yuanToFen(testForm.amountYuan)
+      if (amount <= 0) {
+        ElMessage.warning("金额必须大于 0")
+        return
+      }
+      await ElMessageBox.confirm(
+        `确认通过「${testForm.channelName}」向 ${accountName}（尾号 ${cardNo.slice(-4)}）打款 ${testForm.amountYuan} 元？\n\n这是真出账，钱会真的转出去。`,
+        "确认测试打款",
+        { type: "warning", confirmButtonText: "确认打款" }
+      )
+      testing.value = true
+      try {
+        const res = await testPayoutApi({
+          channelCode: testForm.channelCode,
+          amount,
+          accountName,
+          bankName: testForm.bankName.trim() || undefined,
+          cardNo,
+          remark: testForm.remark.trim() || undefined
+        })
+        if (res.code !== 0) {
+          ElMessage.error(res.msg || "测试打款失败")
+          return
+        }
+        // ok=false 表示单子建了但通道没受理；单号照样给出来，方便去报文页查
+        const r = res.result
+        if (r?.ok)
+          ElMessage.success(`已提交，付款单号 ${r.orderNo}，结果等通道回调`)
+        else
+          ElMessage.warning(`${r?.message || "通道未受理"}（付款单号 ${r?.orderNo || "—"}，详见通道报文）`)
+        testVisible.value = false
+      } finally {
+        testing.value = false
       }
     }
 
@@ -431,7 +639,13 @@ export default defineComponent({
       formVisible,
       isEdit,
       editingKeys,
+      payoutVars,
       form,
+      testVisible,
+      testing,
+      testForm,
+      openTest,
+      submitTest,
       fenToYuan,
       bpsToPercent,
       formatTime,
@@ -475,6 +689,17 @@ export default defineComponent({
 
   &__tag {
     margin-right: 4px;
+  }
+
+  &__alert {
+    margin-bottom: 16px;
+    line-height: 1.6;
+
+    code {
+      padding: 1px 4px;
+      background: var(--el-fill-color-light);
+      border-radius: 3px;
+    }
   }
 
   &__tip {
