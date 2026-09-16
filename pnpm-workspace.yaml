@@ -1,0 +1,10 @@
+# pnpm 10 起默认不跑依赖的 postinstall，要在这里逐个表态，否则 `pnpm install`
+# 以 ERR_PNPM_IGNORED_BUILDS 非 0 退出（CI 会红）。
+# 注意这些设置从 pnpm 12 起不再读 package.json 的 "pnpm" 字段，只认本文件。
+allowBuilds:
+  # 装平台专属的原生二进制，vite 构建依赖它
+  esbuild: true
+  # 按当前 Vue 版本切换 2/3 适配层，不跑就可能解析到错的入口
+  vue-demi: true
+  # core-js@2 的 postinstall 只打印赞助信息，没有实际作用
+  core-js: false

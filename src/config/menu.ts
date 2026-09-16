@@ -21,6 +21,7 @@
 
 import type { Component } from "vue"
 import {
+  Bell,
   ChatLineRound,
   Coin,
   Connection,
@@ -133,7 +134,8 @@ export const menuConfig: MenuItem[] = [
     title: "客服",
     icon: Service,
     children: [
-      { path: "/service/feedback", title: "用户反馈", icon: Message }
+      { path: "/service/feedback", title: "用户反馈", icon: Message },
+      { path: "/service/announcement", title: "运营公告", icon: Bell }
     ]
   },
   {

@@ -204,6 +204,11 @@ const router = createRouter({
               path: "feedback",
               name: "用户反馈",
               component: () => import("@/pages/service/feedback/index.vue")
+            },
+            {
+              path: "announcement",
+              name: "运营公告",
+              component: () => import("@/pages/service/announcement/index.vue")
             }
           ]
         },
