@@ -131,10 +131,11 @@
         @current-change="onGroupPage"
       />
       <div class="onboarding-page__codes">
-        <div class="onboarding-page__codes-label">绑定邀请码</div>
+        <div class="onboarding-page__codes-label">绑定邀请码（最多 20 个）</div>
         <el-select
           v-model="addCodes"
           multiple
+          :multiple-limit="20"
           filterable
           allow-create
           default-first-option
@@ -156,10 +157,11 @@
 
     <el-dialog v-model="editVisible" title="编辑默认群组" width="460px">
       <el-form label-width="90px">
-        <el-form-item label="绑定邀请码">
+        <el-form-item label="绑定邀请码（最多 20 个）">
           <el-select
             v-model="editForm.codes"
             multiple
+            :multiple-limit="20"
             filterable
             allow-create
             default-first-option
