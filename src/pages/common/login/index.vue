@@ -42,14 +42,23 @@ export default defineComponent({
     })
 
     // 表单验证规则
+    // 登录表单只校验非空。
+    //
+    // 原来这里有两条规则，正好把真实的管理员凭证全挡住了：
+    //   1. 账号按 /^1[3-9]\d{9}$/ 当手机号校验 —— 但超管的账号就是 "admin"，
+    //      后端是 `where phone = ? and status = 1` 直接查表，不限格式。
+    //   2. 密码限 6-20 位 —— 而部署脚本生成的管理员密码是 22 位。
+    // 结果就是后台从界面根本登不进去，用 API 却能登录成功。
+    //
+    // 登录表单不该校验密码格式：格式规则属于注册和改密流程，在登录处重复一遍
+    // 只会在规则变化时把已有用户锁在门外，而且给不出任何安全收益——
+    // 真正的判定在后端。
     const loginRules: FormRules = {
       phone: [
-        { required: true, message: "请输入手机号", trigger: "blur" },
-        { pattern: /^1[3-9]\d{9}$/, message: "请输入正确的手机号", trigger: "blur" }
+        { required: true, message: "请输入账号", trigger: "blur" }
       ],
       password: [
-        { required: true, message: "请输入密码", trigger: "blur" },
-        { min: 6, max: 20, message: "密码长度为6-20位", trigger: "blur" }
+        { required: true, message: "请输入密码", trigger: "blur" }
       ]
     }
 
@@ -113,7 +122,7 @@ export default defineComponent({
         <el-form-item prop="phone">
           <el-input
             v-model.trim="loginForm.phone"
-            placeholder="请输入手机号"
+            placeholder="请输入账号"
             :prefix-icon="User"
             size="large"
           />
