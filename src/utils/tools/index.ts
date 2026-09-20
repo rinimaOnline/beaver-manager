@@ -28,6 +28,20 @@ import config from '@/config/env'
  * @param {File} file
  * @return {*}
  */
+/**
+ * @description: 算文件的 SHA-256（十六进制小写）
+ *
+ * 移动端的 ota_update 只认 sha256，桌面端认 md5，所以发版时两个都要算一遍。
+ * 走浏览器自带的 SubtleCrypto，需要 https（管理端本来就是）。
+ */
+export const getSha256 = async (file: File): Promise<string> => {
+  const buffer = await file.arrayBuffer()
+  const digest = await crypto.subtle.digest('SHA-256', buffer)
+  return Array.from(new Uint8Array(digest))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
 export const getMd5 = (file: File): Promise<string> => {
   const bmf = new BMF()
   return new Promise((resolve, reject) => {

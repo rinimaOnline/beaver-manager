@@ -208,6 +208,7 @@ import {
   deleteVersionApi
 } from '@/api/update'
 import { uploadFile } from '@/api/upload'
+import { getMd5, getSha256 } from '@/utils/tools'
 
 export default defineComponent({
   name: 'VersionManagement',
@@ -239,7 +240,10 @@ export default defineComponent({
         fileUrl: '',
         description: '',
         releaseNotes: '',
-        releaseDate: ''
+        releaseDate: '',
+        md5: '',
+        sha256: '',
+        size: 0
       },
       toDeleteVersion: null
     })
@@ -361,8 +365,22 @@ export default defineComponent({
 
     const handleFileChange = async (file: { raw?: File }) => {
       if (!file.raw) return
-      const result = await uploadFile(file.raw)
+      const raw = file.raw
+      const result = await uploadFile(raw)
       state.form.fileUrl = result.fileUrl
+      state.form.size = raw.size
+      // 校验值在这里算：客户端下载完会拿它比对，防止装到半截或被掉包的安装包。
+      // 算失败不挡发版，只是这一版发出去不带校验。
+      try {
+        const [md5, sha256] = await Promise.all([getMd5(raw), getSha256(raw)])
+        state.form.md5 = md5
+        state.form.sha256 = sha256
+      }
+      catch (error) {
+        state.form.md5 = ''
+        state.form.sha256 = ''
+        console.warn('计算安装包校验值失败，本次发版将不带校验', error)
+      }
       ElMessage.success('文件上传成功')
     }
 

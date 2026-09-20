@@ -100,6 +100,12 @@ export interface IAddVersionReq {
   fileUrl: string
   description?: string
   releaseNotes?: string
+  /** 安装包 MD5，桌面端下载后校验；不传则客户端跳过校验 */
+  md5?: string
+  /** 安装包 SHA-256，移动端 ota_update 只认这个 */
+  sha256?: string
+  /** 安装包字节数 */
+  size?: number
 }
 
 export interface IAddVersionRes {
