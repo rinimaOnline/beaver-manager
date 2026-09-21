@@ -37,7 +37,7 @@
         <template #default="{ row }">
           <div class="tpl-page__name">
             {{ row.name }}
-            <el-tag v-if="row.isDefault" size="small" type="info">缺省</el-tag>
+            <el-tag v-if="row.isDefault" size="small" type="info">默认</el-tag>
           </div>
           <div class="tpl-page__code">{{ row.code }}</div>
         </template>
@@ -74,7 +74,7 @@
       <el-table-column label="操作" width="140" fixed="right" align="center">
         <template #default="{ row }">
           <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
-          <el-button v-if="!row.isDefault" link type="danger" @click="handleReset(row)">恢复缺省</el-button>
+          <el-button v-if="!row.isDefault" link type="danger" @click="handleReset(row)">恢复默认</el-button>
         </template>
       </el-table-column>
       <template #empty>
@@ -312,14 +312,14 @@ export default defineComponent({
     }
 
     const handleReset = (row: INotificationTemplateItem) => {
-      ElMessageBox.confirm("恢复成代码里的缺省文案和开关，确定吗？", "恢复缺省", { type: "warning" })
+      ElMessageBox.confirm("恢复成代码里的默认文案和开关，确定吗？", "恢复默认", { type: "warning" })
         .then(async () => {
           const res = await resetNotificationTemplateApi(row.code)
           if (res.code !== 0) {
             ElMessage.error(res.msg || "重置失败")
             return
           }
-          ElMessage.success("已恢复缺省")
+          ElMessage.success("已恢复默认")
           load()
         })
         .catch(() => {})
