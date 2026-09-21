@@ -150,6 +150,22 @@
             成员列表和入群人数上限仍按真实人数算。
           </div>
         </el-form-item>
+        <el-form-item label="隐藏成员">
+          <el-switch v-model="editForm.hideMemberList" />
+          <div class="group-list-page__hint">
+            开启后普通成员点开群资料看不到任何人，只看得到人数（有展示人数就显示展示人数）。
+            群主和管理员照常能看全名单，不然没法踢人、设管理员。
+            <br>
+            和「官方群」是两个独立开关：摘掉官方徽标不会把名单放出来。
+          </div>
+        </el-form-item>
+        <el-form-item label="隐藏成员提示">
+          <el-switch v-model="editForm.hideMemberNotice" />
+          <div class="group-list-page__hint">
+            开启后群里不再发「xxx 加入了群聊」「xxx 被设为管理员」这类灰条。
+            禁言提示、群公告变更不受影响。
+          </div>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="editVisible = false">取消</el-button>
@@ -195,6 +211,14 @@
             placeholder="留空按真实人数展示；填了就顶替，如「100万+」"
           />
         </el-form-item>
+        <el-form-item label="隐藏成员">
+          <el-switch v-model="createForm.hideMemberList" />
+          <span class="group-list-page__hint">普通成员只看得到人数，群主和管理员照常看全名单。</span>
+        </el-form-item>
+        <el-form-item label="隐藏成员提示">
+          <el-switch v-model="createForm.hideMemberNotice" />
+          <span class="group-list-page__hint">不再发「xxx 加入了群聊」这类灰条。</span>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="createVisible = false">取消</el-button>
@@ -228,7 +252,15 @@ export default defineComponent({
     const editVisible = ref(false)
     const editingId = ref(0)
     const editingMemberCount = ref(0)
-    const editForm = reactive({ title: "", notice: "", muteAll: false, displayMemberText: "", isOfficial: false })
+    const editForm = reactive({
+      title: "",
+      notice: "",
+      muteAll: false,
+      displayMemberText: "",
+      isOfficial: false,
+      hideMemberList: false,
+      hideMemberNotice: false
+    })
 
     const createVisible = ref(false)
     const creating = ref(false)
@@ -238,7 +270,9 @@ export default defineComponent({
       notice: "",
       memberIds: "",
       isOfficial: false,
-      displayMemberText: ""
+      displayMemberText: "",
+      hideMemberList: false,
+      hideMemberNotice: false
     })
 
     const load = async () => {
@@ -277,6 +311,8 @@ export default defineComponent({
       editForm.muteAll = row.muteAll || false
       editForm.displayMemberText = row.displayMemberText || ""
       editForm.isOfficial = row.isOfficial || false
+      editForm.hideMemberList = row.hideMemberList || false
+      editForm.hideMemberNotice = row.hideMemberNotice || false
       editVisible.value = true
     }
 
@@ -287,7 +323,9 @@ export default defineComponent({
         notice: editForm.notice,
         muteAll: editForm.muteAll,
         displayMemberText: editForm.displayMemberText.trim(),
-        isOfficial: editForm.isOfficial
+        isOfficial: editForm.isOfficial,
+        hideMemberList: editForm.hideMemberList,
+        hideMemberNotice: editForm.hideMemberNotice
       })
       saving.value = false
       if (res.code !== 0) {
@@ -306,7 +344,9 @@ export default defineComponent({
         notice: "",
         memberIds: "",
         isOfficial: false,
-        displayMemberText: ""
+        displayMemberText: "",
+        hideMemberList: false,
+        hideMemberNotice: false
       })
       createVisible.value = true
     }
@@ -335,7 +375,9 @@ export default defineComponent({
         notice: createForm.notice.trim() || undefined,
         memberIds: memberIds.length ? memberIds : undefined,
         isOfficial: createForm.isOfficial,
-        displayMemberText: createForm.displayMemberText.trim() || undefined
+        displayMemberText: createForm.displayMemberText.trim() || undefined,
+        hideMemberList: createForm.hideMemberList,
+        hideMemberNotice: createForm.hideMemberNotice
       })
       creating.value = false
       if (res.code !== 0) {

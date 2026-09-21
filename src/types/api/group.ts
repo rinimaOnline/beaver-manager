@@ -40,6 +40,10 @@ export interface GroupInfo {
   displayMemberText: string
   /** 官方群标识，客户端在群名后挂「官方」徽标；只有后台能改 */
   isOfficial: boolean
+  /** 隐藏成员列表：开启后普通成员看不到群里有谁，只看得到人数。群主和管理员不受影响 */
+  hideMemberList: boolean
+  /** 隐藏成员变动灰条：开启后本群不再发「xxx 加入了群聊」这类系统提示 */
+  hideMemberNotice: boolean
   /** 真实在册成员数（status=1），和 displayMemberText 无关 */
   memberCount: number
   dissolveTime: string
@@ -83,6 +87,10 @@ export interface UpdateGroupReq {
   displayMemberText?: string
   /** 官方群标识。不传表示不改 */
   isOfficial?: boolean
+  /** 隐藏成员列表。不传表示不改 */
+  hideMemberList?: boolean
+  /** 隐藏成员变动灰条。不传表示不改 */
+  hideMemberNotice?: boolean
 }
 export interface UpdateGroupRes {}
 
@@ -102,6 +110,8 @@ export interface CreateGroupReq {
   memberIds?: string[]
   isOfficial?: boolean
   displayMemberText?: string
+  hideMemberList?: boolean
+  hideMemberNotice?: boolean
 }
 export interface CreateGroupRes {
   groupId: string
