@@ -226,6 +226,11 @@ const router = createRouter({
               component: () => import("@/pages/service/announcement/index.vue")
             },
             {
+              path: "news",
+              name: "微聊新闻",
+              component: () => import("@/pages/service/news/index.vue")
+            },
+            {
               path: "notification",
               name: "站内通知",
               component: () => import("@/pages/service/notification/index.vue")

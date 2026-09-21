@@ -41,6 +41,7 @@ import {
   Platform,
   Postcard,
   Present,
+  Reading,
   Service,
   Setting,
   Share,
@@ -140,6 +141,7 @@ export const menuConfig: MenuItem[] = [
     children: [
       { path: "/service/feedback", title: "用户反馈", icon: Message },
       { path: "/service/announcement", title: "运营公告", icon: Bell },
+      { path: "/service/news", title: "微聊新闻", icon: Reading },
       { path: "/service/notification", title: "站内通知", icon: BellFilled },
       { path: "/service/notification-template", title: "通知模板", icon: Document }
     ]
