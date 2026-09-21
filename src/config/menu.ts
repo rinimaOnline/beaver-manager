@@ -22,6 +22,7 @@
 import type { Component } from "vue"
 import {
   Bell,
+  BellFilled,
   ChatLineRound,
   Coin,
   Connection,
@@ -138,7 +139,9 @@ export const menuConfig: MenuItem[] = [
     icon: Service,
     children: [
       { path: "/service/feedback", title: "用户反馈", icon: Message },
-      { path: "/service/announcement", title: "运营公告", icon: Bell }
+      { path: "/service/announcement", title: "运营公告", icon: Bell },
+      { path: "/service/notification", title: "站内通知", icon: BellFilled },
+      { path: "/service/notification-template", title: "通知模板", icon: Document }
     ]
   },
   {

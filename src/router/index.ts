@@ -224,6 +224,16 @@ const router = createRouter({
               path: "announcement",
               name: "运营公告",
               component: () => import("@/pages/service/announcement/index.vue")
+            },
+            {
+              path: "notification",
+              name: "站内通知",
+              component: () => import("@/pages/service/notification/index.vue")
+            },
+            {
+              path: "notification-template",
+              name: "通知模板",
+              component: () => import("@/pages/service/notification-template/index.vue")
             }
           ]
         },
