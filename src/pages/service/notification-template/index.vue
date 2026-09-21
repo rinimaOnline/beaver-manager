@@ -51,9 +51,13 @@
       <el-table-column label="正文" min-width="280" show-overflow-tooltip>
         <template #default="{ row }">{{ row.content }}</template>
       </el-table-column>
-      <el-table-column label="启用" width="80" align="center">
+      <el-table-column label="启用" width="90" align="center">
         <template #default="{ row }">
-          <el-tag size="small" :type="row.enabled ? 'success' : 'info'">{{ row.enabled ? "开" : "关" }}</el-tag>
+          <el-switch
+            :model-value="row.enabled"
+            :loading="togglingCode === row.code"
+            @change="(v: string | number | boolean) => toggleEnabled(row, Boolean(v))"
+          />
         </template>
       </el-table-column>
       <el-table-column label="弹窗" width="80" align="center">
@@ -189,6 +193,7 @@ export default defineComponent({
     const saving = ref(false)
     const editVisible = ref(false)
     const editing = ref<INotificationTemplateItem | null>(null)
+    const togglingCode = ref("")
     const formRef = ref<FormInstance>()
     const contentRef = ref<any>(null)
 
@@ -279,6 +284,33 @@ export default defineComponent({
       })
     }
 
+    /**
+     * 列表里直接开关。
+     *
+     * 复用保存接口，把这一行当前生效的文案原样带回去——只动 enabled 一个字段。
+     * 之所以不另开一个"只改开关"的接口：保存接口本来就要校验占位符，
+     * 走同一条路就不会出现"开关改得了、文案校验绕过去了"的口子。
+     */
+    const toggleEnabled = async (row: INotificationTemplateItem, next: boolean) => {
+      togglingCode.value = row.code
+      const res = await saveNotificationTemplateApi({
+        code: row.code,
+        title: row.title,
+        content: row.content,
+        linkUrl: row.linkUrl,
+        enabled: next,
+        popup: row.popup
+      })
+      togglingCode.value = ""
+
+      if (res.code !== 0) {
+        ElMessage.error(res.msg || "操作失败")
+        return
+      }
+      ElMessage.success(next ? "已启用" : "已关闭，这类通知不再发送")
+      load()
+    }
+
     const handleReset = (row: INotificationTemplateItem) => {
       ElMessageBox.confirm("恢复成代码里的缺省文案和开关，确定吗？", "恢复缺省", { type: "warning" })
         .then(async () => {
@@ -311,6 +343,8 @@ export default defineComponent({
       openEdit,
       insert,
       token,
+      togglingCode,
+      toggleEnabled,
       submit,
       handleReset
     }
