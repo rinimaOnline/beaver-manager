@@ -90,7 +90,7 @@
             class="tpl-page__var"
             @click="insert(p.key)"
           >
-            {{ `{${p.key}}` }} {{ p.desc }}
+            {{ token(p.key) }} {{ p.desc }}
           </el-tag>
           <span v-if="!editing.placeholders.length">这个触发点没有变量</span>
         </div>
@@ -150,6 +150,16 @@ import {
 
 /** 和服务端 placeholderPattern 一致：{字母开头的标识符} */
 const PLACEHOLDER = /\{([a-zA-Z][a-zA-Z0-9_]*)\}/g
+
+/**
+ * 把变量名包成 {name} 给模板显示。
+ *
+ * 必须走函数，不能在模板里直接写字符串字面量——那样结尾的 }} 会被 Vue 当成
+ * 插值的结束符，编译直接报 "Unexpected token"（vue-tsc 不报，只有 build 才炸）。
+ */
+function token(key: string): string {
+  return `{${key}}`
+}
 
 /**
  * 预览用的假数据：按变量名猜一个像样的值，纯粹为了让运营看清排版。
@@ -300,6 +310,7 @@ export default defineComponent({
       load,
       openEdit,
       insert,
+      token,
       submit,
       handleReset
     }
@@ -307,7 +318,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="less" scoped>
 .tpl-page {
   &__header {
     display: flex;

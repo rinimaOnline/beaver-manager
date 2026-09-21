@@ -323,7 +323,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="less" scoped>
 .notification-page {
   &__header {
     display: flex;
