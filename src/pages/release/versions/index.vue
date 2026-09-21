@@ -328,7 +328,12 @@ export default defineComponent({
         fileUrl: '',
         description: '',
         releaseNotes: '',
-        releaseDate: ''
+        releaseDate: '',
+        // 校验值要一起清：不清的话上一版的 md5/sha256/size 会留在表单里，
+        // 新包上传失败时就会带着上一版的校验值提交，客户端下下来一律拒装。
+        md5: '',
+        sha256: '',
+        size: 0
       }
       state.dialogTitle = '添加版本'
       state.dialogVisible = true

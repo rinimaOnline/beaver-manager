@@ -28,6 +28,13 @@ export interface IVersionForm {
   description: string
   releaseNotes: string
   releaseDate: string
+  /**
+   * 安装包校验值与体积。客户端下载完拿它比对，防止装到半截或被掉包的包。
+   * 上传时算不出来就留空 / 0，发版照常，只是这一版不带校验。
+   */
+  md5: string
+  sha256: string
+  size: number
 }
 
 export interface IVersionState {
