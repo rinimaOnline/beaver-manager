@@ -91,11 +91,14 @@ export interface IOnboardingSettingItem {
 
 export interface IOnboardingSettingGetRes {
   allowEmptyInviteCode: boolean
+  /** 强制实名才能聊天：开=实名审核通过前发不出消息 */
+  forceIdentityChat: boolean
   list: IOnboardingSettingItem[]
 }
 
 export interface IOnboardingSettingSaveReq {
   allowEmptyInviteCode: boolean
+  forceIdentityChat: boolean
 }
 
 // ---------- 邀请树 ----------

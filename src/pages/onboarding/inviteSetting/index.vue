@@ -25,7 +25,7 @@
       <div>
         <h2 class="invite-setting-page__title">注册设置</h2>
         <p class="invite-setting-page__subtitle">
-          控制普通用户注册时是否必须填邀请码。
+          控制普通用户注册时是否必须填邀请码，以及未实名用户能不能聊天。
         </p>
       </div>
       <div class="invite-setting-page__actions">
@@ -40,6 +40,17 @@
         <div class="invite-setting-page__tip">
           开启后，不填邀请码也能注册，这类用户会命中「默认好友 / 默认群组」里绑定邀请码留空的那些条目；
           关闭后，注册必须填一个有效的邀请码。
+        </div>
+      </el-form-item>
+
+      <el-form-item label="强制实名才能聊天">
+        <el-switch v-model="forceIdentityChat" active-text="强制" inactive-text="不强制" />
+        <div class="invite-setting-page__tip">
+          开启后，实名审核<strong>通过</strong>之前发不出任何消息，客户端会把用户锁在实名认证页上。
+          存量老用户一并生效，不区分注册时间。
+          <br>
+          这是一道全站闸门：线上出问题（比如审核积压、大面积投诉）就把它关掉，一分钟内全端恢复发消息，
+          不用重新发版。
         </div>
       </el-form-item>
     </el-form>
@@ -57,6 +68,7 @@ export default defineComponent({
     const loading = ref(false)
     const saving = ref(false)
     const allowEmptyInviteCode = ref(false)
+    const forceIdentityChat = ref(true)
 
     const load = async () => {
       loading.value = true
@@ -67,6 +79,7 @@ export default defineComponent({
           return
         }
         allowEmptyInviteCode.value = !!res.result?.allowEmptyInviteCode
+        forceIdentityChat.value = !!res.result?.forceIdentityChat
       }
       catch (e: any) {
         ElMessage.error(e?.message || "获取设置失败")
@@ -79,7 +92,10 @@ export default defineComponent({
     const save = async () => {
       saving.value = true
       try {
-        const res = await saveOnboardingSettingApi({ allowEmptyInviteCode: allowEmptyInviteCode.value })
+        const res = await saveOnboardingSettingApi({
+          allowEmptyInviteCode: allowEmptyInviteCode.value,
+          forceIdentityChat: forceIdentityChat.value,
+        })
         if (res.code !== 0) {
           ElMessage.error(res.msg || "保存失败")
           return
@@ -101,6 +117,7 @@ export default defineComponent({
       loading,
       saving,
       allowEmptyInviteCode,
+      forceIdentityChat,
       load,
       save
     }
