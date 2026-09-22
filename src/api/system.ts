@@ -37,6 +37,7 @@ import type {
   IGetAuthorityModulesRes,
   IGetMenuListReq,
   IGetMenuListRes,
+  IGetMyModulesRes,
   IListAdminModulesRes,
   IUpdateAuthorityModuleReq,
   IUpdateAuthorityModuleRes,
@@ -145,6 +146,18 @@ export function getAuthorityModulesApi(authorityId: number) {
     method: "GET",
     url: `${config.baseAPI}/admin/system/v1/authority_modules`,
     params: { id: authorityId }
+  })
+}
+
+/**
+ * 查当前登录管理员自己的模块授权。
+ * 服务端把它登记在 sharedPaths 里（只验登录、不校模块），
+ * 否则没有 system 权限的角色连自己有什么权限都查不了。
+ */
+export function getMyModulesApi() {
+  return ajax<IGetMyModulesRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/system/v1/my_modules`
   })
 }
 

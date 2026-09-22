@@ -95,16 +95,24 @@
 </template>
 
 <script lang="ts">
-import { computed,  ref } from "vue"
+import { computed } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import type { MenuItem } from "@/config/menu"
-import { menuConfig } from "@/config/menu"
+import { filterByPermission, menuConfig } from "@/config/menu"
+import { useUserStore } from "@/pinia/user/user"
 
 export default defineComponent({
   setup() {
     const route = useRoute()
     const router = useRouter()
-    const menuItems = ref(menuConfig)
+    const userStore = useUserStore()
+
+    // 权限没加载完之前渲染空菜单，避免先闪一下全量菜单再收起来
+    const menuItems = computed(() =>
+      userStore.permissionsLoaded
+        ? filterByPermission(menuConfig, userStore.canAccessModule)
+        : []
+    )
 
     const hasChildren = (item: MenuItem) => Boolean(item.children && item.children.length)
 

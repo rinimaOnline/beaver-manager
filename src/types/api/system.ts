@@ -143,6 +143,13 @@ export interface IGetAuthorityModulesRes {
   isSuper: boolean
 }
 
+/** 当前登录管理员自己的模块授权，管理端据此过滤侧边栏 */
+export interface IGetMyModulesRes {
+  modules: string[]
+  /** 超管豁免全部模块，此时 modules 是空数组，不要当成「没有权限」 */
+  isSuper: boolean
+}
+
 export interface IUpdateAuthorityModuleReq {
   id: number
   modules: string[]

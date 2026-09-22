@@ -22,13 +22,22 @@
 import type { IApiResponse, IGetUserInfoRes, ILoginReq, ILoginRes } from "@/types/auth"
 import { defineStore } from "pinia"
 import { getUserInfoApi, loginApi } from "@/api/auth"
+import { getMyModulesApi } from "@/api/system"
 
 export const useUserStore = defineStore("useUserStore", {
   state: () => ({
     token: localStorage.getItem("token") || "",
     userId: localStorage.getItem("userId") || "",
     phone: localStorage.getItem("phone") || "",
-    userInfo: null as any
+    userInfo: null as any,
+
+    // 当前管理员的后台模块授权，用来过滤侧边栏。
+    // 只放内存不落 localStorage：权限改完最多 30 秒生效（服务端有缓存），
+    // 再叠一层浏览器缓存会让「改了权限怎么还不变」更难解释。
+    modules: [] as string[],
+    isSuper: false,
+    // 没加载完之前不渲染菜单，否则会先闪一下全量菜单再收起来
+    permissionsLoaded: false
   }),
 
   getters: {
@@ -36,7 +45,15 @@ export const useUserStore = defineStore("useUserStore", {
     isLoggedIn: state => !!state.token,
 
     // 获取用户显示名称
-    displayName: state => state.phone || "未登录"
+    displayName: state => state.phone || "未登录",
+
+    // 能不能访问某个后台模块。超管豁免全部模块，它的 modules 是空数组
+    canAccessModule: state => (module?: string) => {
+      if (!module) {
+        return true
+      }
+      return state.isSuper || state.modules.includes(module)
+    }
   },
 
   actions: {
@@ -84,12 +101,33 @@ export const useUserStore = defineStore("useUserStore", {
       }
     },
 
+    // 拉取自己的模块授权。
+    //
+    // 失败时不退回「显示全部菜单」——那正是这次要修的旧行为，
+    // 一次网络抖动就会让运营又看到满屏点不开的菜单。宁可只留免授权的项，
+    // 让人一眼看出是加载失败并刷新。后端鉴权始终生效，两种处理都不影响安全。
+    async loadPermissions() {
+      if (!this.token) {
+        return
+      }
+      const res = await getMyModulesApi()
+      if (res.code !== 0) {
+        throw new Error(res.msg || "获取权限失败")
+      }
+      this.modules = res.result.modules || []
+      this.isSuper = res.result.isSuper
+      this.permissionsLoaded = true
+    },
+
     // 登出
     logout() {
       this.token = ""
       this.userId = ""
       this.phone = ""
       this.userInfo = null
+      this.modules = []
+      this.isSuper = false
+      this.permissionsLoaded = false
       localStorage.removeItem("token")
       localStorage.removeItem("userId")
       localStorage.removeItem("phone")

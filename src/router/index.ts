@@ -21,6 +21,8 @@
 
 import { createRouter, createWebHashHistory } from "vue-router"
 import { useUserStore } from "@/pinia/user/user"
+import { firstAccessiblePath, menuModuleMap } from "@/config/menu"
+import { ElMessage } from "element-plus"
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -360,7 +362,7 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const userStore = useUserStore()
   if (to.path === "/login") {
     next()
@@ -370,6 +372,35 @@ router.beforeEach((to, _from, next) => {
     next("/login")
     return
   }
+
+  // 首次进入（含刷新）先把自己的模块授权取回来，菜单和守卫都依赖它
+  if (!userStore.permissionsLoaded) {
+    try {
+      await userStore.loadPermissions()
+    } catch (error: any) {
+      // 拿不到权限就只剩免授权的页面能进。不放行全部——那等于退回
+      // 「菜单全显示、点进去全 403」的旧行为，反而更难判断是不是坏了。
+      ElMessage.error(error?.message || "获取权限失败，请刷新重试")
+    }
+  }
+
+  // 侧边栏藏起来了不等于进不去，手输 URL 一样能到，所以这里再挡一道。
+  // 详情页自己不在菜单里，按 meta.activeMenu 归到对应的列表页上。
+  const menuPath = typeof to.meta.activeMenu === "string" ? to.meta.activeMenu : to.path
+  const module = menuModuleMap[menuPath]
+  if (module && !userStore.canAccessModule(module)) {
+    // 落地页 /workspace/operations 归 overview 模块，没给这个模块的角色
+    // 一登录就会撞到这里。丢去 404 像系统坏了，改成送到他第一个能进的页面。
+    const fallback = firstAccessiblePath(userStore.canAccessModule)
+    if (fallback && fallback !== to.path) {
+      next(fallback)
+      return
+    }
+    ElMessage.error("无权访问该功能")
+    next("/error/404")
+    return
+  }
+
   next()
 })
 
