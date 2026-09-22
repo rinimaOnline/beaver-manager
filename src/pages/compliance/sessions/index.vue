@@ -456,10 +456,14 @@ export default defineComponent({
 
     const handleClearConversation = async () => {
       if (!activeSession.value) return
-      await ElMessageBox.confirm("确认清空该会话全部消息？此操作不可撤销。", "高危操作", { type: "error" })
+      await ElMessageBox.confirm(
+        "确认清空该会话全部消息？清空后所有成员的客户端都会删掉本地记录，此操作不可撤销。",
+        "高危操作",
+        { type: "error" }
+      )
       const res = await clearConversationApi({ conversationId: activeSession.value.conversationId })
       if (res.code === 0) {
-        ElMessage.success("会话已清空")
+        ElMessage.success(`会话已清空，共 ${res.result?.affectedMessages ?? 0} 条消息，通知 ${res.result?.notifiedUsers ?? 0} 名成员`)
         await loadTimeline(true)
         await loadSessions()
       } else {

@@ -144,7 +144,11 @@ export interface IClearConversationReq {
 }
 
 // 清空会话响应
-export interface IClearConversationRes {}
+export interface IClearConversationRes {
+  clearedSeq: number // 清空水位，该 seq 及之前的消息对所有成员不再可见
+  affectedMessages: number // 标记为已删除的消息条数
+  notifiedUsers: number // 收到清空通知的会话成员数
+}
 
 // 按类型删除消息请求
 export interface IDeleteMessagesByTypeReq {
