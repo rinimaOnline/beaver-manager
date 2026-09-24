@@ -106,6 +106,10 @@ export interface IAddVersionReq {
   sha256?: string
   /** 安装包字节数 */
   size?: number
+  /** 仅 iOS 企业签 IPA：上传接口返回的 ipa.bundleId，服务端拿它生成安装清单 */
+  bundleId?: string
+  /** 仅 iOS 企业签 IPA：安装弹窗里显示的应用名 */
+  bundleName?: string
 }
 
 export interface IAddVersionRes {

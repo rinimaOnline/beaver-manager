@@ -127,11 +127,20 @@ export interface UploadResult {
   duration?: number
 }
 
+// 上传 .ipa 时服务端从包里读出的 bundle 信息
+export interface IIpaInfo {
+  bundleId: string
+  version: string
+  build: string
+  displayName: string
+}
+
 // 文件上传API返回结果
 export interface IFileUploadResult {
   fileUrl: string
   originalName: string
   fileInfo: any
+  ipa?: IIpaInfo
 }
 
 // 文件上传API响应（result部分）
@@ -140,6 +149,7 @@ export interface IFileRes {
   originalName: string
   filePath?: string
   md5?: string
+  ipa?: IIpaInfo
 }
 
 // 不同类型文件的样式信息
@@ -227,6 +237,7 @@ export const uploadFileApiWithTarget = async (file: File, target: 'default' | 'l
     fileUrl: result.result.fileUrl,
     originalName: result.result.originalName,
     fileInfo,
+    ipa: result.result.ipa,
   }
 }
 

@@ -20,6 +20,7 @@
  */
 
 import { uploadFileApi } from '@/api/file'
+import type { IIpaInfo } from '@/api/file'
 import { getAudioInfo, getFileType, getImageAttribute, getVideoInfo } from '@/utils/tools'
 
 // 上传文件类型
@@ -33,6 +34,7 @@ export interface UploadResult {
   originalName?: string
   size?: number
   thumbnailKey?: string // 视频封面图文件ID（仅视频类型）
+  ipa?: IIpaInfo // 仅 .ipa：服务端从包里读出的 bundle 信息
 }
 
 // 不同类型文件的样式信息
@@ -134,6 +136,7 @@ export const uploadFile = async (file: File): Promise<UploadResult> => {
     type: fileType,
     originalName: uploadResult.originalName,
     size: file.size,
+    ipa: uploadResult.ipa,
   }
 }
 

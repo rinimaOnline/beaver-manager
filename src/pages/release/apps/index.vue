@@ -148,10 +148,38 @@
         <el-form-item label="版本号" prop="version">
           <el-input v-model="versionForm.version" placeholder="如：1.0.0" />
         </el-form-item>
-        <el-form-item label="安装包" prop="fileUrl">
-          <el-upload action="#" :auto-upload="false" :limit="1" :on-change="handleFileChange">
-            <el-button type="primary">选择文件</el-button>
+        <el-form-item v-if="isIOSArch" label="发布方式">
+          <el-radio-group v-model="iosSource" @change="handleIosSourceChange">
+            <el-radio value="ipa">上传企业签 IPA</el-radio>
+            <el-radio value="url">填写外部地址</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item v-if="isIOSArch && iosSource === 'url'" label="下载地址" prop="fileUrl">
+          <el-input v-model="versionForm.fileUrl" placeholder="https://apps.apple.com/…、TestFlight 邀请链接或分发平台页面" />
+          <div class="release-apps__form-tip">
+            官网和 App 内会直接打开这个地址，不做任何转换。
+          </div>
+        </el-form-item>
+        <el-form-item v-else label="安装包" prop="fileUrl">
+          <el-upload
+            action="#"
+            :auto-upload="false"
+            :limit="1"
+            :accept="isIOSArch ? '.ipa' : undefined"
+            :on-change="handleFileChange"
+          >
+            <el-button type="primary" :loading="uploading">选择文件</el-button>
           </el-upload>
+          <div v-if="isIOSArch" class="release-apps__form-tip">
+            <template v-if="ipaInfo">
+              {{ ipaInfo.displayName || '（无显示名）' }} · {{ ipaInfo.bundleId }} · v{{ ipaInfo.version }}（{{ ipaInfo.build }}）
+            </template>
+            <template v-else>
+              选企业证书签名的 .ipa。上传后自动读出 Bundle ID 并生成 itms-services 安装链接；
+              iOS 只装 https 下发的包，测试环境（http）装不上。用户首次安装后要去
+              「设置 - 通用 - VPN 与设备管理」信任企业证书。
+            </template>
+          </div>
         </el-form-item>
         <el-form-item label="描述">
           <el-input v-model="versionForm.description" type="textarea" :rows="2" />
@@ -200,7 +228,9 @@ import {
   deleteVersionApi
 } from '@/api/update'
 import type { IAppInfo, IArchitectureInfo, IVersionInfo } from '@/types/api/update'
+import type { IIpaInfo } from '@/api/file'
 import {
+  ArchTypes,
   PlatformTypes,
   getPlatformName,
   getArchName,
@@ -256,6 +286,13 @@ export default defineComponent({
       description: '',
       releaseNotes: ''
     })
+    const uploading = ref(false)
+    // iOS 两种发法：企业签 IPA（服务端生成 itms-services 链接）或外部地址（App Store / 分发平台）
+    const iosSource = ref<'ipa' | 'url'>('ipa')
+    const ipaInfo = ref<IIpaInfo | null>(null)
+    const isIOSArch = computed(() =>
+      architectures.value.find(a => a.id === selectedArchId.value)?.archId === ArchTypes.IOS
+    )
 
     const appRules: FormRules = {
       name: [{ required: true, message: '请输入应用名称', trigger: 'blur' }]
@@ -402,31 +439,69 @@ export default defineComponent({
 
     const openVersionDialog = () => {
       versionForm.value = { version: '', fileUrl: '', description: '', releaseNotes: '' }
+      iosSource.value = 'ipa'
+      ipaInfo.value = null
       versionDialogVisible.value = true
+    }
+
+    const handleIosSourceChange = () => {
+      versionForm.value.fileUrl = ''
+      ipaInfo.value = null
     }
 
     const handleFileChange = async (file: { raw?: File }) => {
       if (!file.raw) return
-      const result = await uploadFile(file.raw)
-      versionForm.value.fileUrl = result.fileUrl
-      ElMessage.success('文件上传成功')
+      if (isIOSArch.value && !file.raw.name.toLowerCase().endsWith('.ipa')) {
+        ElMessage.error('iOS 只能上传 .ipa 安装包')
+        return
+      }
+      uploading.value = true
+      try {
+        const result = await uploadFile(file.raw)
+        versionForm.value.fileUrl = result.fileUrl
+        ipaInfo.value = result.ipa || null
+        // 版本号以包内为准，没填的话直接带上
+        if (result.ipa?.version && !versionForm.value.version) {
+          versionForm.value.version = result.ipa.version
+        }
+        ElMessage.success('文件上传成功')
+      }
+      finally {
+        uploading.value = false
+      }
     }
 
     const submitVersion = async () => {
       if (!versionFormRef.value || !selectedArchId.value) return
-      if (!versionForm.value.fileUrl) {
-        ElMessage.error('请先上传安装包')
+      const fileUrl = versionForm.value.fileUrl.trim()
+      const byUrl = isIOSArch.value && iosSource.value === 'url'
+      if (!fileUrl) {
+        ElMessage.error(byUrl ? '请填写下载地址' : '请先上传安装包')
+        return
+      }
+      if (byUrl && !/^https?:\/\/\S+$/i.test(fileUrl)) {
+        ElMessage.error('下载地址必须以 http:// 或 https:// 开头')
+        return
+      }
+      if (isIOSArch.value && !byUrl && !ipaInfo.value) {
+        ElMessage.error('没读到 IPA 的 Bundle ID，请重新上传安装包')
         return
       }
       await versionFormRef.value.validate()
+      if (ipaInfo.value?.version && ipaInfo.value.version !== versionForm.value.version) {
+        ElMessage.warning(`注意：填写的版本号与包内版本 ${ipaInfo.value.version} 不一致`)
+      }
       versionSubmitting.value = true
       const res = await addVersionApi({
         architectureId: selectedArchId.value,
         version: versionForm.value.version,
-        fileUrl: versionForm.value.fileUrl,
+        fileUrl,
         description: versionForm.value.description,
-        releaseNotes: versionForm.value.releaseNotes
-      } as any)
+        releaseNotes: versionForm.value.releaseNotes,
+        ...(!byUrl && ipaInfo.value
+          ? { bundleId: ipaInfo.value.bundleId, bundleName: ipaInfo.value.displayName }
+          : {})
+      })
       versionSubmitting.value = false
       if (res.code === 0) {
         versionDialogVisible.value = false
@@ -489,6 +564,11 @@ export default defineComponent({
       appForm,
       archForm,
       versionForm,
+      uploading,
+      iosSource,
+      ipaInfo,
+      isIOSArch,
+      handleIosSourceChange,
       appRules,
       archRules,
       versionRules,
@@ -547,6 +627,14 @@ export default defineComponent({
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 12px;
+  }
+
+  &__form-tip {
+    width: 100%;
+    margin-top: 4px;
+    color: #909399;
+    font-size: 12px;
+    line-height: 1.6;
   }
 
   &__version-toolbar {
