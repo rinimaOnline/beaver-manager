@@ -181,6 +181,10 @@ export interface IOperationLogInfo {
   detail: string
   result: string
   errorMessage: string
+  clientIp: string
+  forwardedFor: string
+  device: string
+  userAgent: string
   createdAt: string
 }
 
@@ -193,6 +197,7 @@ export interface IGetOperationLogListReq {
   targetType?: string
   targetId?: string
   caseId?: number
+  clientIp?: string
 }
 
 export interface IGetOperationLogListRes {

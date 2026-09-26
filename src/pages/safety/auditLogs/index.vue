@@ -23,7 +23,7 @@
   <div class="safety-audit">
     <div class="safety-audit__header">
       <h2 class="safety-audit__title">操作审计日志</h2>
-      <p class="safety-audit__subtitle">只读记录，涵盖工单处置、敏感词维护与管控动作的执行结果</p>
+      <p class="safety-audit__subtitle">只读记录，涵盖后台登录、工单处置、敏感词维护与管控动作的执行结果。后台账号可多人同时登录，按来源 IP 和设备区分操作人</p>
     </div>
 
     <el-form :inline="true">
@@ -65,6 +65,15 @@
           @keyup.enter="search"
         />
       </el-form-item>
+      <el-form-item label="来源IP">
+        <el-input
+          v-model="searchForm.clientIp"
+          placeholder="IP（精确匹配）"
+          clearable
+          style="width: 160px"
+          @keyup.enter="search"
+        />
+      </el-form-item>
       <el-form-item label="工单ID">
         <el-input-number v-model="searchForm.caseId" :min="0" :controls="false" style="width: 120px" />
       </el-form-item>
@@ -74,7 +83,7 @@
       </el-form-item>
     </el-form>
 
-    <!-- 服务端 list_logs 只支持 operatorId / action / targetType / targetId / caseId 精确筛选，没有时间区间参数 -->
+    <!-- 服务端 list_logs 只支持 operatorId / action / targetType / targetId / caseId / clientIp 精确筛选，没有时间区间参数 -->
     <el-alert
       type="info"
       :closable="false"
@@ -87,6 +96,28 @@
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="createdAt" label="时间" width="200" />
       <el-table-column prop="operatorId" label="操作人" width="150" />
+      <el-table-column label="来源" width="200">
+        <template #default="{ row }">
+          <el-tooltip
+            v-if="row.clientIp || row.userAgent"
+            placement="top"
+            :show-after="300"
+          >
+            <template #content>
+              <div class="safety-audit__source-tip">
+                <div v-if="row.forwardedFor">转发链：{{ row.forwardedFor }}</div>
+                <div v-if="row.userAgent">UA：{{ row.userAgent }}</div>
+              </div>
+            </template>
+            <div>
+              <div>{{ row.clientIp || "—" }}</div>
+              <el-text v-if="row.device" type="info" size="small">{{ row.device }}</el-text>
+            </div>
+          </el-tooltip>
+          <!-- 加这两列之前的老日志没有来源信息 -->
+          <span v-else>—</span>
+        </template>
+      </el-table-column>
       <el-table-column label="动作" width="150">
         <template #default="{ row }">{{ actionLabel(row.action) }}</template>
       </el-table-column>
@@ -145,6 +176,7 @@ import { useRouter } from "vue-router"
 
 // 与服务端 RecordOperation 落库的 action 字面量一一对应
 const actionOptions = [
+  { label: "登录后台", value: "admin_login" },
   { label: "举报立案", value: "escalate_report" },
   { label: "驳回举报", value: "reject_report" },
   { label: "创建工单", value: "create_case" },
@@ -163,6 +195,7 @@ const actionOptions = [
 ]
 
 const targetTypeOptions = [
+  { label: "管理员", value: "admin_user" },
   { label: "工单", value: "case" },
   { label: "举报", value: "report" },
   { label: "敏感词", value: "sensitive_word" },
@@ -185,7 +218,8 @@ export default defineComponent({
       action: "",
       targetType: "",
       targetId: "",
-      caseId: 0
+      caseId: 0,
+      clientIp: ""
     })
 
     const actionLabel = (action: string) =>
@@ -202,7 +236,8 @@ export default defineComponent({
         action: searchForm.action || undefined,
         targetType: searchForm.targetType || undefined,
         targetId: searchForm.targetId || undefined,
-        caseId: searchForm.caseId > 0 ? searchForm.caseId : undefined
+        caseId: searchForm.caseId > 0 ? searchForm.caseId : undefined,
+        clientIp: searchForm.clientIp.trim() || undefined
       })
       loading.value = false
       if (res.code !== 0) {
@@ -224,6 +259,7 @@ export default defineComponent({
       searchForm.targetType = ""
       searchForm.targetId = ""
       searchForm.caseId = 0
+      searchForm.clientIp = ""
       search()
     }
 
@@ -267,6 +303,11 @@ export default defineComponent({
     margin: 0;
     font-size: 13px;
     color: var(--el-text-color-secondary);
+  }
+
+  &__source-tip {
+    max-width: 420px;
+    word-break: break-all;
   }
 
   &__hint {
