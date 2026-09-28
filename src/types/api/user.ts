@@ -42,6 +42,14 @@ export interface IUserInfo {
   realName: string
   /** 身份证号，没提交过为空。删号时会被换成 void_xxx 占位串 */
   idNumber: string
+  /** 身份证人像面 */
+  portraitUrl: string
+  /** 身份证国徽面 */
+  emblemUrl: string
+  /** 活体正脸主照 */
+  faceUrl: string
+  /** 活体各动作帧；没采集到时是空数组 */
+  faceFrames: string[]
 }
 
 // 获取用户列表请求参数

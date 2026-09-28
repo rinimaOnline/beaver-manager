@@ -206,19 +206,28 @@
               </el-tag>
             </template>
           </el-table-column>
-          <!-- 实名不脱敏，和「实名审核」页同一口径：进得来用户管理的人本来就看得到证件照原图 -->
-          <el-table-column label="实名" width="180" align="center">
+          <!-- 实名不脱敏，和「实名审核」页同一口径：进得来用户管理的人本来就看得到证件照原图。
+               证件号单独成列而不是挂在姓名的悬停提示上——提示里的东西鼠标不停上去就等于没有。 -->
+          <el-table-column label="实名" width="170" align="center">
             <template #default="{ row }">
               <el-tag :type="getIdentityType(row.identityStatus)" size="small">
                 {{ getIdentityText(row.identityStatus) }}
               </el-tag>
-              <el-tooltip
-                v-if="row.realName"
-                :content="`身份证号：${row.idNumber || '—'}`"
-                placement="top"
+              <span v-if="row.realName" class="identity-name">{{ row.realName }}</span>
+              <el-button
+                v-if="hasIdentityMedia(row)"
+                link
+                type="primary"
+                size="small"
+                @click="openIdentityDetail(row)"
               >
-                <span class="identity-name">{{ row.realName }}</span>
-              </el-tooltip>
+                查看
+              </el-button>
+            </template>
+          </el-table-column>
+          <el-table-column label="身份证号" width="190" align="center" show-overflow-tooltip>
+            <template #default="{ row }">
+              {{ row.idNumber || "—" }}
             </template>
           </el-table-column>
           <el-table-column prop="source" label="来源" width="120" align="center">
@@ -413,6 +422,39 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- 实名资料：证件影像和活体帧不进表格，缩略图会把行拉高，一页十几个人还要同时拉几十张图 -->
+    <el-dialog v-model="showIdentityDialog" title="实名资料" width="720px">
+      <template v-if="identityRow">
+        <el-descriptions :column="2" border>
+          <el-descriptions-item label="昵称">{{ identityRow.nickName || "—" }}</el-descriptions-item>
+          <el-descriptions-item label="微聊号">{{ identityRow.weliaoId || "—" }}</el-descriptions-item>
+          <el-descriptions-item label="用户ID">{{ identityRow.id }}</el-descriptions-item>
+          <el-descriptions-item label="状态">
+            <el-tag :type="getIdentityType(identityRow.identityStatus)" size="small">
+              {{ getIdentityText(identityRow.identityStatus) }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="姓名">{{ identityRow.realName || "—" }}</el-descriptions-item>
+          <el-descriptions-item label="身份证号">{{ identityRow.idNumber || "—" }}</el-descriptions-item>
+        </el-descriptions>
+        <div class="identity-gallery">
+          <div v-for="item in identityGalleryOf(identityRow)" :key="item.url" class="identity-gallery__item">
+            <el-image
+              :src="item.url"
+              :preview-src-list="identityGalleryUrlsOf(identityRow)"
+              fit="contain"
+              preview-teleported
+            />
+            <span>{{ item.label }}</span>
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <el-button @click="showIdentityDialog = false">关闭</el-button>
+        <el-button type="primary" @click="goIdentityReview">去实名审核</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -431,6 +473,8 @@ import {
   resetUserPasswordApi,
   updateUserApi
 } from "@/api/user"
+import { identityGallery, identityGalleryUrls } from "@/utils/identity"
+
 export default defineComponent({
   setup() {
     const router = useRouter()
@@ -594,6 +638,23 @@ export default defineComponent({
     }
     const getIdentityText = (status?: number) => identityTextMap[status ?? 0] || "未实名"
     const getIdentityType = (status?: number) => identityTypeMap[status ?? 0] || "info"
+
+    const showIdentityDialog = ref(false)
+    const identityRow = ref<IUserInfo | null>(null)
+    // 只在真有影像可看时才给「查看」：没提交过实名的行摆个按钮点进去是空的
+    const hasIdentityMedia = (row: IUserInfo) => identityGallery(row).length > 0
+    const openIdentityDetail = (row: IUserInfo) => {
+      identityRow.value = row
+      showIdentityDialog.value = true
+    }
+    const identityGalleryOf = (row: IUserInfo) => identityGallery(row)
+    const identityGalleryUrlsOf = (row: IUserInfo) => identityGalleryUrls(row)
+    // 审核/驳回的入口在实名审核页，带上证件号让它直接定位到这个人
+    const goIdentityReview = () => {
+      const keyword = identityRow.value?.idNumber || identityRow.value?.id || ""
+      showIdentityDialog.value = false
+      router.push({ path: "/user/identity", query: keyword ? { keyword } : {} })
+    }
 
     const getSourceText = (source: number) => {
       const sourceMap: Record<number, string> = {
@@ -856,6 +917,13 @@ export default defineComponent({
       getStatusText,
       getIdentityText,
       getIdentityType,
+      showIdentityDialog,
+      identityRow,
+      hasIdentityMedia,
+      openIdentityDetail,
+      identityGalleryOf,
+      identityGalleryUrlsOf,
+      goIdentityReview,
       getSourceText,
       getSourceType,
       getUserTypeText,
@@ -986,8 +1054,29 @@ export default defineComponent({
 
 .identity-name {
   margin-left: 6px;
-  cursor: help;
-  border-bottom: 1px dashed var(--el-border-color);
+}
+
+.identity-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+
+    .el-image {
+      width: 160px;
+      height: 110px;
+      border: 1px solid var(--el-border-color-lighter);
+      border-radius: 4px;
+    }
+  }
 }
 
 .form-hint {

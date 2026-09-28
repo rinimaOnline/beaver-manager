@@ -148,10 +148,12 @@ import type { IIdentityInfo } from "@/types/api/user"
 import { ElMessage } from "element-plus"
 import { getIdentityListApi, reviewIdentityApi } from "@/api/user"
 import { IdentityStatus } from "@/types/api/user"
+import { identityGallery, identityGalleryUrls } from "@/utils/identity"
 
 export default defineComponent({
   setup() {
     const router = useRouter()
+    const route = useRoute()
     const loading = ref(false)
     const submitting = ref(false)
     const identityList = ref<IIdentityInfo[]>([])
@@ -159,7 +161,14 @@ export default defineComponent({
     const detailVisible = ref(false)
     const reviewVisible = ref(false)
     const reviewFormRef = ref<FormInstance>()
-    const searchForm = reactive({ keyword: "", status: IdentityStatus.PENDING as number })
+    // 带 ?keyword= 进来的（用户管理里点「去实名审核」）状态默认放开到「全部」：
+    // 这页平时是待审工作队列，但指名点到某个人时他多半已经审过了，
+    // 还按待审过滤的话会显示成「查不到这个人」。
+    const fromQuery = String(route.query.keyword ?? "").trim()
+    const searchForm = reactive({
+      keyword: fromQuery,
+      status: fromQuery ? -1 : (IdentityStatus.PENDING as number)
+    })
     const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
     const reviewForm = reactive({ status: IdentityStatus.APPROVED as number, rejectReason: "" })
     const reviewRules: FormRules = {
@@ -180,16 +189,10 @@ export default defineComponent({
       return map[status] || "info"
     }
 
-    // 证件正反面 + 活体帧，审核人要按同一组预览来回比对
-    const galleryOf = (row: IIdentityInfo) => {
-      const items: { url: string, label: string }[] = []
-      if (row.portraitUrl) items.push({ url: row.portraitUrl, label: "身份证人像面" })
-      if (row.emblemUrl) items.push({ url: row.emblemUrl, label: "身份证国徽面" })
-      const frames = row.faceFrames?.length ? row.faceFrames : (row.faceUrl ? [row.faceUrl] : [])
-      frames.forEach((url, index) => items.push({ url, label: `活体帧 ${index + 1}` }))
-      return items
-    }
-    const thumbsOf = (row: IIdentityInfo) => galleryOf(row).map(item => item.url)
+    // 证件正反面 + 活体帧，审核人要按同一组预览来回比对。
+    // 取帧规则和「用户管理」共用一份，见 utils/identity。
+    const galleryOf = (row: IIdentityInfo) => identityGallery(row)
+    const thumbsOf = (row: IIdentityInfo) => identityGalleryUrls(row)
 
     const fetchList = async () => {
       loading.value = true

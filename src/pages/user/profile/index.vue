@@ -31,15 +31,14 @@
             <el-tag :type="profile.status === 2 ? 'danger' : 'success'" size="small">
               {{ profile.status === 2 ? "禁用" : "正常" }}
             </el-tag>
-            <!-- 实名不脱敏，和「实名审核」页同一口径 -->
-            <el-tooltip
-              :content="profile.realName ? `${profile.realName} · ${profile.idNumber || '—'}` : '该用户未提交实名资料'"
-              placement="top"
-            >
-              <el-tag :type="identityTagType" size="small">
-                实名{{ identityLabel }}
-              </el-tag>
-            </el-tooltip>
+            <!-- 实名不脱敏，和「实名审核」页同一口径。
+                 姓名和证件号直接摆出来，不塞悬停提示：运营来这页就是为了核对这两项。 -->
+            <el-tag :type="identityTagType" size="small">
+              实名{{ identityLabel }}
+            </el-tag>
+            <el-tag v-if="profile.realName" type="info" size="small">
+              {{ profile.realName }} · {{ profile.idNumber || "—" }}
+            </el-tag>
             <el-tag type="info" size="small">
               {{ data.friendTotal }} 好友 · {{ data.groupTotal }} 群 · {{ data.circleTotal }} 圈子 · {{ data.momentTotal }} 动态
             </el-tag>
