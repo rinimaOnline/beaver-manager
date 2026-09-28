@@ -31,6 +31,15 @@
             <el-tag :type="profile.status === 2 ? 'danger' : 'success'" size="small">
               {{ profile.status === 2 ? "禁用" : "正常" }}
             </el-tag>
+            <!-- 实名不脱敏，和「实名审核」页同一口径 -->
+            <el-tooltip
+              :content="profile.realName ? `${profile.realName} · ${profile.idNumber || '—'}` : '该用户未提交实名资料'"
+              placement="top"
+            >
+              <el-tag :type="identityTagType" size="small">
+                实名{{ identityLabel }}
+              </el-tag>
+            </el-tooltip>
             <el-tag type="info" size="small">
               {{ data.friendTotal }} 好友 · {{ data.groupTotal }} 群 · {{ data.circleTotal }} 圈子 · {{ data.momentTotal }} 动态
             </el-tag>
@@ -256,7 +265,10 @@ interface IRelationItem {
 }
 
 const emptyData = (): IGetUserOperationsProfileRes => ({
-  profile: { userId: "", weliaoId: "", nickName: "", email: "", avatar: "", abstract: "", status: 1, source: 1, createTime: "" },
+  profile: {
+    userId: "", weliaoId: "", nickName: "", email: "", avatar: "", abstract: "", status: 1, source: 1, createTime: "",
+    identityStatus: 0, realName: "", idNumber: ""
+  },
   friendTotal: 0, groupTotal: 0, sessionTotal: 0, momentTotal: 0, circleTotal: 0, reportTotal: 0, blockTotal: 0,
   friends: [], groups: [], circles: [], sessions: [], moments: [], reports: [], blocks: []
 })
@@ -291,6 +303,18 @@ export default defineComponent({
 
     const userId = computed(() => route.params.userId as string)
     const profile = computed(() => data.value.profile?.userId ? data.value.profile : null)
+
+    // 实名：0 未提交 1 待审 2 通过 3 驳回
+    const identityLabel = computed(() => {
+      const map: Record<number, string> = { 0: "未提交", 1: "待审核", 2: "已通过", 3: "已驳回" }
+      return map[data.value.profile?.identityStatus ?? 0] || "未提交"
+    })
+    const identityTagType = computed(() => {
+      const map: Record<number, "info" | "warning" | "success" | "danger"> = {
+        0: "info", 1: "warning", 2: "success", 3: "danger"
+      }
+      return map[data.value.profile?.identityStatus ?? 0] || "info"
+    })
 
     const activeConversationId = computed(() => activeRelation.value?.conversationId || null)
     const activeGroupId = computed(() => activeRelation.value?.groupId || "")
@@ -673,6 +697,7 @@ export default defineComponent({
 
     return {
       loading, sidebarLoading, controlLoading, data, profile, userId,
+      identityLabel, identityTagType,
       relationMode, relationKeyword, filteredRelations, activeRelation,
       momentList, filteredMoments, activeMomentId,
       circleList, filteredCircles, activeCircleId,

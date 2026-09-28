@@ -36,6 +36,12 @@ export interface IUserInfo {
   lastLoginIp: string
   createTime: string
   updateTime: string
+  /** 实名状态：0未提交 1待审 2通过 3驳回 */
+  identityStatus: number
+  /** 实名姓名，没提交过为空 */
+  realName: string
+  /** 身份证号，没提交过为空。删号时会被换成 void_xxx 占位串 */
+  idNumber: string
 }
 
 // 获取用户列表请求参数

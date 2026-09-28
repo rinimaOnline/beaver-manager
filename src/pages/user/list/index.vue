@@ -47,9 +47,9 @@
           <el-form-item label="关键词">
             <el-input
               v-model="searchForm.keyword"
-              placeholder="昵称/微聊号/邮箱/手机号"
+              placeholder="昵称/微聊号/邮箱/手机号/实名姓名/身份证号"
               clearable
-              style="width: 200px"
+              style="width: 280px"
               @keyup.enter="handleSearch"
             />
           </el-form-item>
@@ -204,6 +204,21 @@
               <el-tag :type="getStatusType(row.status)" size="small">
                 {{ getStatusText(row.status) }}
               </el-tag>
+            </template>
+          </el-table-column>
+          <!-- 实名不脱敏，和「实名审核」页同一口径：进得来用户管理的人本来就看得到证件照原图 -->
+          <el-table-column label="实名" width="180" align="center">
+            <template #default="{ row }">
+              <el-tag :type="getIdentityType(row.identityStatus)" size="small">
+                {{ getIdentityText(row.identityStatus) }}
+              </el-tag>
+              <el-tooltip
+                v-if="row.realName"
+                :content="`身份证号：${row.idNumber || '—'}`"
+                placement="top"
+              >
+                <span class="identity-name">{{ row.realName }}</span>
+              </el-tooltip>
             </template>
           </el-table-column>
           <el-table-column prop="source" label="来源" width="120" align="center">
@@ -564,6 +579,22 @@ export default defineComponent({
       return status === 3 ? "已删除" : "禁用"
     }
 
+    // 实名：0 未提交 1 待审 2 通过 3 驳回。字段缺省（老接口）按未提交算
+    const identityTextMap: Record<number, string> = {
+      0: "未实名",
+      1: "待审核",
+      2: "已通过",
+      3: "已驳回"
+    }
+    const identityTypeMap: Record<number, "info" | "warning" | "success" | "danger"> = {
+      0: "info",
+      1: "warning",
+      2: "success",
+      3: "danger"
+    }
+    const getIdentityText = (status?: number) => identityTextMap[status ?? 0] || "未实名"
+    const getIdentityType = (status?: number) => identityTypeMap[status ?? 0] || "info"
+
     const getSourceText = (source: number) => {
       const sourceMap: Record<number, string> = {
         1: "注册",
@@ -823,6 +854,8 @@ export default defineComponent({
       fetchUserList,
       getStatusType,
       getStatusText,
+      getIdentityText,
+      getIdentityType,
       getSourceText,
       getSourceType,
       getUserTypeText,
@@ -949,6 +982,12 @@ export default defineComponent({
 
 .official-tag {
   margin-left: 6px;
+}
+
+.identity-name {
+  margin-left: 6px;
+  cursor: help;
+  border-bottom: 1px dashed var(--el-border-color);
 }
 
 .form-hint {

@@ -29,6 +29,12 @@ export interface IUserOpsProfileInfo {
   status: number
   source: number
   createTime: string
+  /** 实名状态：0未提交 1待审 2通过 3驳回 */
+  identityStatus: number
+  /** 实名姓名，没提交过为空 */
+  realName: string
+  /** 身份证号，没提交过为空 */
+  idNumber: string
 }
 
 export interface IUserOpsFriendItem {
