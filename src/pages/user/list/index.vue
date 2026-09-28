@@ -71,6 +71,8 @@
             >
               <el-option label="正常" :value="1" />
               <el-option label="禁用" :value="2" />
+              <!-- 已删除的账号默认不出现在列表里，只有筛这一项才查得到 -->
+              <el-option label="已删除" :value="3" />
             </el-select>
           </el-form-item>
           <el-form-item label="类型">
@@ -548,11 +550,18 @@ export default defineComponent({
 
     // 工具函数
     const getStatusType = (status: number) => {
-      return status === 1 ? "success" : "danger"
+      if (status === 1) {
+        return "success"
+      }
+      return status === 3 ? "info" : "danger"
     }
 
+    // 3 是软删。原先 status != 1 一律显示「禁用」，删掉的账号看上去只是被禁了
     const getStatusText = (status: number) => {
-      return status === 1 ? "正常" : "禁用"
+      if (status === 1) {
+        return "正常"
+      }
+      return status === 3 ? "已删除" : "禁用"
     }
 
     const getSourceText = (source: number) => {
