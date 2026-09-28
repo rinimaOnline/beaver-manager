@@ -686,6 +686,11 @@ export default defineComponent({
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     gap: 10px;
+
+    /* 8 列头像窄屏下每个只有二三十像素宽，点不准也看不清 */
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
   }
 
   &__library-item {

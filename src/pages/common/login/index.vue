@@ -162,11 +162,16 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  min-height: 100dvh;
+  padding: 16px;
+  box-sizing: border-box;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .login-card {
   width: 400px;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 40px;
   background: #fff;
   border-radius: 8px;
@@ -188,6 +193,20 @@ export default defineComponent({
     margin: 0;
     color: #666;
     font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-card {
+    padding: 24px 20px;
+  }
+
+  .login-header {
+    margin-bottom: 20px;
+
+    h2 {
+      font-size: 20px;
+    }
   }
 }
 

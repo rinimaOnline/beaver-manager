@@ -367,6 +367,11 @@ export default defineComponent({
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
+
+    /* 三列权限勾选在手机上会挤成竖着一个字一个字的，窄屏压成一列 */
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
   }
 }
 </style>

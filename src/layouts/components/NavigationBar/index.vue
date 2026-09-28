@@ -22,6 +22,15 @@
 <template>
   <div class="navigation-bar">
     <div class="left-menu">
+      <!-- 窄屏的侧栏入口：抽屉收起后这是唯一能唤出菜单的地方 -->
+      <el-icon
+        v-if="appStore.isMobile"
+        class="menu-toggle"
+        @click="appStore.toggleMobileSidebar()"
+      >
+        <Fold v-if="appStore.mobileSidebarOpen" />
+        <Expand v-else />
+      </el-icon>
       <span class="title">微聊后台管理</span>
     </div>
 
@@ -45,13 +54,19 @@
 
 <script lang="ts">
 import { useRouter } from "vue-router"
-import { UserFilled } from "@element-plus/icons-vue"
+import { Expand, Fold, UserFilled } from "@element-plus/icons-vue"
+import { useAppStore } from "@/pinia/app/app"
 import { useUserStore } from "@/pinia/user/user"
 
 export default defineComponent({
+  components: {
+    Expand,
+    Fold
+  },
   setup() {
     const router = useRouter()
     const userStore = useUserStore()
+    const appStore = useAppStore()
 
     const logout = () => {
       userStore.logout()
@@ -61,6 +76,7 @@ export default defineComponent({
     return {
       UserFilled,
       userStore,
+      appStore,
       logout
     }
   }
@@ -78,12 +94,26 @@ export default defineComponent({
   border-bottom: 1px solid #e8e8e8;
 
   .left-menu {
-    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+
+    .menu-toggle {
+      font-size: 22px;
+      color: #333333;
+      cursor: pointer;
+      /* 图标本身只有 22px，撑一下热区，手指才好点 */
+      padding: 4px;
+    }
 
     .title {
       font-size: 18px;
       font-weight: 500;
       color: #333333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 
@@ -107,6 +137,33 @@ export default defineComponent({
 
     .user-info:hover {
       background-color: #f5f5f5;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .navigation-bar {
+    padding: 0 10px;
+
+    .left-menu .title {
+      font-size: 16px;
+    }
+  }
+}
+
+/* 再窄就只留汉堡 + 头像，标题和用户名都让位给操作区 */
+@media (max-width: 480px) {
+  .navigation-bar {
+    .left-menu .title {
+      font-size: 15px;
+    }
+
+    .right-menu .user-info {
+      padding: 5px;
+
+      .username {
+        display: none;
+      }
     }
   }
 }

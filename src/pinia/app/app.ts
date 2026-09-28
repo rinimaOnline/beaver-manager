@@ -26,6 +26,9 @@ export const useAppStore = defineStore("useAppStore", {
     // 侧边栏是否折叠
     sidebarCollapsed: false,
 
+    // 窄屏下侧栏是抽屉，默认收起；桌面端不看这个值
+    mobileSidebarOpen: false,
+
     // 当前设备类型
     device: "desktop" as "desktop" | "mobile",
 
@@ -47,9 +50,23 @@ export const useAppStore = defineStore("useAppStore", {
       this.sidebarCollapsed = !this.sidebarCollapsed
     },
 
+    // 切换窄屏侧栏抽屉
+    toggleMobileSidebar() {
+      this.mobileSidebarOpen = !this.mobileSidebarOpen
+    },
+
+    // 关闭窄屏侧栏抽屉（点遮罩、点菜单跳转、切回桌面宽度时调用）
+    closeMobileSidebar() {
+      this.mobileSidebarOpen = false
+    },
+
     // 设置设备类型
     setDevice(device: "desktop" | "mobile") {
       this.device = device
+      // 拉宽到桌面时把抽屉状态收掉，否则再窄回来会莫名其妙是展开的
+      if (device === "desktop") {
+        this.mobileSidebarOpen = false
+      }
     },
 
     // 设置加载状态

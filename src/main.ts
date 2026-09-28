@@ -27,6 +27,8 @@ import App from "./App.vue"
 
 import router from "./router"
 import "element-plus/dist/index.css"
+// 放在 element-plus 样式之后：全局窄屏适配要能盖掉组件库默认值
+import "./styles/responsive.less"
 
 const app = createApp(App)
 const pinia = createPinia()

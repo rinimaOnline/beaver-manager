@@ -1,0 +1,443 @@
+/**
+ * Copyright (c) 2024-2026 Beaver IM Team
+ * SPDX-License-Identifier: MIT
+ * Project: beaver-manager
+ * https://github.com/wsrh8888/beaver-manager
+ *
+ * 中文：
+ * 本文件为海狸 IM（Beaver IM）开源项目源代码。
+ * 版权所有 © 2024-2026 Beaver IM Team，基于 MIT 协议授权。
+ * 禁止删除、篡改或替换本文件头部版权与许可声明。
+ * 使用与商业授权说明：https://wsrh8888.github.io/beaver-docs/community/license.html
+ *
+ * English:
+ * This file is part of the Beaver IM open-source project.
+ * Copyright (c) 2024-2026 Beaver IM Team. Licensed under the MIT License.
+ * Do not remove, alter, or replace this copyright and license header.
+ * Usage & commercial licensing: https://wsrh8888.github.io/beaver-docs/community/license.html
+ *
+ * beaver-manager-header-v1
+ */
+
+/**
+ * 全局窄屏适配。
+ *
+ * 后台原本只按桌面写：侧栏固定 210px、搜索表单 inline 且每个控件写死 px 宽、
+ * 页面容器一律 `height: 100%` + `overflow: hidden` 靠内部分区滚动、弹窗写死 600px。
+ * 这些页面有 45 个、样式全是 scoped，逐页改一遍成本和回归风险都太大，
+ * 所以统一在这里做一层窄屏兜底，覆盖所有页面。
+ *
+ * 两条规则：
+ * 1. 只在 `@media (max-width: 768px)` 里生效，桌面端渲染结果完全不变。
+ * 2. 大量用 `!important`。这里必须用：要盖的是组件里 `[data-v-xxx]` 的 scoped 规则
+ *    和模板里 `style="width: 280px"` 的行内样式，正常优先级盖不动。
+ *    不要因为「!important 是坏味道」把它们摘掉。
+ */
+
+@mobile: ~"(max-width: 768px)";
+@narrow: ~"(max-width: 480px)";
+
+@media @mobile {
+  /**
+   * 放大 Element Plus 的基础控件尺寸。手指点 32px 高的输入框/按钮很难点准，
+   * 这两个变量一改，全站 input / select / button / date-picker 一起变高。
+   */
+  :root {
+    --el-component-size: 36px;
+    --el-component-size-small: 30px;
+    --el-component-size-large: 40px;
+  }
+
+  /**
+   * iOS Safari 在聚焦 font-size < 16px 的输入框时会自动放大整个页面，
+   * 且退出聚焦不会缩回去，后台会彻底错位。所以窄屏下输入类控件一律 16px。
+   */
+  .el-input__inner,
+  .el-textarea__inner,
+  .el-select__input,
+  input,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* ---------- 页面容器：整页滚动，不再做「固定高度 + 内部分区滚动」 ---------- */
+
+  /**
+   * 桌面端各页面是「容器撑满视口高度，表格区自己滚」。手机上可视高度本来就小，
+   * 再切成几个内部滚动区就只剩两三行可见，且嵌套滚动在触屏上很难操作。
+   * 窄屏改成高度自然撑开、由 .app-main 整体纵向滚动。
+   */
+  .app-main {
+    > div,
+    .el-card,
+    .el-card__body,
+    .table-section,
+    .search-section,
+    .search-form {
+      height: auto !important;
+      max-height: none !important;
+      min-height: 0 !important;
+      overflow: visible !important;
+    }
+
+    .el-card__header {
+      padding: 12px !important;
+    }
+
+    .el-card__body {
+      padding: 12px !important;
+    }
+  }
+
+  /* 卡片头部（标题 + 右侧操作按钮）窄屏换行，否则标题会被按钮挤成一列竖排的字 */
+  .el-card__header > div {
+    flex-wrap: wrap !important;
+    row-gap: 8px;
+  }
+
+  /**
+   * 各页面自己写的头部/工具条/操作区（命名五花八门：card-header、page-header、
+   * xxx__toolbar、xxx__actions…）绝大多数是 `display: flex` 且不换行，窄屏会把
+   * 标题压成竖排单字。这里按类名模糊匹配统一放开换行——flex-wrap 对非 flex 容器
+   * 是空操作，所以误命中也没有副作用。
+   */
+  .app-main [class*="header"],
+  .app-main [class*="toolbar"],
+  .app-main [class*="actions"],
+  .app-main [class*="filter"],
+  .el-drawer [class*="header"],
+  .el-drawer [class*="actions"],
+  .el-dialog [class*="header"],
+  .el-dialog [class*="actions"] {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  /* ---------- 表单 ---------- */
+
+  /**
+   * inline 搜索表单：每项独占一行，标题留在左边（"关键词""状态"都很短，
+   * 压到上面一行会让 6 项搜索条件变成 12 行），控件撑满剩余宽度。
+   */
+  .el-form--inline {
+    .el-form-item {
+      display: flex !important;
+      width: 100% !important;
+      margin-right: 0 !important;
+      margin-bottom: 10px !important;
+    }
+
+    .el-form-item__content {
+      flex: 1;
+      min-width: 0;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* 有 gap 之后 Element Plus 自带的按钮间距会变成双份 */
+    .el-form-item__content > .el-button + .el-button {
+      margin-left: 0 !important;
+    }
+  }
+
+  /**
+   * 非 inline 表单（弹窗表单、配置页）：标签压到控件上方。
+   * label-width 是以行内 style 打在 label 上的，必须 !important 才能放开。
+   */
+  .el-form:not(.el-form--inline) {
+    .el-form-item {
+      flex-direction: column !important;
+      align-items: stretch !important;
+    }
+
+    .el-form-item__label {
+      width: auto !important;
+      justify-content: flex-start !important;
+      padding: 0 0 4px !important;
+      height: auto !important;
+      line-height: 1.5 !important;
+      text-align: left !important;
+    }
+
+    .el-form-item__content {
+      margin-left: 0 !important;
+      width: 100%;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .el-form-item__content > .el-button + .el-button {
+      margin-left: 0 !important;
+    }
+  }
+
+  /**
+   * 控件写死宽度的地方最多（style="width: 280px" 之类），统一撑满。
+   * 这里只放开表单里的控件，表格单元格里的内联控件不动。
+   */
+  .el-form-item__content {
+    > .el-input,
+    > .el-select,
+    > .el-input-number,
+    > .el-cascader,
+    > .el-autocomplete,
+    > .el-date-editor,
+    > .el-textarea,
+    > .el-slider,
+    > .el-tree-select,
+    > .el-select-v2 {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+  }
+
+  /* 日期区间选择器内部还有一层写死的 min-width */
+  .el-date-editor.el-input__wrapper {
+    min-width: 0 !important;
+  }
+
+  /* 单选/多选组换行，避免横向溢出 */
+  .el-radio-group,
+  .el-checkbox-group {
+    flex-wrap: wrap;
+  }
+
+  /* ---------- 表格 ---------- */
+
+  /**
+   * 表格列宽写死、列又多，窄屏放不下。这里不改结构、保留横向滚动（手指左右滑动看列），
+   * 只把行高和内边距压紧，让一屏能多看到几列几行。
+   * 操作列的 fixed="right" 保留——滑动过程中操作按钮始终可见才好点。
+   */
+  .el-table {
+    font-size: 13px;
+
+    th.el-table__cell,
+    td.el-table__cell {
+      padding: 6px 0 !important;
+    }
+
+    .cell {
+      padding: 0 8px !important;
+    }
+
+    /* 表格里的文字链按钮默认几乎没有内边距，手指点不中 */
+    .el-button.is-link {
+      padding: 6px 2px;
+    }
+  }
+
+  /**
+   * el-scrollbar 默认只在 hover 时显示滚动条，触屏没有 hover，用户不知道表格还能左右滑。
+   * 窄屏下让横向滚动条常显，当作「这里可以滑」的提示。
+   */
+  .el-table__body-wrapper .el-scrollbar__bar.is-horizontal {
+    height: 6px;
+    opacity: 0.6;
+  }
+
+  .el-table .el-scrollbar__wrap {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ---------- 分页 ---------- */
+
+  .pagination-wrapper {
+    justify-content: center !important;
+  }
+
+  .el-pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 8px;
+    padding: 0;
+  }
+
+  /* ---------- 弹窗 / 抽屉 ---------- */
+
+  /**
+   * 弹窗宽度基本都写死在 width="600px" / "70%"，窄屏会超出视口，
+   * 关闭按钮和底部按钮都可能点不到。统一改成近满屏 + 内容区自己滚。
+   */
+  .el-dialog {
+    --el-dialog-width: 94vw;
+
+    width: 94vw !important;
+    max-width: 94vw !important;
+    margin: 6vh auto !important;
+  }
+
+  .el-dialog__body {
+    max-height: 68vh;
+    overflow-y: auto;
+    padding: 12px !important;
+  }
+
+  .el-dialog__header {
+    padding: 12px !important;
+    margin-right: 0 !important;
+  }
+
+  .el-dialog__footer {
+    padding: 12px !important;
+
+    .el-button {
+      margin-left: 0 !important;
+    }
+
+    .dialog-footer,
+    > div {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+  }
+
+  /* 抽屉尺寸同样写死 px（520px / 440px），窄屏按视口比例给 */
+  .el-drawer.ltr,
+  .el-drawer.rtl {
+    width: 92vw !important;
+  }
+
+  .el-drawer.ttb,
+  .el-drawer.btt {
+    height: 80vh !important;
+  }
+
+  .el-drawer__body {
+    padding: 12px !important;
+  }
+
+  /* 消息弹层/确认框在窄屏也会溢出 */
+  .el-message-box {
+    width: 88vw !important;
+    max-width: 88vw !important;
+  }
+
+  .el-message {
+    min-width: 0 !important;
+    width: calc(100vw - 24px);
+  }
+
+  /* 下拉不要宽过视口 */
+  .el-select__popper,
+  .el-popper {
+    max-width: calc(100vw - 16px) !important;
+  }
+
+  /**
+   * 日期区间面板写死 646px（左右两个月并排），窄屏一半在屏幕外、点不到右边那个月。
+   * 改成上下两个月竖排，面板按视口宽走。
+   */
+  .el-picker-panel.el-date-range-picker {
+    width: calc(100vw - 16px) !important;
+
+    .el-picker-panel__body {
+      min-width: 0 !important;
+    }
+
+    .el-picker-panel__content {
+      float: none !important;
+      width: auto !important;
+      margin: 0 !important;
+    }
+
+    .el-picker-panel__content.is-right {
+      border-left: none;
+      border-top: 1px solid var(--el-border-color-lighter);
+    }
+  }
+
+  /* 快捷选项列（"最近一周"之类）在窄屏改成横向排列，省掉左侧一大块 */
+  .el-picker-panel__sidebar {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    display: flex;
+    flex-wrap: wrap;
+    border-right: none;
+  }
+
+  .el-picker-panel__body-wrapper .el-picker-panel__body {
+    margin-left: 0 !important;
+  }
+
+  /* ---------- 栅格 ---------- */
+
+  /**
+   * 统计卡片一类用 el-col 平铺。窄屏下：
+   * span <= 8（一行 3 个以上的小卡）压成两列，其余一律独占一行。
+   */
+  .el-row > .el-col {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  .el-row > .el-col-2,
+  .el-row > .el-col-3,
+  .el-row > .el-col-4,
+  .el-row > .el-col-6,
+  .el-row > .el-col-8 {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+
+  /* ---------- 描述列表 ---------- */
+
+  /**
+   * el-descriptions 默认 3 列（:column 是组件属性，改不了就只能改渲染）。
+   * 窄屏下把表格单元拍平成块级，变成「标签一行、内容一行」的单列形式。
+   */
+  .el-descriptions__body .el-descriptions__table,
+  .el-descriptions__body .el-descriptions__table tbody,
+  .el-descriptions__body .el-descriptions__table tr,
+  .el-descriptions__body .el-descriptions__table .el-descriptions__cell {
+    display: block !important;
+    width: auto !important;
+  }
+
+  .el-descriptions__body .el-descriptions__table .el-descriptions__cell {
+    box-sizing: border-box;
+  }
+
+  /* ---------- 标签页 / 步骤条 ---------- */
+
+  /* 标签多了自动出左右箭头，前提是不让它换行把布局顶开 */
+  .el-tabs__nav-wrap.is-scrollable {
+    padding: 0 20px;
+  }
+
+  .el-tabs__item {
+    padding: 0 12px !important;
+    font-size: 13px;
+  }
+
+  .el-steps--horizontal {
+    flex-wrap: wrap;
+    row-gap: 12px;
+  }
+
+  /* ---------- 其它常见横向溢出 ---------- */
+
+  /* 顶部/区块内的按钮组换行 */
+  .el-button-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+  }
+
+  /* 长文本（ID、URL、token）强制折行，不要把容器撑宽 */
+  .el-descriptions__content,
+  .el-card__body p {
+    word-break: break-all;
+  }
+}
+
+/* 极窄屏（小屏手机）再让一步 */
+@media @narrow {
+  /* 分页只留上一页/下一页和页码，「每页条数」「跳至第几页」收掉 */
+  .el-pagination__sizes,
+  .el-pagination__jump {
+    display: none !important;
+  }
+}
