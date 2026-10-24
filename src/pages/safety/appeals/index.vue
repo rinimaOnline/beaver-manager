@@ -43,7 +43,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="appealList" border stripe>
+    <el-table v-loading="loading" :data="appealList" border stripe height="100%">
       <el-table-column prop="id" label="ID" width="70" />
       <el-table-column prop="userId" label="用户ID" min-width="130">
         <template #default="{ row }">

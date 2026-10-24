@@ -48,7 +48,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="list" border stripe>
+    <el-table v-loading="loading" :data="list" border stripe height="100%">
       <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
       <el-table-column prop="content" label="正文" min-width="260" show-overflow-tooltip />
       <el-table-column label="范围" width="110" align="center">

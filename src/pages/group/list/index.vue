@@ -61,7 +61,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="list" border stripe>
+    <el-table v-loading="loading" :data="list" border stripe height="100%">
       <el-table-column label="群组" min-width="240">
         <template #default="{ row }">
           <div class="group-list-page__group">

@@ -67,7 +67,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="list" border stripe>
+    <el-table v-loading="loading" :data="list" border stripe height="100%">
       <el-table-column label="付款单号" min-width="210" show-overflow-tooltip>
         <template #default="{ row }">
           <el-tag v-if="row.isTest" type="warning" size="small" effect="plain">测试</el-tag>

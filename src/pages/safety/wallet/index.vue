@@ -65,7 +65,7 @@
       </el-radio-group>
       <el-button :loading="ordersLoading" @click="reloadOrders">刷新</el-button>
     </div>
-    <el-table v-loading="ordersLoading" :data="orders" border stripe>
+    <el-table v-loading="ordersLoading" :data="orders" border stripe height="100%">
       <el-table-column prop="createdAt" label="申请时间" width="170">
         <template #default="{ row }">{{ formatTime(row.createdAt) }}</template>
       </el-table-column>

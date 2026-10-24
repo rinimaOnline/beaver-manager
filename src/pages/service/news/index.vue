@@ -61,7 +61,7 @@
           </el-form-item>
         </el-form>
 
-        <el-table v-loading="loading" :data="list" border stripe>
+        <el-table v-loading="loading" :data="list" border stripe height="100%">
           <el-table-column label="标题" min-width="260" show-overflow-tooltip>
             <template #default="{ row }">
               <div class="news-page__title-cell">
@@ -821,7 +821,29 @@ export default defineComponent({
 
 <style scoped>
 .news-page {
+  height: 100%;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+.news-page :deep(.el-tabs) {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.news-page :deep(.el-tabs__content),
+.news-page :deep(.el-tab-pane) {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .news-page__header {

@@ -46,7 +46,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="list" border stripe>
+    <el-table v-loading="loading" :data="list" border stripe height="100%">
       <el-table-column prop="orderId" label="单号" min-width="200" show-overflow-tooltip />
       <!-- 充值单资金流入用户，服务端记在 toUser；老数据兼容回落 fromUser -->
       <el-table-column label="用户" width="160" show-overflow-tooltip>

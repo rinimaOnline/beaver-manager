@@ -44,7 +44,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="identityList" border stripe>
+    <el-table v-loading="loading" :data="identityList" border stripe height="100%">
       <el-table-column label="用户" min-width="180">
         <template #default="{ row }">
           <div class="user-identity__user">
@@ -80,9 +80,21 @@
         </template>
       </el-table-column>
       <el-table-column prop="submitTime" label="提交时间" width="180" />
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column label="操作" width="240" fixed="right">
         <template #default="{ row }">
-          <el-button link type="primary" @click="openReview(row)">审核</el-button>
+          <el-popconfirm
+            v-if="row.status === IdentityStatus.PENDING"
+            :title="`确认通过「${row.realName || row.nickName}」的实名？通过后不能从后台撤销`"
+            confirm-button-text="通过"
+            cancel-button-text="取消"
+            width="260"
+            @confirm="quickApprove(row)"
+          >
+            <template #reference>
+              <el-button link type="success" :loading="approvingId === row.userId">通过</el-button>
+            </template>
+          </el-popconfirm>
+          <el-button v-if="row.status === IdentityStatus.PENDING" link type="primary" @click="openReview(row)">审核</el-button>
           <el-button link @click="openDetail(row)">详情</el-button>
         </template>
       </el-table-column>
@@ -156,6 +168,7 @@ export default defineComponent({
     const route = useRoute()
     const loading = ref(false)
     const submitting = ref(false)
+    const approvingId = ref("")
     const identityList = ref<IIdentityInfo[]>([])
     const current = ref<IIdentityInfo | null>(null)
     const detailVisible = ref(false)
@@ -235,6 +248,35 @@ export default defineComponent({
       reviewVisible.value = true
     }
 
+    const applyReview = async (row: IIdentityInfo, status: number, rejectReason = "") => {
+      const res = await reviewIdentityApi({
+        userId: row.userId,
+        status,
+        rejectReason
+      })
+      if (res.code === 0) {
+        ElMessage.success(status === IdentityStatus.APPROVED ? "已通过" : "已驳回")
+        reviewVisible.value = false
+        fetchList()
+        return true
+      }
+      ElMessage.error(res.msg || "审核失败")
+      return false
+    }
+
+    const quickApprove = async (row: IIdentityInfo) => {
+      if (row.status !== IdentityStatus.PENDING) {
+        ElMessage.warning("该记录不是待审核状态")
+        return
+      }
+      approvingId.value = row.userId
+      try {
+        await applyReview(row, IdentityStatus.APPROVED)
+      } finally {
+        approvingId.value = ""
+      }
+    }
+
     const submitReview = async () => {
       if (!current.value) return
       if (reviewForm.status === IdentityStatus.REJECTED && !reviewForm.rejectReason.trim()) {
@@ -242,19 +284,8 @@ export default defineComponent({
         return
       }
       submitting.value = true
-      const res = await reviewIdentityApi({
-        userId: current.value.userId,
-        status: reviewForm.status,
-        rejectReason: reviewForm.rejectReason.trim()
-      })
+      await applyReview(current.value, reviewForm.status, reviewForm.rejectReason.trim())
       submitting.value = false
-      if (res.code === 0) {
-        ElMessage.success(reviewForm.status === IdentityStatus.APPROVED ? "已通过" : "已驳回")
-        reviewVisible.value = false
-        fetchList()
-      } else {
-        ElMessage.error(res.msg || "审核失败")
-      }
     }
 
     const goUser = (userId: string) => router.push(`/user/profile/${userId}`)
@@ -262,10 +293,11 @@ export default defineComponent({
     onMounted(fetchList)
 
     return {
-      loading, submitting, identityList, current, detailVisible, reviewVisible,
+      IdentityStatus,
+      loading, submitting, approvingId, identityList, current, detailVisible, reviewVisible,
       reviewFormRef, reviewForm, reviewRules, searchForm, pagination,
       statusLabel, statusTag, galleryOf, thumbsOf,
-      handleSearch, handleReset, onPageChange, openDetail, openReview, submitReview, goUser
+      handleSearch, handleReset, onPageChange, openDetail, openReview, quickApprove, submitReview, goUser
     }
   }
 })
@@ -273,13 +305,23 @@ export default defineComponent({
 
 <style lang="less" scoped>
 .user-identity {
+  height: 100%;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: auto;
 
-  &__header { margin-bottom: 16px; }
+  &__header { margin-bottom: 16px; flex-shrink: 0; }
   &__title { margin: 0 0 4px; }
   &__hint { margin: 0; color: #909399; font-size: 13px; }
-  &__form { margin-bottom: 12px; }
-  &__pagination { margin-top: 16px; justify-content: flex-end; }
+  &__form { margin-bottom: 12px; flex-shrink: 0; }
+  &__pagination { margin-top: 16px; justify-content: flex-end; flex-shrink: 0; }
+
+  :deep(.el-table) {
+    flex: 1;
+    min-height: 0;
+  }
 
   &__user { display: flex; align-items: center; gap: 8px; }
   &__user-text { display: flex; flex-direction: column; line-height: 1.3; }

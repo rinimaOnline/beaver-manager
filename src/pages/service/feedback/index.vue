@@ -49,7 +49,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="feedbackList" border stripe>
+    <el-table v-loading="loading" :data="feedbackList" border stripe height="100%">
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="userId" label="用户ID" width="120" />
       <el-table-column prop="content" label="反馈内容" min-width="200" show-overflow-tooltip />

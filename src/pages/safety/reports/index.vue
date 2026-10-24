@@ -40,6 +40,7 @@
       :data="list"
       border
       stripe
+      height="100%"
       :row-class-name="rowClassName"
     >
       <el-table-column prop="id" label="ID" width="80" />

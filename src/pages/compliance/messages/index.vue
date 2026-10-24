@@ -47,7 +47,7 @@
       <el-button type="success" :disabled="!selectedIds.length" @click="handleBatchRestore">批量恢复</el-button>
     </div>
 
-    <el-table v-loading="loading" :data="messageList" border stripe @selection-change="onSelectionChange">
+    <el-table v-loading="loading" :data="messageList" border stripe height="100%" @selection-change="onSelectionChange">
       <el-table-column type="selection" width="45" />
       <el-table-column prop="messageId" label="消息ID" min-width="160" show-overflow-tooltip />
       <el-table-column prop="conversationId" label="会话ID" min-width="160" show-overflow-tooltip />

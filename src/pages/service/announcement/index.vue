@@ -58,7 +58,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="list" border stripe>
+    <el-table v-loading="loading" :data="list" border stripe height="100%">
       <el-table-column label="标题" min-width="200" show-overflow-tooltip>
         <template #default="{ row }">
           <div class="announcement-page__title-cell">

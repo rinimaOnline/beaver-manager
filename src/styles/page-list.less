@@ -1,0 +1,139 @@
+/**
+ * Copyright (c) 2024-2026 Beaver IM Team
+ * SPDX-License-Identifier: MIT
+ * Project: beaver-manager
+ * https://github.com/wsrh8888/beaver-manager
+ *
+ * 中文：
+ * 本文件为海狸 IM（Beaver IM）开源项目源代码。
+ * 版权所有 © 2024-2026 Beaver IM Team，基于 MIT 协议授权。
+ * 禁止删除、篡改或替换本文件头部版权与许可声明。
+ * 使用与商业授权说明：https://wsrh8888.github.io/beaver-docs/community/license.html
+ *
+ * English:
+ * This file is part of the Beaver IM open-source project.
+ * Copyright (c) 2024-2026 Beaver IM Team. Licensed under the MIT License.
+ * Do not remove, alter, or replace this copyright and license header.
+ * Usage & commercial licensing: https://wsrh8888.github.io/beaver-docs/community/license.html
+ *
+ * beaver-manager-header-v1
+ */
+
+/**
+ * 桌面端列表页：表格区自己滚，分页钉在主栏底部，不再被 overflow 裁掉。
+ *
+ * 后台大量列表是「标题 + 筛选 + 表格 + 分页」平铺，表格按行数撑开之后
+ * 分页落到 .app-main 可视区外面。原先主栏 overflow:hidden，整页又滚不动。
+ *
+ * 窄屏已经在 responsive.less 里改成整页滚动，这里只管桌面。
+ */
+
+@desktop: ~"(min-width: 769px)";
+
+@media @desktop {
+  /**
+   * 根节点直接挂着表格和分页的页面（实名、群列表、流水、审计……）：
+   * 撑满主栏，表格吃剩余高度，分页始终可见。
+   */
+  .app-main > *:has(> .el-table):has(.el-pagination) {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+
+  .app-main > *:has(> .el-table) > .el-table {
+    flex: 1 1 0;
+    min-height: 160px;
+    width: 100%;
+  }
+
+  .app-main > *:has(> .el-table) > .el-pagination,
+  .app-main > *:has(> .el-table) > [class*="__pager"],
+  .app-main > *:has(> .el-table) > [class*="pagination"] {
+    flex-shrink: 0;
+  }
+
+  /**
+   * 套了 el-card 的列表（用户列表、素材、表情……）：
+   * 卡片和 card-body 把高度传下去，table-section / 表格吃剩余空间。
+   */
+  .app-main > *:has(.el-pagination) > .el-card,
+  .app-main > *:has(.el-pagination) .main-card,
+  .app-main > *:has(.el-pagination) [class$="__list"] {
+    min-height: 0;
+  }
+
+  .app-main .table-section {
+    min-height: 0;
+  }
+
+  .app-main .table-section > .el-table,
+  .app-main .el-card__body > .el-table {
+    flex: 1 1 0;
+    min-height: 160px;
+    width: 100%;
+  }
+
+  /* Element Plus 表格只有拿到明确高度才会让 tbody 自己滚 */
+  .app-main .el-table {
+    --el-table-header-bg-color: #f5f7fa;
+  }
+
+  .app-main .el-table .el-table__inner-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app-main .el-table .el-table__header-wrapper {
+    flex-shrink: 0;
+  }
+
+  .app-main .el-table .el-table__body-wrapper {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto !important;
+  }
+
+  .app-main .el-table .el-scrollbar,
+  .app-main .el-table .el-scrollbar__wrap {
+    max-height: 100%;
+  }
+
+  .app-main .el-pagination,
+  .app-main .pagination-wrapper,
+  .app-main [class*="__pager"],
+  .app-main [class*="__pagination"] {
+    flex-shrink: 0;
+  }
+
+  /* 套在 el-tabs 里的列表（微聊新闻）：标签页内容区把高度传给表格 */
+  .app-main .el-tabs:has(.el-pagination) {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .app-main .el-tabs:has(.el-pagination) .el-tabs__header {
+    flex-shrink: 0;
+  }
+
+  .app-main .el-tabs:has(.el-pagination) .el-tabs__content,
+  .app-main .el-tabs:has(.el-pagination) .el-tab-pane:has(.el-pagination) {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .app-main .el-tabs:has(.el-pagination) .el-tab-pane:has(.el-pagination) > .el-table {
+    flex: 1 1 0;
+    min-height: 160px;
+  }
+}

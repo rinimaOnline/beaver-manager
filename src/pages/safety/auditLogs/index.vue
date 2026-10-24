@@ -92,7 +92,7 @@
       title="日志按 ID 倒序返回，服务端暂不支持按时间区间筛选，需要看更早的记录请翻页。"
     />
 
-    <el-table v-loading="loading" :data="list" border stripe>
+    <el-table v-loading="loading" :data="list" border stripe height="100%">
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="createdAt" label="时间" width="200" />
       <el-table-column prop="operatorId" label="操作人" width="150" />

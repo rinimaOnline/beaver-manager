@@ -160,6 +160,7 @@
           @selection-change="handleSelectionChange"
           stripe
           border
+          height="100%"
           style="width: 100%"
         >
           <el-table-column type="selection" width="50" />

@@ -117,8 +117,10 @@ export default defineComponent({
 
     .app-main {
       flex: 1;
+      min-height: 0;
       margin: 20px 10px;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
       box-sizing: border-box;
       border-radius: 10px;
       background: #ffffff;

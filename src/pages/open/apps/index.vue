@@ -70,7 +70,7 @@
       <el-button type="success" :disabled="!selectedIds.length" @click="handleBatchStatus(4)">批量启用</el-button>
     </div>
 
-    <el-table v-loading="loading" :data="appList" border stripe @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="appList" border stripe height="100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="50" />
       <el-table-column prop="appId" label="应用ID" min-width="140" show-overflow-tooltip />
       <el-table-column prop="name" label="应用名称" min-width="140" />

@@ -51,7 +51,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="list" border stripe>
+    <el-table v-loading="loading" :data="list" border stripe height="100%">
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="word" label="词条" min-width="160" show-overflow-tooltip />
       <el-table-column label="分类" width="140">

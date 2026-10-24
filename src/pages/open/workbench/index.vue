@@ -48,7 +48,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="appList" border stripe>
+    <el-table v-loading="loading" :data="appList" border stripe height="100%">
       <el-table-column label="应用" min-width="200">
         <template #default="{ row }">
           <div class="open-workbench__app">

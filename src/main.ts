@@ -29,6 +29,8 @@ import router from "./router"
 import "element-plus/dist/index.css"
 // 放在 element-plus 样式之后：全局窄屏适配要能盖掉组件库默认值
 import "./styles/responsive.less"
+// 桌面端列表页：表格区滚动、分页钉底，避免被主栏裁掉
+import "./styles/page-list.less"
 
 const app = createApp(App)
 const pinia = createPinia()

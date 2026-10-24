@@ -41,7 +41,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="adminList" border stripe>
+    <el-table v-loading="loading" :data="adminList" border stripe height="100%">
       <el-table-column prop="nickName" label="昵称" width="120" />
       <el-table-column prop="phone" label="手机号" width="130" />
       <el-table-column prop="userId" label="管理员ID" min-width="160" show-overflow-tooltip />
