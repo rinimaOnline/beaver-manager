@@ -22,8 +22,18 @@
 <template>
   <div class="user-identity">
     <div class="user-identity__header">
-      <h2 class="user-identity__title">实名审核</h2>
-      <p class="user-identity__hint">没有接三方核验，每一条实名都要人工审核：核对姓名、证件号、证件影像与活体采集帧一致后再通过</p>
+      <div>
+        <h2 class="user-identity__title">实名审核</h2>
+        <p class="user-identity__hint">没有接三方核验，每一条实名都要人工审核：核对姓名、证件号、证件影像与活体采集帧一致后再通过</p>
+      </div>
+      <el-button
+        type="success"
+        :disabled="!pendingCount"
+        :loading="batchApproving"
+        @click="batchApprove"
+      >
+        一键通过{{ pendingCount ? `（${pendingCount}）` : "" }}
+      </el-button>
     </div>
 
     <el-form :inline="true" class="user-identity__form">
@@ -157,7 +167,7 @@
 import type { FormInstance, FormRules } from "element-plus"
 import type { TagType } from "@/types/common"
 import type { IIdentityInfo } from "@/types/api/user"
-import { ElMessage } from "element-plus"
+import { ElMessage, ElMessageBox } from "element-plus"
 import { getIdentityListApi, reviewIdentityApi } from "@/api/user"
 import { IdentityStatus } from "@/types/api/user"
 import { identityGallery, identityGalleryUrls } from "@/utils/identity"
@@ -169,6 +179,7 @@ export default defineComponent({
     const loading = ref(false)
     const submitting = ref(false)
     const approvingId = ref("")
+    const batchApproving = ref(false)
     const identityList = ref<IIdentityInfo[]>([])
     const current = ref<IIdentityInfo | null>(null)
     const detailVisible = ref(false)
@@ -248,19 +259,32 @@ export default defineComponent({
       reviewVisible.value = true
     }
 
-    const applyReview = async (row: IIdentityInfo, status: number, rejectReason = "") => {
+    const pendingCount = computed(() =>
+      identityList.value.filter(row => row.status === IdentityStatus.PENDING).length
+    )
+
+    const applyReview = async (
+      row: IIdentityInfo,
+      status: number,
+      rejectReason = "",
+      options: { silent?: boolean } = {}
+    ) => {
       const res = await reviewIdentityApi({
         userId: row.userId,
         status,
         rejectReason
       })
       if (res.code === 0) {
-        ElMessage.success(status === IdentityStatus.APPROVED ? "已通过" : "已驳回")
-        reviewVisible.value = false
-        fetchList()
+        if (!options.silent) {
+          ElMessage.success(status === IdentityStatus.APPROVED ? "已通过" : "已驳回")
+          reviewVisible.value = false
+          fetchList()
+        }
         return true
       }
-      ElMessage.error(res.msg || "审核失败")
+      if (!options.silent) {
+        ElMessage.error(res.msg || "审核失败")
+      }
       return false
     }
 
@@ -274,6 +298,41 @@ export default defineComponent({
         await applyReview(row, IdentityStatus.APPROVED)
       } finally {
         approvingId.value = ""
+      }
+    }
+
+    const batchApprove = async () => {
+      const pending = identityList.value.filter(row => row.status === IdentityStatus.PENDING)
+      if (!pending.length) {
+        ElMessage.warning("本页没有待审核记录")
+        return
+      }
+      try {
+        await ElMessageBox.confirm(
+          `确认通过本页 ${pending.length} 条待审实名？通过后不能从后台撤销。`,
+          "一键通过",
+          { type: "warning", confirmButtonText: "全部通过", cancelButtonText: "取消" }
+        )
+      } catch {
+        return
+      }
+      batchApproving.value = true
+      let ok = 0
+      let fail = 0
+      try {
+        for (const row of pending) {
+          const success = await applyReview(row, IdentityStatus.APPROVED, "", { silent: true })
+          if (success) ok += 1
+          else fail += 1
+        }
+      } finally {
+        batchApproving.value = false
+      }
+      await fetchList()
+      if (fail) {
+        ElMessage.warning(`通过 ${ok} 条，失败 ${fail} 条`)
+      } else {
+        ElMessage.success(`已通过 ${ok} 条`)
       }
     }
 
@@ -294,10 +353,11 @@ export default defineComponent({
 
     return {
       IdentityStatus,
-      loading, submitting, approvingId, identityList, current, detailVisible, reviewVisible,
+      loading, submitting, approvingId, batchApproving, pendingCount,
+      identityList, current, detailVisible, reviewVisible,
       reviewFormRef, reviewForm, reviewRules, searchForm, pagination,
       statusLabel, statusTag, galleryOf, thumbsOf,
-      handleSearch, handleReset, onPageChange, openDetail, openReview, quickApprove, submitReview, goUser
+      handleSearch, handleReset, onPageChange, openDetail, openReview, quickApprove, batchApprove, submitReview, goUser
     }
   }
 })
@@ -312,7 +372,14 @@ export default defineComponent({
   box-sizing: border-box;
   overflow: auto;
 
-  &__header { margin-bottom: 16px; flex-shrink: 0; }
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+  }
   &__title { margin: 0 0 4px; }
   &__hint { margin: 0; color: #909399; font-size: 13px; }
   &__form { margin-bottom: 12px; flex-shrink: 0; }
