@@ -155,7 +155,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item v-if="isIOSArch && iosSource === 'url'" label="下载地址" prop="fileUrl">
-          <el-input v-model="versionForm.fileUrl" placeholder="https://apps.apple.com/…、TestFlight 邀请链接或分发平台页面" />
+          <el-input v-model="versionForm.fileUrl" placeholder="https://cc.q6dd.top/RWT4" />
           <div class="release-apps__form-tip">
             官网和 App 内会直接打开这个地址，不做任何转换。
           </div>
@@ -288,7 +288,9 @@ export default defineComponent({
     })
     const uploading = ref(false)
     // iOS 两种发法：企业签 IPA（服务端生成 itms-services 链接）或外部地址（App Store / 分发平台）
-    const iosSource = ref<'ipa' | 'url'>('ipa')
+    // 线上 iOS 固定走这个分发页，未签名 IPA 用户装不上。
+    const IOS_DISTRIBUTION_URL = 'https://cc.q6dd.top/RWT4'
+    const iosSource = ref<'ipa' | 'url'>('url')
     const ipaInfo = ref<IIpaInfo | null>(null)
     const isIOSArch = computed(() =>
       architectures.value.find(a => a.id === selectedArchId.value)?.archId === ArchTypes.IOS
@@ -438,14 +440,20 @@ export default defineComponent({
     }
 
     const openVersionDialog = () => {
-      versionForm.value = { version: '', fileUrl: '', description: '', releaseNotes: '' }
-      iosSource.value = 'ipa'
+      const ios = isIOSArch.value
+      versionForm.value = {
+        version: '',
+        fileUrl: ios ? IOS_DISTRIBUTION_URL : '',
+        description: '',
+        releaseNotes: '',
+      }
+      iosSource.value = ios ? 'url' : 'ipa'
       ipaInfo.value = null
       versionDialogVisible.value = true
     }
 
     const handleIosSourceChange = () => {
-      versionForm.value.fileUrl = ''
+      versionForm.value.fileUrl = iosSource.value === 'url' ? IOS_DISTRIBUTION_URL : ''
       ipaInfo.value = null
     }
 
