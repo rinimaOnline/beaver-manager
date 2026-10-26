@@ -35,6 +35,8 @@ import type {
   IReviewIdentityReq,
   IReviewIdentityRes,
   IResetUserPasswordReq,
+  IUpdateIdentityReq,
+  IUpdateIdentityRes,
   IResetUserPasswordRes,
   IUpdateUserReq,
   IUpdateUserRes
@@ -121,6 +123,15 @@ export function reviewIdentityApi(data: IReviewIdentityReq) {
   return ajax<IReviewIdentityRes>({
     method: "POST",
     url: `${config.baseAPI}/admin/user/v1/identity/review`,
+    data
+  })
+}
+
+/** 修改实名信息：姓名、证件号、证件正反面、活体主照和动作帧都能改；没提交过的会落成已通过 */
+export function updateIdentityApi(data: IUpdateIdentityReq) {
+  return ajax<IUpdateIdentityRes>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/user/v1/identity/update`,
     data
   })
 }

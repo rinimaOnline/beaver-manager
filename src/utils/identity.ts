@@ -51,3 +51,46 @@ export function identityGallery(row: IIdentityMedia): IIdentityGalleryItem[] {
 export function identityGalleryUrls(row: IIdentityMedia): string[] {
   return identityGallery(row).map(item => item.url)
 }
+
+export interface IIdentityEditValue {
+  realName: string
+  idNumber: string
+  portraitUrl: string
+  emblemUrl: string
+  faceUrl: string
+  faceFrames: string[]
+}
+
+export function emptyIdentityEdit(): IIdentityEditValue {
+  return {
+    realName: "",
+    idNumber: "",
+    portraitUrl: "",
+    emblemUrl: "",
+    faceUrl: "",
+    faceFrames: []
+  }
+}
+
+export function identityEditFrom(row: IIdentityMedia & { realName?: string, idNumber?: string }): IIdentityEditValue {
+  const frames = (row.faceFrames || []).filter(url => !!url)
+  return {
+    realName: row.realName || "",
+    idNumber: row.idNumber || "",
+    portraitUrl: row.portraitUrl || "",
+    emblemUrl: row.emblemUrl || "",
+    faceUrl: row.faceUrl || "",
+    faceFrames: frames
+  }
+}
+
+export function identityEditFilled(form: IIdentityEditValue) {
+  return !!(
+    form.realName.trim()
+    || form.idNumber.trim()
+    || form.portraitUrl
+    || form.emblemUrl
+    || form.faceUrl
+    || form.faceFrames.some(url => !!url)
+  )
+}

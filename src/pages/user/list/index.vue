@@ -279,7 +279,7 @@
     <el-dialog
       :title="isEdit ? '编辑用户' : '新增用户'"
       v-model="showCreateDialog"
-      width="580px"
+      :width="isEdit ? '760px' : '580px'"
       :close-on-click-modal="false"
     >
       <el-form
@@ -363,6 +363,10 @@
             </el-radio>
           </el-radio-group>
         </el-form-item>
+      </el-form>
+
+      <el-form v-if="isEdit" :model="identityForm" label-width="100px">
+        <IdentityEditForm :model-value="identityForm" />
       </el-form>
 
       <template #footer>
@@ -453,6 +457,7 @@
       </template>
       <template #footer>
         <el-button @click="showIdentityDialog = false">关闭</el-button>
+        <el-button @click="editIdentityFromDetail">修改实名</el-button>
         <el-button type="primary" @click="goIdentityReview">去实名审核</el-button>
       </template>
     </el-dialog>
@@ -472,11 +477,14 @@ import {
   deleteUserApi,
   getUserListApi,
   resetUserPasswordApi,
+  updateIdentityApi,
   updateUserApi
 } from "@/api/user"
-import { identityGallery, identityGalleryUrls } from "@/utils/identity"
+import IdentityEditForm from "@/pages/user/components/identityEditForm.vue"
+import { emptyIdentityEdit, identityEditFilled, identityEditFrom, identityGallery, identityGalleryUrls } from "@/utils/identity"
 
 export default defineComponent({
+  components: { IdentityEditForm },
   setup() {
     const router = useRouter()
     const route = useRoute()
@@ -519,6 +527,7 @@ export default defineComponent({
       status: 1,
       isOfficial: false
     })
+    const identityForm = reactive(emptyIdentityEdit())
 
     // 密码表单
     const passwordForm = reactive({
@@ -657,6 +666,12 @@ export default defineComponent({
       router.push({ path: "/user/identity", query: keyword ? { keyword } : {} })
     }
 
+    const editIdentityFromDetail = () => {
+      if (!identityRow.value) return
+      showIdentityDialog.value = false
+      handleEdit(identityRow.value)
+    }
+
     const getSourceText = (source: number) => {
       const sourceMap: Record<number, string> = {
         1: "注册",
@@ -744,6 +759,7 @@ export default defineComponent({
         isOfficial: row.isOfficial,
         password: ""
       })
+      Object.assign(identityForm, identityEditFrom(row))
       showCreateDialog.value = true
     }
 
@@ -813,14 +829,40 @@ export default defineComponent({
             status: userForm.status
           })
         : await createUserApi({ ...formData, password: userForm.password })
-      submitting.value = false
-      if (response.code === 0) {
-        ElMessage.success(isEdit.value ? "更新成功" : "创建成功")
-        showCreateDialog.value = false
-        fetchUserList()
-      } else {
+      if (response.code !== 0) {
+        submitting.value = false
         ElMessage.error(response.msg || (isEdit.value ? "更新失败" : "创建失败"))
+        return
       }
+
+      if (isEdit.value && identityEditFilled(identityForm)) {
+        const realName = identityForm.realName.trim()
+        const idNumber = identityForm.idNumber.trim()
+        if (!realName || !idNumber) {
+          submitting.value = false
+          ElMessage.error("姓名和证件号要一起填写")
+          return
+        }
+        const identityRes = await updateIdentityApi({
+          userId: userForm.id,
+          realName,
+          idNumber,
+          portraitUrl: identityForm.portraitUrl,
+          emblemUrl: identityForm.emblemUrl,
+          faceUrl: identityForm.faceUrl,
+          faceFrames: identityForm.faceFrames
+        })
+        if (identityRes.code !== 0) {
+          submitting.value = false
+          ElMessage.error(identityRes.msg || "用户资料已保存，实名信息未改成功")
+          return
+        }
+      }
+
+      submitting.value = false
+      ElMessage.success(isEdit.value ? "更新成功" : "创建成功")
+      showCreateDialog.value = false
+      fetchUserList()
     }
 
     const handlePasswordSubmit = async () => {
@@ -852,6 +894,7 @@ export default defineComponent({
         status: 1,
         isOfficial: false
       })
+      Object.assign(identityForm, emptyIdentityEdit())
       isEdit.value = false
     }
 
@@ -908,6 +951,7 @@ export default defineComponent({
       showPasswordDialog,
       isEdit,
       userForm,
+      identityForm,
       passwordForm,
       userFormRef,
       passwordFormRef,
@@ -925,6 +969,7 @@ export default defineComponent({
       identityGalleryOf,
       identityGalleryUrlsOf,
       goIdentityReview,
+      editIdentityFromDetail,
       getSourceText,
       getSourceType,
       getUserTypeText,
@@ -1085,4 +1130,5 @@ export default defineComponent({
   color: var(--el-text-color-secondary);
   font-size: 12px;
 }
+
 </style>

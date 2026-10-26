@@ -197,6 +197,20 @@ export interface IReviewIdentityReq {
 // 审核实名认证响应
 export interface IReviewIdentityRes {}
 
+// 修改实名信息请求参数
+export interface IUpdateIdentityReq {
+  userId: string
+  realName: string
+  idNumber: string
+  portraitUrl?: string
+  emblemUrl?: string
+  faceUrl?: string
+  faceFrames?: string[]
+}
+
+// 修改实名信息响应
+export interface IUpdateIdentityRes {}
+
 // 实名认证状态枚举
 export enum IdentityStatus {
   NONE = 0, // 未提交

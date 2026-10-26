@@ -90,7 +90,7 @@
         </template>
       </el-table-column>
       <el-table-column prop="submitTime" label="提交时间" width="180" />
-      <el-table-column label="操作" width="240" fixed="right">
+      <el-table-column label="操作" width="280" fixed="right">
         <template #default="{ row }">
           <el-popconfirm
             v-if="row.status === IdentityStatus.PENDING"
@@ -105,6 +105,7 @@
             </template>
           </el-popconfirm>
           <el-button v-if="row.status === IdentityStatus.PENDING" link type="primary" @click="openReview(row)">审核</el-button>
+          <el-button link type="primary" @click="openEdit(row)">修改</el-button>
           <el-button link @click="openDetail(row)">详情</el-button>
         </template>
       </el-table-column>
@@ -141,6 +142,10 @@
           </div>
         </div>
       </template>
+      <template #footer>
+        <el-button @click="detailVisible = false">关闭</el-button>
+        <el-button type="primary" @click="openEditFromDetail">修改</el-button>
+      </template>
     </el-dialog>
 
     <el-dialog v-model="reviewVisible" title="审核实名认证" width="480px">
@@ -160,6 +165,16 @@
         <el-button type="primary" :loading="submitting" @click="submitReview">提交</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="editVisible" title="修改实名信息" width="760px">
+      <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-width="100px">
+        <IdentityEditForm :model-value="editForm" />
+      </el-form>
+      <template #footer>
+        <el-button @click="editVisible = false">取消</el-button>
+        <el-button type="primary" :loading="editSubmitting" @click="submitEdit">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -168,11 +183,13 @@ import type { FormInstance, FormRules } from "element-plus"
 import type { TagType } from "@/types/common"
 import type { IIdentityInfo } from "@/types/api/user"
 import { ElMessage, ElMessageBox } from "element-plus"
-import { getIdentityListApi, reviewIdentityApi } from "@/api/user"
+import { getIdentityListApi, reviewIdentityApi, updateIdentityApi } from "@/api/user"
 import { IdentityStatus } from "@/types/api/user"
-import { identityGallery, identityGalleryUrls } from "@/utils/identity"
+import IdentityEditForm from "@/pages/user/components/identityEditForm.vue"
+import { emptyIdentityEdit, identityEditFrom, identityGallery, identityGalleryUrls } from "@/utils/identity"
 
 export default defineComponent({
+  components: { IdentityEditForm },
   setup() {
     const router = useRouter()
     const route = useRoute()
@@ -184,7 +201,10 @@ export default defineComponent({
     const current = ref<IIdentityInfo | null>(null)
     const detailVisible = ref(false)
     const reviewVisible = ref(false)
+    const editVisible = ref(false)
     const reviewFormRef = ref<FormInstance>()
+    const editFormRef = ref<FormInstance>()
+    const editSubmitting = ref(false)
     // 带 ?keyword= 进来的（用户管理里点「去实名审核」）状态默认放开到「全部」：
     // 这页平时是待审工作队列，但指名点到某个人时他多半已经审过了，
     // 还按待审过滤的话会显示成「查不到这个人」。
@@ -197,6 +217,11 @@ export default defineComponent({
     const reviewForm = reactive({ status: IdentityStatus.APPROVED as number, rejectReason: "" })
     const reviewRules: FormRules = {
       status: [{ required: true, message: "请选择审核结果", trigger: "change" }]
+    }
+    const editForm = reactive({ userId: "", ...emptyIdentityEdit() })
+    const editRules: FormRules = {
+      realName: [{ required: true, message: "请填写姓名", trigger: "blur" }],
+      idNumber: [{ required: true, message: "请填写证件号", trigger: "blur" }]
     }
 
     const statusLabel = (status: number) => {
@@ -246,6 +271,41 @@ export default defineComponent({
     const openDetail = (row: IIdentityInfo) => {
       current.value = row
       detailVisible.value = true
+    }
+
+    const openEdit = (row: IIdentityInfo) => {
+      current.value = row
+      Object.assign(editForm, { userId: row.userId, ...identityEditFrom(row) })
+      editVisible.value = true
+    }
+
+    const openEditFromDetail = () => {
+      if (!current.value) return
+      detailVisible.value = false
+      openEdit(current.value)
+    }
+
+    const submitEdit = async () => {
+      if (!editFormRef.value) return
+      await editFormRef.value.validate()
+      editSubmitting.value = true
+      const res = await updateIdentityApi({
+        userId: editForm.userId,
+        realName: editForm.realName.trim(),
+        idNumber: editForm.idNumber.trim(),
+        portraitUrl: editForm.portraitUrl,
+        emblemUrl: editForm.emblemUrl,
+        faceUrl: editForm.faceUrl,
+        faceFrames: editForm.faceFrames
+      })
+      editSubmitting.value = false
+      if (res.code === 0) {
+        ElMessage.success("实名信息已更新")
+        editVisible.value = false
+        fetchList()
+        return
+      }
+      ElMessage.error(res.msg || "修改失败")
     }
 
     const openReview = (row: IIdentityInfo) => {
@@ -354,10 +414,11 @@ export default defineComponent({
     return {
       IdentityStatus,
       loading, submitting, approvingId, batchApproving, pendingCount,
-      identityList, current, detailVisible, reviewVisible,
+      identityList, current, detailVisible, reviewVisible, editVisible,
       reviewFormRef, reviewForm, reviewRules, searchForm, pagination,
+      editFormRef, editForm, editRules, editSubmitting,
       statusLabel, statusTag, galleryOf, thumbsOf,
-      handleSearch, handleReset, onPageChange, openDetail, openReview, quickApprove, batchApprove, submitReview, goUser
+      handleSearch, handleReset, onPageChange, openDetail, openEdit, openEditFromDetail, openReview, quickApprove, batchApprove, submitReview, submitEdit, goUser
     }
   }
 })
@@ -413,5 +474,6 @@ export default defineComponent({
 
     .el-image { width: 200px; height: 130px; border: 1px solid #ebeef5; border-radius: 4px; }
   }
+
 }
 </style>
