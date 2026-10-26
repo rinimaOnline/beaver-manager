@@ -67,6 +67,9 @@
         </template>
       </el-table-column>
       <el-table-column prop="realName" label="姓名" width="110" />
+      <el-table-column label="证件类型" width="120">
+        <template #default="{ row }">{{ idTypeLabel(row.idType) }}</template>
+      </el-table-column>
       <el-table-column prop="idNumber" label="证件号" min-width="180" />
       <el-table-column label="影像" width="200">
         <template #default="{ row }">
@@ -128,6 +131,7 @@
           <el-descriptions-item label="用户ID">{{ current.userId }}</el-descriptions-item>
           <el-descriptions-item label="昵称">{{ current.nickName || '-' }}</el-descriptions-item>
           <el-descriptions-item label="姓名">{{ current.realName }}</el-descriptions-item>
+          <el-descriptions-item label="证件类型">{{ idTypeLabel(current.idType) }}</el-descriptions-item>
           <el-descriptions-item label="证件号">{{ current.idNumber }}</el-descriptions-item>
           <el-descriptions-item label="状态">{{ statusLabel(current.status) }}</el-descriptions-item>
           <el-descriptions-item label="提交时间">{{ current.submitTime }}</el-descriptions-item>
@@ -186,7 +190,7 @@ import { ElMessage, ElMessageBox } from "element-plus"
 import { getIdentityListApi, reviewIdentityApi, updateIdentityApi } from "@/api/user"
 import { IdentityStatus } from "@/types/api/user"
 import IdentityEditForm from "@/pages/user/components/identityEditForm.vue"
-import { emptyIdentityEdit, identityEditFrom, identityGallery, identityGalleryUrls } from "@/utils/identity"
+import { emptyIdentityEdit, identityEditFrom, identityGallery, identityGalleryUrls, idTypeLabel } from "@/utils/identity"
 
 export default defineComponent({
   components: { IdentityEditForm },
@@ -293,6 +297,7 @@ export default defineComponent({
         userId: editForm.userId,
         realName: editForm.realName.trim(),
         idNumber: editForm.idNumber.trim(),
+        idType: editForm.idType,
         portraitUrl: editForm.portraitUrl,
         emblemUrl: editForm.emblemUrl,
         faceUrl: editForm.faceUrl,
@@ -417,7 +422,7 @@ export default defineComponent({
       identityList, current, detailVisible, reviewVisible, editVisible,
       reviewFormRef, reviewForm, reviewRules, searchForm, pagination,
       editFormRef, editForm, editRules, editSubmitting,
-      statusLabel, statusTag, galleryOf, thumbsOf,
+      statusLabel, statusTag, idTypeLabel, galleryOf, thumbsOf,
       handleSearch, handleReset, onPageChange, openDetail, openEdit, openEditFromDetail, openReview, quickApprove, batchApprove, submitReview, submitEdit, goUser
     }
   }

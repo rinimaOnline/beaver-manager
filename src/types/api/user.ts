@@ -42,6 +42,8 @@ export interface IUserInfo {
   realName: string
   /** 身份证号，没提交过为空。删号时会被换成 void_xxx 占位串 */
   idNumber: string
+  /** 证件类型：1居民身份证 2香港 3澳门 4台湾 */
+  idType: number
   /** 身份证人像面 */
   portraitUrl: string
   /** 身份证国徽面 */
@@ -161,6 +163,7 @@ export interface IIdentityInfo {
   avatar: string
   realName: string
   idNumber: string
+  idType: number
   portraitUrl: string
   emblemUrl: string
   faceUrl: string
@@ -202,6 +205,7 @@ export interface IUpdateIdentityReq {
   userId: string
   realName: string
   idNumber: string
+  idType?: number
   portraitUrl?: string
   emblemUrl?: string
   faceUrl?: string

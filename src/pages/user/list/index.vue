@@ -226,9 +226,9 @@
               </el-button>
             </template>
           </el-table-column>
-          <el-table-column label="身份证号" width="190" align="center" show-overflow-tooltip>
+          <el-table-column label="证件号" width="190" align="center" show-overflow-tooltip>
             <template #default="{ row }">
-              {{ row.idNumber || "—" }}
+              {{ row.idNumber ? `${idTypeLabel(row.idType)} ${row.idNumber}` : "—" }}
             </template>
           </el-table-column>
           <el-table-column prop="source" label="来源" width="120" align="center">
@@ -441,7 +441,8 @@
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="姓名">{{ identityRow.realName || "—" }}</el-descriptions-item>
-          <el-descriptions-item label="身份证号">{{ identityRow.idNumber || "—" }}</el-descriptions-item>
+          <el-descriptions-item label="证件类型">{{ idTypeLabel(identityRow.idType) }}</el-descriptions-item>
+          <el-descriptions-item label="证件号">{{ identityRow.idNumber || "—" }}</el-descriptions-item>
         </el-descriptions>
         <div class="identity-gallery">
           <div v-for="item in identityGalleryOf(identityRow)" :key="item.url" class="identity-gallery__item">
@@ -481,7 +482,7 @@ import {
   updateUserApi
 } from "@/api/user"
 import IdentityEditForm from "@/pages/user/components/identityEditForm.vue"
-import { emptyIdentityEdit, identityEditFilled, identityEditFrom, identityGallery, identityGalleryUrls } from "@/utils/identity"
+import { emptyIdentityEdit, identityEditFilled, identityEditFrom, identityGallery, identityGalleryUrls, idTypeLabel } from "@/utils/identity"
 
 export default defineComponent({
   components: { IdentityEditForm },
@@ -847,6 +848,7 @@ export default defineComponent({
           userId: userForm.id,
           realName,
           idNumber,
+          idType: identityForm.idType,
           portraitUrl: identityForm.portraitUrl,
           emblemUrl: identityForm.emblemUrl,
           faceUrl: identityForm.faceUrl,
@@ -962,6 +964,7 @@ export default defineComponent({
       getStatusText,
       getIdentityText,
       getIdentityType,
+      idTypeLabel,
       showIdentityDialog,
       identityRow,
       hasIdentityMedia,

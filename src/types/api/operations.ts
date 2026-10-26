@@ -35,6 +35,8 @@ export interface IUserOpsProfileInfo {
   realName: string
   /** 身份证号，没提交过为空 */
   idNumber: string
+  /** 证件类型：1居民身份证 2香港 3澳门 4台湾 */
+  idType: number
 }
 
 export interface IUserOpsFriendItem {

@@ -19,8 +19,24 @@
  * beaver-manager-header-v1
  */
 
+export const ID_TYPE_OPTIONS = [
+  { code: 1, label: "居民身份证", front: "人像面", back: "国徽面" },
+  { code: 2, label: "香港身份证", front: "正面", back: "背面" },
+  { code: 3, label: "澳门身份证", front: "正面", back: "背面" },
+  { code: 4, label: "台湾身分证", front: "正面", back: "背面" }
+] as const
+
+export function idTypeLabel(code?: number) {
+  return ID_TYPE_OPTIONS.find(item => item.code === code)?.label || "居民身份证"
+}
+
+export function idTypeMeta(code?: number) {
+  return ID_TYPE_OPTIONS.find(item => item.code === code) || ID_TYPE_OPTIONS[0]
+}
+
 /** 实名影像的来源字段，「实名审核」和「用户管理」两处的行对象都满足 */
 export interface IIdentityMedia {
+  idType?: number
   portraitUrl?: string
   emblemUrl?: string
   faceUrl?: string
@@ -40,8 +56,9 @@ export interface IIdentityGalleryItem {
  */
 export function identityGallery(row: IIdentityMedia): IIdentityGalleryItem[] {
   const items: IIdentityGalleryItem[] = []
-  if (row.portraitUrl) items.push({ url: row.portraitUrl, label: "身份证人像面" })
-  if (row.emblemUrl) items.push({ url: row.emblemUrl, label: "身份证国徽面" })
+  const meta = idTypeMeta(row.idType)
+  if (row.portraitUrl) items.push({ url: row.portraitUrl, label: meta.front })
+  if (row.emblemUrl) items.push({ url: row.emblemUrl, label: meta.back })
   const frames = row.faceFrames?.length ? row.faceFrames : (row.faceUrl ? [row.faceUrl] : [])
   frames.forEach((url, index) => items.push({ url, label: `活体帧 ${index + 1}` }))
   return items
@@ -55,6 +72,7 @@ export function identityGalleryUrls(row: IIdentityMedia): string[] {
 export interface IIdentityEditValue {
   realName: string
   idNumber: string
+  idType: number
   portraitUrl: string
   emblemUrl: string
   faceUrl: string
@@ -65,6 +83,7 @@ export function emptyIdentityEdit(): IIdentityEditValue {
   return {
     realName: "",
     idNumber: "",
+    idType: 1,
     portraitUrl: "",
     emblemUrl: "",
     faceUrl: "",
@@ -72,11 +91,12 @@ export function emptyIdentityEdit(): IIdentityEditValue {
   }
 }
 
-export function identityEditFrom(row: IIdentityMedia & { realName?: string, idNumber?: string }): IIdentityEditValue {
+export function identityEditFrom(row: IIdentityMedia & { realName?: string, idNumber?: string, idType?: number }): IIdentityEditValue {
   const frames = (row.faceFrames || []).filter(url => !!url)
   return {
     realName: row.realName || "",
     idNumber: row.idNumber || "",
+    idType: row.idType || 1,
     portraitUrl: row.portraitUrl || "",
     emblemUrl: row.emblemUrl || "",
     faceUrl: row.faceUrl || "",

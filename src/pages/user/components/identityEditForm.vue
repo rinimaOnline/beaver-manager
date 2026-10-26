@@ -23,13 +23,25 @@
   <div class="identity-edit-form">
     <el-row :gutter="20">
       <el-col :span="12">
-        <el-form-item label="实名姓名" prop="realName">
-          <el-input v-model="form.realName" maxlength="15" placeholder="2-15 个汉字" />
+        <el-form-item label="证件类型" prop="idType">
+          <el-select v-model="form.idType" style="width: 100%">
+            <el-option
+              v-for="item in ID_TYPE_OPTIONS"
+              :key="item.code"
+              :label="item.label"
+              :value="item.code"
+            />
+          </el-select>
         </el-form-item>
       </el-col>
       <el-col :span="12">
-        <el-form-item label="身份证号" prop="idNumber">
-          <el-input v-model="form.idNumber" maxlength="18" placeholder="15 或 18 位证件号" />
+        <el-form-item label="实名姓名" prop="realName">
+          <el-input v-model="form.realName" maxlength="40" placeholder="证件上的姓名" />
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="证件号" prop="idNumber">
+          <el-input v-model="form.idNumber" maxlength="32" :placeholder="idNumberHint" />
         </el-form-item>
       </el-col>
     </el-row>
@@ -91,6 +103,7 @@
 <script lang="ts">
 import type { PropType } from "vue"
 import type { IIdentityEditValue } from "@/utils/identity"
+import { ID_TYPE_OPTIONS, idTypeMeta } from "@/utils/identity"
 import { ElMessage } from "element-plus"
 import { Plus } from "@element-plus/icons-vue"
 import { uploadFile } from "@/api/upload"
@@ -111,11 +124,22 @@ export default defineComponent({
   setup(props) {
     const form = props.modelValue
     const uploadingKey = ref("")
-    const singleSlots: { key: SingleKey, label: string }[] = [
-      { key: "portraitUrl", label: "人像面" },
-      { key: "emblemUrl", label: "国徽面" },
-      { key: "faceUrl", label: "活体正脸" }
-    ]
+    const idNumberHint = computed(() => {
+      switch (form.idType) {
+        case 2: return "如 A123456(3)"
+        case 3: return "7 或 8 位数字"
+        case 4: return "1 位字母 + 9 位数字"
+        default: return "15 或 18 位证件号"
+      }
+    })
+    const singleSlots = computed(() => {
+      const meta = idTypeMeta(form.idType)
+      return [
+        { key: "portraitUrl" as SingleKey, label: meta.front },
+        { key: "emblemUrl" as SingleKey, label: meta.back },
+        { key: "faceUrl" as SingleKey, label: "活体正脸" }
+      ]
+    })
 
     const pickImage = async (): Promise<string> => {
       const input = document.createElement("input")
@@ -183,6 +207,8 @@ export default defineComponent({
     return {
       form,
       uploadingKey,
+      ID_TYPE_OPTIONS,
+      idNumberHint,
       singleSlots,
       uploadSingle,
       replaceFrame,
