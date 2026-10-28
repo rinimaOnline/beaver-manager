@@ -32,7 +32,8 @@ import type {
   IPayoutOrder,
   IPayoutOrderQuery,
   ITestPayoutReq,
-  IWalletConfigItem
+  IWalletConfigItem,
+  IWithdrawOrdersRes
 } from "@/types/api/finance"
 import config from "@/config/env"
 import { ajax } from "@/utils/request"
@@ -156,5 +157,23 @@ export function saveWalletConfigApi(data: { items: IWalletConfigItem[] }) {
     method: "POST",
     url: `${config.baseAPI}/admin/wallet/v1/config/save`,
     data
+  })
+}
+
+/** 提现审核列表。status：1 待审核 / 5 打款中 / 2 已通过；列表不回完整卡号 */
+export function getWithdrawOrdersApi(params: { status?: number, page?: number, limit?: number }) {
+  return ajax<IWithdrawOrdersRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/wallet/v1/withdraw/orders`,
+    params
+  })
+}
+
+/** 导出当前筛选下的提现单，含解密后的完整卡号，供财务线下打款 */
+export function exportWithdrawOrdersApi(params: { status?: number }) {
+  return ajax<IWithdrawOrdersRes>({
+    method: "GET",
+    url: `${config.baseAPI}/admin/wallet/v1/withdraw/export`,
+    params
   })
 }

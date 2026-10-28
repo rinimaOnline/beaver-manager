@@ -284,3 +284,29 @@ export interface IWalletConfigItem {
   /** 仅列表返回：true 表示未落库，value 是服务端缺省值 */
   isDefault?: boolean
 }
+
+/** 提现审核行。cardNo 只在导出接口回明文，列表只有尾号 */
+export interface IWithdrawOrderItem {
+  orderId: string
+  userId: string
+  amount: number
+  fee: number
+  realAmount: number
+  status: number
+  holderName: string
+  bankName: string
+  bankCode: string
+  cardNo?: string
+  cardLast4: string
+  cardType: number
+  createdAt: string
+  reviewedBy: string
+  reviewedAt: string
+  failReason: string
+}
+
+export interface IWithdrawOrdersRes {
+  total: number
+  list: IWithdrawOrderItem[]
+  truncated?: boolean
+}

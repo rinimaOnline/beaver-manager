@@ -100,7 +100,7 @@
           </el-card>
         </el-col>
         <el-col :span="6">
-          <el-card shadow="hover" class="finance-overview__clickable" @click="go('/safety/wallet')">
+          <el-card shadow="hover" class="finance-overview__clickable" @click="go('/finance/withdraw')">
             <el-statistic title="待审提现" :value="stats.pendingWithdrawCount" />
           </el-card>
         </el-col>

@@ -51,18 +51,13 @@
       </el-table-column>
     </el-table>
 
-    <h3>待审订单</h3>
+    <h3>待审充值</h3>
+    <p class="safety-wallet__hint">
+      提现审核已移到
+      <router-link to="/finance/withdraw">财务中心 → 提现审核</router-link>
+      ，这里只审人工充值。
+    </p>
     <div class="safety-wallet__filter">
-      <el-radio-group v-model="orderTypeFilter" @change="reloadOrders">
-        <el-radio-button :value="3">提现</el-radio-button>
-        <el-radio-button :value="2">充值</el-radio-button>
-      </el-radio-group>
-      <!-- 打款中 = 审核已通过、代付单已建、资金仍冻结、等通道回调。
-           回调丢了不会自动超时处理，要由人在这里按通道后台的实际结果收口。 -->
-      <el-radio-group v-if="orderTypeFilter === 3" v-model="withdrawStatusFilter" @change="reloadOrders">
-        <el-radio-button :value="1">待审核</el-radio-button>
-        <el-radio-button :value="5">打款中</el-radio-button>
-      </el-radio-group>
       <el-button :loading="ordersLoading" @click="reloadOrders">刷新</el-button>
     </div>
     <el-table v-loading="ordersLoading" :data="orders" border stripe height="100%">
@@ -74,31 +69,12 @@
         <template #default="{ row }">{{ fenToYuan(row.amount) }} 元</template>
       </el-table-column>
       <el-table-column prop="fromUser" label="用户" width="140" />
-      <!-- 提现必须核对收款账户，否则审核人只能看到一个 userId 和金额 -->
-      <el-table-column v-if="orderTypeFilter === 3" label="收款账户" min-width="220">
-        <template #default="{ row }">
-          <div v-if="row.cardLast4 || row.cardHolderName">
-            <div>{{ row.cardHolderName || "—" }}</div>
-            <div class="safety-wallet__card-sub">
-              {{ row.cardBankName || "未知银行" }} 尾号 {{ row.cardLast4 || "----" }}
-            </div>
-          </div>
-          <el-text v-else type="warning" size="small">卡信息缺失</el-text>
-        </template>
-      </el-table-column>
       <el-table-column prop="channel" label="渠道" width="120" />
-      <el-table-column v-if="isPayingView" label="审核通过时间" width="170">
-        <template #default="{ row }">{{ formatTime(row.reviewedAt) }}</template>
-      </el-table-column>
       <el-table-column label="操作" width="200" fixed="right">
         <template #default="{ row }">
           <template v-if="canReview(row)">
             <el-button link type="primary" @click="review(row, true)">通过</el-button>
             <el-button link type="danger" @click="review(row, false)">驳回</el-button>
-          </template>
-          <template v-else-if="isPayingWithdraw(row)">
-            <el-button link type="primary" @click="review(row, true)">确认已到账</el-button>
-            <el-button link type="danger" @click="review(row, false)">打款失败退回</el-button>
           </template>
         </template>
       </el-table-column>
@@ -125,10 +101,9 @@ import {
   getAdminWalletAccountApi,
   getAdminWalletLedgersApi,
   getAdminWalletOrdersApi,
-  reviewAdminRechargeApi,
-  reviewAdminWithdrawApi
+  reviewAdminRechargeApi
 } from "@/api/wallet"
-import { computed, defineComponent, onMounted, ref } from "vue"
+import { defineComponent, onMounted, ref } from "vue"
 
 function yuanToFen(raw: string): number {
   const s = raw.trim()
@@ -159,11 +134,6 @@ export default defineComponent({
     const ordersPage = ref(1)
     const ordersLimit = ref(20)
     const ordersTotal = ref(0)
-    // 提现是唯一走人工审核的环节，默认停在提现 tab
-    const orderTypeFilter = ref(3)
-    // 提现子筛选：1 待审核 / 5 打款中（代付已发起、等回调）
-    const withdrawStatusFilter = ref(1)
-    const isPayingView = computed(() => orderTypeFilter.value === 3 && withdrawStatusFilter.value === 5)
     const creditYuan = ref("")
     const creditRemark = ref("")
 
@@ -196,8 +166,8 @@ export default defineComponent({
       ordersLoading.value = true
       try {
         const res = await getAdminWalletOrdersApi({
-          type: orderTypeFilter.value,
-          status: orderTypeFilter.value === 3 ? withdrawStatusFilter.value : 1,
+          type: 2,
+          status: 1,
           page: ordersPage.value,
           limit: ordersLimit.value
         })
@@ -218,11 +188,7 @@ export default defineComponent({
     }
 
     const canReview = (row: IAdminWalletOrderItem) =>
-      row.status === 1 && (row.orderType === 2 || row.orderType === 3)
-
-    /** 提现「打款中」（FundStatusPaying=5）：服务端 reviewWithdraw 对它的语义是人工收口 */
-    const isPayingWithdraw = (row: IAdminWalletOrderItem) =>
-      row.status === 5 && row.orderType === 3
+      row.status === 1 && row.orderType === 2
 
     const credit = async () => {
       if (!userId.value) {
@@ -268,56 +234,11 @@ export default defineComponent({
     }
 
     const review = async (row: IAdminWalletOrderItem, pass: boolean) => {
-      const isWithdraw = row.orderType === 3
       let remark = ""
-
-      if (isPayingWithdraw(row)) {
-        // 打款中的单子：通过 = 已在通道后台核实到账，按成功扣减冻结；
-        // 驳回 = 通道确认失败，解冻退回用户。两个动作都不可逆，先让人确认。
-        if (pass) {
-          await ElMessageBox.confirm(
-            `确认这笔代付已实际到账？\n金额：${fenToYuan(row.amount)} 元\n用户：${row.fromUser}\n`
-            + `收款卡：${row.cardBankName || "未知银行"} 尾号 ${row.cardLast4 || "----"}\n\n`
-            + `确认后将从冻结中扣减并把提现标为成功，请先在代付通道后台核对。`,
-            "人工确认到账",
-            { type: "warning", confirmButtonText: "已核实，确认到账", showClose: false }
-          )
-          const { value } = await ElMessageBox.prompt("备注（可选，建议填通道流水号）", "备注", {
-            inputValue: "",
-            confirmButtonText: "提交"
-          })
-          remark = value || ""
-        } else {
-          const { value } = await ElMessageBox.prompt(
-            "失败原因（必填，会展示给用户）。确认后冻结资金退回用户余额。",
-            "打款失败退回",
-            {
-              inputValidator: (input: string) => (input && input.trim() ? true : "请填写失败原因"),
-              inputErrorMessage: "请填写失败原因"
-            }
-          )
-          remark = value.trim()
-        }
-        const res = await reviewAdminWithdrawApi({ orderId: row.orderId, pass, remark })
-        if (res.code !== 0) {
-          ElMessage.error(res.msg || "操作失败")
-          return
-        }
-        ElMessage.success(pass ? "已确认到账" : "已退回用户")
-        loadOrders()
-        if (userId.value)
-          loadAccount()
-        return
-      }
-
       if (pass) {
-        // 提现通过意味着真的要打款出去，先让审核人确认收款账户再放行
-        const payee = isWithdraw
-          ? `\n收款人：${row.cardHolderName || "未知"}\n收款卡：${row.cardBankName || "未知银行"} 尾号 ${row.cardLast4 || "----"}`
-          : ""
         await ElMessageBox.confirm(
-          `确认通过这笔${isWithdraw ? "提现" : "充值"}？\n金额：${fenToYuan(row.amount)} 元\n用户：${row.fromUser}${payee}`,
-          isWithdraw ? "通过提现" : "通过充值",
+          `确认通过这笔充值？\n金额：${fenToYuan(row.amount)} 元\n用户：${row.fromUser}`,
+          "通过充值",
           { type: "warning", confirmButtonText: "确认通过", showClose: false }
         )
         const { value } = await ElMessageBox.prompt("通过备注（可选）", "备注", {
@@ -326,7 +247,6 @@ export default defineComponent({
         })
         remark = value || ""
       } else {
-        // 服务端强制要求驳回原因，前端提前拦住空值，省一次失败往返
         const { value } = await ElMessageBox.prompt("驳回原因（必填，会展示给用户）", "驳回", {
           inputValidator: (input: string) => (input && input.trim() ? true : "请填写驳回原因"),
           inputErrorMessage: "请填写驳回原因"
@@ -334,8 +254,7 @@ export default defineComponent({
         remark = value.trim()
       }
 
-      const api = row.orderType === 2 ? reviewAdminRechargeApi : reviewAdminWithdrawApi
-      const res = await api({ orderId: row.orderId, pass, remark })
+      const res = await reviewAdminRechargeApi({ orderId: row.orderId, pass, remark })
       if (res.code !== 0) {
         ElMessage.error(res.msg || "审核失败")
         return
@@ -358,15 +277,11 @@ export default defineComponent({
       ordersPage,
       ordersLimit,
       ordersTotal,
-      orderTypeFilter,
-      withdrawStatusFilter,
-      isPayingView,
       creditYuan,
       creditRemark,
       fenToYuan,
       formatTime,
       canReview,
-      isPayingWithdraw,
       loadAccount,
       loadOrders,
       reloadOrders,
@@ -393,8 +308,9 @@ export default defineComponent({
   align-items: center;
   margin-bottom: 12px;
 }
-.safety-wallet__card-sub {
-  font-size: 12px;
+.safety-wallet__hint {
+  margin: 0 0 12px;
+  font-size: 13px;
   color: var(--el-text-color-secondary);
 }
 .safety-wallet__pager {

@@ -173,6 +173,11 @@ const router = createRouter({
               component: () => import("@/pages/finance/overview.vue")
             },
             {
+              path: "withdraw",
+              name: "提现审核",
+              component: () => import("@/pages/finance/withdraw.vue")
+            },
+            {
               path: "payment-channels",
               name: "充值通道",
               component: () => import("@/pages/finance/payment-channels.vue")

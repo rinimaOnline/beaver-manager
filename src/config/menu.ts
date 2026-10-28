@@ -136,6 +136,7 @@ export const menuConfig: MenuItem[] = [
     icon: Money,
     children: [
       { path: "/finance/overview", title: "资金概览", icon: DataAnalysis, module: "wallet" },
+      { path: "/finance/withdraw", title: "提现审核", icon: Tickets, module: "wallet" },
       { path: "/finance/payment-channels", title: "充值通道", icon: CreditCard, module: "wallet" },
       { path: "/finance/payout-channels", title: "代付通道", icon: Wallet, module: "wallet" },
       { path: "/finance/payment-orders", title: "支付订单", icon: Tickets, module: "wallet" },

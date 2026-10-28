@@ -146,7 +146,7 @@ const GROUPS: ConfigGroup[] = [
       { key: "withdraw_min_fen", label: "提现最小金额", kind: "yuan" },
       { key: "withdraw_max_fen", label: "提现最大金额", kind: "yuan", tip: "0 表示不限" },
       { key: "withdraw_fee_rate_bps", label: "提现费率", kind: "percent", tip: "按提现金额收取，实际到账 = 金额 - 手续费" },
-      { key: "withdraw_manual_review", label: "提现需人工审核", kind: "switch", tip: "开启后提现单进入「安全合规 → 钱包」待审列表" },
+      { key: "withdraw_manual_review", label: "提现需人工审核", kind: "switch", tip: "开启后提现单进入「财务中心 → 提现审核」待审列表" },
       { key: "withdraw_time_start", label: "提现开放开始时间", kind: "time" },
       { key: "withdraw_time_end", label: "提现开放结束时间", kind: "time", tip: "开始与结束均留空表示全天开放" },
       { key: "withdraw_payout_channel_code", label: "提现出款代付通道", kind: "payoutChannel", tip: "留空表示人工线下打款；也可手动输入通道编码" },
