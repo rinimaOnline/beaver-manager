@@ -126,8 +126,7 @@ export const menuConfig: MenuItem[] = [
       { path: "/safety/cases", title: "处置工单", icon: Tickets, module: "moderation" },
       { path: "/safety/sensitive-words", title: "敏感词库", icon: Filter, module: "moderation" },
       { path: "/safety/audit-logs", title: "操作审计", icon: Document, module: "moderation" },
-      { path: "/safety/appeals", title: "申诉", icon: Message, module: "moderation" },
-      { path: "/safety/wallet", title: "钱包", icon: Lock, module: "wallet" }
+      { path: "/safety/appeals", title: "申诉", icon: Message, module: "moderation" }
     ]
   },
   {

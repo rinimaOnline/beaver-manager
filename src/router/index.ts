@@ -155,11 +155,6 @@ const router = createRouter({
               path: "audit-logs",
               name: "操作审计",
               component: () => import("@/pages/safety/auditLogs/index.vue")
-            },
-            {
-              path: "wallet",
-              name: "钱包",
-              component: () => import("@/pages/safety/wallet/index.vue")
             }
           ]
         },

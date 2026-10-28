@@ -206,7 +206,7 @@ export default defineComponent({
         const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "")
         const statusName = STATUS_LABEL[statusFilter.value] || "提现"
         downloadExcel(
-          `提现打款_${statusName}_${stamp}.xls`,
+          `提现打款_${statusName}_${stamp}.xlsx`,
           "提现打款",
           [
             "提现单号",
