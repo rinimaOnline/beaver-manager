@@ -239,23 +239,31 @@
             </template>
           </el-table-column>
           <el-table-column prop="createTime" label="创建时间"  />
-          <el-table-column label="操作" fixed="right" align="center">
+          <el-table-column label="操作" width="220" fixed="right" align="center">
             <template #default="{ row }">
-              <el-button size="small" type="success" @click="openUserProfile(row.id)">
-                用户360
-              </el-button>
-              <el-button size="small" type="primary" @click="handleEdit(row)">
-                <el-icon><Edit /></el-icon>
-                编辑
-              </el-button>
-              <el-button size="small" type="warning" @click="handleResetPassword(row)">
-                <el-icon><Key /></el-icon>
-                重置密码
-              </el-button>
-              <el-button size="small" type="danger" @click="handleDelete(row)">
-                <el-icon><Delete /></el-icon>
-                删除
-              </el-button>
+              <div class="row-actions">
+                <el-button link type="success" @click="openUserProfile(row.id)">
+                  用户360
+                </el-button>
+                <el-button link type="primary" @click="handleEdit(row)">
+                  编辑
+                </el-button>
+                <el-dropdown trigger="click" @command="(cmd) => handleRowCommand(cmd, row)">
+                  <el-button link type="primary">
+                    更多
+                    <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+                  </el-button>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item command="resetPassword">重置登录密码</el-dropdown-item>
+                      <el-dropdown-item command="resetPayPassword">重置交易密码</el-dropdown-item>
+                      <el-dropdown-item command="delete" divided>
+                        <span class="row-actions__danger">删除</span>
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -428,6 +436,75 @@
       </template>
     </el-dialog>
 
+    <!-- 重置交易密码弹窗 -->
+    <el-dialog
+      title="重置交易密码"
+      v-model="showPayPasswordDialog"
+      width="450px"
+      :close-on-click-modal="false"
+    >
+      <el-alert
+        type="info"
+        :closable="false"
+        show-icon
+        title="支付密码为 6 位数字。重置后请线下告知用户，并提醒尽快自行修改。"
+        style="margin-bottom: 16px"
+      />
+      <el-form
+        ref="payPasswordFormRef"
+        :model="payPasswordForm"
+        :rules="payPasswordFormRules"
+        label-width="100px"
+      >
+        <el-form-item label="新密码" prop="newPassword">
+          <el-input
+            v-model="payPasswordForm.newPassword"
+            type="password"
+            maxlength="6"
+            placeholder="6 位数字"
+            show-password
+            inputmode="numeric"
+          >
+            <template #prefix>
+              <el-icon><Lock /></el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="确认密码" prop="confirmPassword">
+          <el-input
+            v-model="payPasswordForm.confirmPassword"
+            type="password"
+            maxlength="6"
+            placeholder="再次输入 6 位数字"
+            show-password
+            inputmode="numeric"
+          >
+            <template #prefix>
+              <el-icon><Lock /></el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input
+            v-model="payPasswordForm.remark"
+            type="textarea"
+            :rows="2"
+            maxlength="200"
+            placeholder="可选，写入操作审计"
+          />
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showPayPasswordDialog = false">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="handlePayPasswordSubmit">
+            确定
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
+
     <!-- 实名资料：证件影像和活体帧不进表格，缩略图会把行拉高，一页十几个人还要同时拉几十张图 -->
     <el-dialog v-model="showIdentityDialog" title="实名资料" width="720px">
       <template v-if="identityRow">
@@ -478,6 +555,7 @@ import {
   deleteUserApi,
   getUserListApi,
   resetUserPasswordApi,
+  resetUserPayPasswordApi,
   updateIdentityApi,
   updateUserApi
 } from "@/api/user"
@@ -514,6 +592,7 @@ export default defineComponent({
     // 弹窗控制
     const showCreateDialog = ref(false)
     const showPasswordDialog = ref(false)
+    const showPayPasswordDialog = ref(false)
     const isEdit = ref(false)
 
     // 用户表单
@@ -537,9 +616,18 @@ export default defineComponent({
       confirmPassword: ""
     })
 
+    // 交易密码表单
+    const payPasswordForm = reactive({
+      userId: "",
+      newPassword: "",
+      confirmPassword: "",
+      remark: ""
+    })
+
     // 表单引用
     const userFormRef = ref<FormInstance | null>(null)
     const passwordFormRef = ref<FormInstance | null>(null)
+    const payPasswordFormRef = ref<FormInstance | null>(null)
 
     // 表单验证规则
     // 邮箱/手机号二选一：两个都空才报错，所以校验挂在两边、互相看对方
@@ -586,6 +674,26 @@ export default defineComponent({
         {
           validator: (_rule: any, value: any, callback: any) => {
             if (value !== passwordForm.newPassword) {
+              callback(new Error("两次输入的密码不一致"))
+            } else {
+              callback()
+            }
+          },
+          trigger: "blur"
+        }
+      ]
+    }
+
+    const payPasswordFormRules = {
+      newPassword: [
+        { required: true, message: "请输入新交易密码", trigger: "blur" },
+        { pattern: /^\d{6}$/, message: "交易密码须为6位数字", trigger: "blur" }
+      ],
+      confirmPassword: [
+        { required: true, message: "请确认交易密码", trigger: "blur" },
+        {
+          validator: (_rule: any, value: any, callback: any) => {
+            if (value !== payPasswordForm.newPassword) {
               callback(new Error("两次输入的密码不一致"))
             } else {
               callback()
@@ -781,6 +889,26 @@ export default defineComponent({
       showPasswordDialog.value = true
     }
 
+    const handleResetPayPassword = (row: IUserInfo) => {
+      resetPayPasswordForm()
+      payPasswordForm.userId = row.id
+      showPayPasswordDialog.value = true
+    }
+
+    const handleRowCommand = (command: string, row: IUserInfo) => {
+      if (command === "resetPassword") {
+        handleResetPassword(row)
+        return
+      }
+      if (command === "resetPayPassword") {
+        handleResetPayPassword(row)
+        return
+      }
+      if (command === "delete") {
+        handleDelete(row)
+      }
+    }
+
     const handleBatchDelete = async () => {
       await ElMessageBox.confirm(`确认删除选中的 ${selectedUserIds.value.length} 个用户？`, "批量删除", { type: "warning" })
       const response = await batchDeleteUsersApi({ ids: selectedUserIds.value })
@@ -884,6 +1012,24 @@ export default defineComponent({
       }
     }
 
+    const handlePayPasswordSubmit = async () => {
+      if (!payPasswordFormRef.value) return
+      await payPasswordFormRef.value.validate()
+      submitting.value = true
+      const response = await resetUserPayPasswordApi({
+        userId: payPasswordForm.userId,
+        newPassword: payPasswordForm.newPassword,
+        remark: payPasswordForm.remark.trim() || undefined
+      })
+      submitting.value = false
+      if (response.code === 0) {
+        ElMessage.success("交易密码已重置")
+        showPayPasswordDialog.value = false
+      } else {
+        ElMessage.error(response.msg || "交易密码重置失败")
+      }
+    }
+
     const resetUserForm = () => {
       Object.assign(userForm, {
         id: "",
@@ -908,6 +1054,15 @@ export default defineComponent({
       })
     }
 
+    const resetPayPasswordForm = () => {
+      Object.assign(payPasswordForm, {
+        userId: "",
+        newPassword: "",
+        confirmPassword: "",
+        remark: ""
+      })
+    }
+
     // 监听弹窗关闭
     watch(showCreateDialog, (val) => {
       if (!val) {
@@ -920,6 +1075,13 @@ export default defineComponent({
       if (!val) {
         resetPasswordForm()
         passwordFormRef.value?.resetFields()
+      }
+    })
+
+    watch(showPayPasswordDialog, (val) => {
+      if (!val) {
+        resetPayPasswordForm()
+        payPasswordFormRef.value?.resetFields()
       }
     })
 
@@ -951,14 +1113,18 @@ export default defineComponent({
       pagination,
       showCreateDialog,
       showPasswordDialog,
+      showPayPasswordDialog,
       isEdit,
       userForm,
       identityForm,
       passwordForm,
+      payPasswordForm,
       userFormRef,
       passwordFormRef,
+      payPasswordFormRef,
       userFormRules,
       passwordFormRules,
+      payPasswordFormRules,
       fetchUserList,
       getStatusType,
       getStatusText,
@@ -986,14 +1152,18 @@ export default defineComponent({
       handleEdit,
       handleDelete,
       handleResetPassword,
+      handleResetPayPassword,
+      handleRowCommand,
       handleBatchDelete,
       handleBatchDisable,
       handleBatchEnable,
       handleBatchUpdateStatus,
       handleSubmit,
       handlePasswordSubmit,
+      handlePayPasswordSubmit,
       resetUserForm,
       resetPasswordForm,
+      resetPayPasswordForm,
       openUserProfile
     }
   }
@@ -1132,6 +1302,19 @@ export default defineComponent({
   margin-left: 12px;
   color: var(--el-text-color-secondary);
   font-size: 12px;
+}
+
+.row-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2px 4px;
+  white-space: nowrap;
+
+  &__danger {
+    color: var(--el-color-danger);
+  }
 }
 
 </style>

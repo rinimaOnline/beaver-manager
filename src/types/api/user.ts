@@ -146,6 +146,15 @@ export interface IResetUserPasswordReq {
 // 重置用户密码响应
 export interface IResetUserPasswordRes {}
 
+/** 重置用户支付密码（交易密码） */
+export interface IResetUserPayPasswordReq {
+  userId: string
+  newPassword: string
+  remark?: string
+}
+
+export interface IResetUserPayPasswordRes {}
+
 // 批量更新用户状态请求参数
 export interface IBatchUpdateUserStatusReq {
   ids: string[]

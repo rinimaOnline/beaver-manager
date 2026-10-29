@@ -35,6 +35,8 @@ import type {
   IReviewIdentityReq,
   IReviewIdentityRes,
   IResetUserPasswordReq,
+  IResetUserPayPasswordReq,
+  IResetUserPayPasswordRes,
   IUpdateIdentityReq,
   IUpdateIdentityRes,
   IResetUserPasswordRes,
@@ -98,6 +100,18 @@ export async function resetUserPasswordApi(data: IResetUserPasswordReq) {
     method: "POST",
     url: `${config.baseAPI}/admin/user/v1/reset_password`,
     data: { ...data, newPassword: await encryptSecret(data.newPassword) }
+  })
+}
+
+export async function resetUserPayPasswordApi(data: IResetUserPayPasswordReq) {
+  return ajax<IResetUserPayPasswordRes>({
+    method: "POST",
+    url: `${config.baseAPI}/admin/user/v1/reset_pay_password`,
+    data: {
+      userId: data.userId,
+      newPassword: await encryptSecret(data.newPassword),
+      ...(data.remark ? { remark: data.remark } : {})
+    }
   })
 }
 
