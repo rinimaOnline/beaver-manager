@@ -19,6 +19,16 @@
  * beaver-manager-header-v1
  */
 
+/** 按类型隐藏成员变动灰条。true = 不发该类灰条 */
+export interface HideMemberNotices {
+  join: boolean
+  quit: boolean
+  kick: boolean
+  transfer: boolean
+  setAdmin: boolean
+  unsetAdmin: boolean
+}
+
 // 群组信息
 export interface GroupInfo {
   id: number
@@ -42,8 +52,10 @@ export interface GroupInfo {
   isOfficial: boolean
   /** 隐藏成员列表：开启后普通成员看不到群里有谁，只看得到人数。群主和管理员不受影响 */
   hideMemberList: boolean
-  /** 隐藏成员变动灰条：开启后本群不再发「xxx 加入了群聊」这类系统提示 */
+  /** 兼容：六种成员变动灰条全关时为 true */
   hideMemberNotice: boolean
+  /** 按类型隐藏成员变动灰条。true = 不发该类灰条 */
+  hideMemberNotices: HideMemberNotices
   /** 真实在册成员数（status=1），和 displayMemberText 无关 */
   memberCount: number
   dissolveTime: string
@@ -89,8 +101,10 @@ export interface UpdateGroupReq {
   isOfficial?: boolean
   /** 隐藏成员列表。不传表示不改 */
   hideMemberList?: boolean
-  /** 隐藏成员变动灰条。不传表示不改 */
+  /** 隐藏成员变动灰条总开关。不传表示不改。新后台走 hideMemberNotices */
   hideMemberNotice?: boolean
+  /** 按类型隐藏灰条。传了就按类型写 */
+  hideMemberNotices?: HideMemberNotices
 }
 export interface UpdateGroupRes {}
 
@@ -112,6 +126,7 @@ export interface CreateGroupReq {
   displayMemberText?: string
   hideMemberList?: boolean
   hideMemberNotice?: boolean
+  hideMemberNotices?: HideMemberNotices
 }
 export interface CreateGroupRes {
   groupId: string

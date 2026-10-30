@@ -160,10 +160,14 @@
           </div>
         </el-form-item>
         <el-form-item label="隐藏成员提示">
-          <el-switch v-model="editForm.hideMemberNotice" />
-          <div class="group-list-page__hint">
-            开启后群里不再发「xxx 加入了群聊」「xxx 被设为管理员」这类灰条。
-            禁言提示、群公告变更不受影响。
+          <div class="group-list-page__notice-flags">
+            <div v-for="item in noticeFlagItems" :key="item.key" class="group-list-page__notice-flag">
+              <span>{{ item.label }}</span>
+              <el-switch v-model="editForm.hideMemberNotices[item.key]" />
+            </div>
+          </div>
+          <div class="group-list-page__hint group-list-page__hint--block">
+            开启后对应类型不再发灰条，可单独开关。禁言、群公告不受影响。
           </div>
         </el-form-item>
       </el-form>
@@ -216,8 +220,13 @@
           <span class="group-list-page__hint">普通成员只看得到人数，群主和管理员照常看全名单。</span>
         </el-form-item>
         <el-form-item label="隐藏成员提示">
-          <el-switch v-model="createForm.hideMemberNotice" />
-          <span class="group-list-page__hint">不再发「xxx 加入了群聊」这类灰条。</span>
+          <div class="group-list-page__notice-flags">
+            <div v-for="item in noticeFlagItems" :key="item.key" class="group-list-page__notice-flag">
+              <span>{{ item.label }}</span>
+              <el-switch v-model="createForm.hideMemberNotices[item.key]" />
+            </div>
+          </div>
+          <div class="group-list-page__hint group-list-page__hint--block">开启后对应类型不再发灰条，可单独开关。</div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -229,7 +238,7 @@
 </template>
 
 <script lang="ts">
-import type { GroupInfo } from "@/types/api/group"
+import type { GroupInfo, HideMemberNotices } from "@/types/api/group"
 import { ElMessage } from "element-plus"
 import { createGroupApi, getGroupListApi, updateGroupApi } from "@/api/group"
 import { defineComponent, onMounted, reactive, ref } from "vue"
@@ -252,6 +261,39 @@ export default defineComponent({
     const editVisible = ref(false)
     const editingId = ref(0)
     const editingMemberCount = ref(0)
+    const noticeFlagItems: { key: keyof HideMemberNotices, label: string }[] = [
+      { key: "join", label: "进入群聊" },
+      { key: "quit", label: "退出群聊" },
+      { key: "kick", label: "移出群聊" },
+      { key: "transfer", label: "转让群主" },
+      { key: "setAdmin", label: "设为管理员" },
+      { key: "unsetAdmin", label: "取消管理员" }
+    ]
+
+    const emptyNotices = (): HideMemberNotices => ({
+      join: false,
+      quit: false,
+      kick: false,
+      transfer: false,
+      setAdmin: false,
+      unsetAdmin: false
+    })
+
+    const noticesFromRow = (row: GroupInfo): HideMemberNotices => {
+      if (row.hideMemberNotices) {
+        return { ...emptyNotices(), ...row.hideMemberNotices }
+      }
+      const all = !!row.hideMemberNotice
+      return {
+        join: all,
+        quit: all,
+        kick: all,
+        transfer: all,
+        setAdmin: all,
+        unsetAdmin: all
+      }
+    }
+
     const editForm = reactive({
       title: "",
       notice: "",
@@ -259,7 +301,7 @@ export default defineComponent({
       displayMemberText: "",
       isOfficial: false,
       hideMemberList: false,
-      hideMemberNotice: false
+      hideMemberNotices: emptyNotices()
     })
 
     const createVisible = ref(false)
@@ -272,7 +314,7 @@ export default defineComponent({
       isOfficial: false,
       displayMemberText: "",
       hideMemberList: false,
-      hideMemberNotice: false
+      hideMemberNotices: emptyNotices()
     })
 
     const load = async () => {
@@ -312,7 +354,7 @@ export default defineComponent({
       editForm.displayMemberText = row.displayMemberText || ""
       editForm.isOfficial = row.isOfficial || false
       editForm.hideMemberList = row.hideMemberList || false
-      editForm.hideMemberNotice = row.hideMemberNotice || false
+      editForm.hideMemberNotices = noticesFromRow(row)
       editVisible.value = true
     }
 
@@ -325,7 +367,7 @@ export default defineComponent({
         displayMemberText: editForm.displayMemberText.trim(),
         isOfficial: editForm.isOfficial,
         hideMemberList: editForm.hideMemberList,
-        hideMemberNotice: editForm.hideMemberNotice
+        hideMemberNotices: { ...editForm.hideMemberNotices }
       })
       saving.value = false
       if (res.code !== 0) {
@@ -346,7 +388,7 @@ export default defineComponent({
         isOfficial: false,
         displayMemberText: "",
         hideMemberList: false,
-        hideMemberNotice: false
+        hideMemberNotices: emptyNotices()
       })
       createVisible.value = true
     }
@@ -377,7 +419,7 @@ export default defineComponent({
         isOfficial: createForm.isOfficial,
         displayMemberText: createForm.displayMemberText.trim() || undefined,
         hideMemberList: createForm.hideMemberList,
-        hideMemberNotice: createForm.hideMemberNotice
+        hideMemberNotices: { ...createForm.hideMemberNotices }
       })
       creating.value = false
       if (res.code !== 0) {
@@ -410,6 +452,7 @@ export default defineComponent({
       isOfficial,
       createVisible,
       creating,
+      noticeFlagItems,
       createForm,
       openCreate,
       submitCreate,
@@ -481,10 +524,31 @@ export default defineComponent({
     font-size: 12px;
     line-height: 1.5;
     color: var(--el-text-color-secondary);
+
+    &--block {
+      margin-left: 0;
+      margin-top: 6px;
+    }
   }
 
   &__official {
     margin-left: 6px;
+  }
+
+  &__notice-flags {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  &__notice-flag {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 280px;
+    font-size: 13px;
+    color: var(--el-text-color-primary);
   }
 
   &__pager {
